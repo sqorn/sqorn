@@ -1,0 +1,33 @@
+{
+  "name": "@sqorn/builder-sq",
+  "version": "0.0.46",
+  "description": "Sqorn Untyped Query Builder",
+  "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "main": "./src/index.js",
+  "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-query-builder",
+  "homepage": "https://sqorn.org",
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "javascript",
+    "sql",
+    "query",
+    "builder",
+    "template",
+    "strings",
+    "tagged",
+    "template",
+    "literals"
+  ],
+  "dependencies": {
+    "@sqorn/lib-util": "^0.0.45"
+  },
+  "scripts": {
+    "prerelease": "gitpkg publish"
+  }
+}
