@@ -1,0 +1,22 @@
+{
+  "name": "@sqorn/lib-expression",
+  "version": "0.0.46",
+  "description": "Sqorn Expression Library",
+  "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "main": "./src/index.js",
+  "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-lib-expression",
+  "homepage": "https://sqorn.org",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@sqorn/lib-util": "^0.0.45"
+  },
+  "scripts": {
+    "prerelease": "gitpkg publish"
+  }
+}
