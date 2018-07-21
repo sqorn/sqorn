@@ -1,10 +1,20 @@
 {
   "name": "sqorn",
   "version": "0.0.0",
-  "description": "a concise javascript sql query builder",
-  "main": "index.js",
+  "description": "Concise javascript SQL query builder",
+  "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
+  "license": "MIT",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "main": "./src",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eejdoowad/sqorn.git"
+  },
+  "homepage": "http://github.com/eejdoowad/sqorn",
+  "bugs": {
+    "url": "https://github.com/eejdoowad/sqorn/issues"
   },
   "keywords": [
     "javascript",
@@ -14,8 +24,8 @@
     "template",
     "strings",
     "tagged",
-    "templates"
-  ],
-  "author": "Sufyan Dawoodjee",
-  "license": "MIT"
+    "template",
+    "literals",
+    "strings"
+  ]
 }
