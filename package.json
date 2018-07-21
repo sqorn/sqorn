@@ -1,0 +1,21 @@
+{
+  "name": "sqorn",
+  "version": "0.0.0",
+  "description": "a concise javascript sql query builder",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "javascript",
+    "sql",
+    "query",
+    "builder",
+    "template",
+    "strings",
+    "tagged",
+    "templates"
+  ],
+  "author": "Sufyan Dawoodjee",
+  "license": "MIT"
+}
