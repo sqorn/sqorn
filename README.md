@@ -1,6 +1,8 @@
 # sqorn
 
-**sqorn** is a SQL query builder designed to make querying your database a joy. It uses template strings and promises to provide a concise, elegant API. sqorn makes queries short and sweet without sacrificing the full power of SQL.
+**sqorn** is a SQL query builder designed to make querying your database a joy. It uses tagged template literals and promises to provide a concise, elegant API. sqorn makes queries short, structured, and intuitive while providing the full power of SQL. By default, sqorn streamlines query building by making assumptions about how database entities and query arguments are named.
+
+TODO: make express sel - whr - ret SELECT only
 
 **CURRENT STATUS: unimplemented, just an idea**
 
@@ -20,6 +22,57 @@ sq`person``id`
 // insert into person (first_name, lastName)
 // values(upper('John'), upper('Doe')) returning id
 sq`person`({ age })`id`.del
+// delete from person where age = 40 returning id
+sq`person``age < ${age}`.del
+// delete from person where age < 40
+sq`person p join company c on p.employer_id = c.id`
+  `p.id = ${23}``c.name`
+// select c.name from person p join company c on p.employer_id = c.id
+// where p.id = 23
+sq.wit`children`(sq`person``age < ${18}`)`children`()`first_name`
+// with children as (select * from "person" where age < 18)
+// select first_name from children`
+sq.l`name = ${firstName}`
+// name = 'John' -- builds escaped SQL string
+sq.ary`order by name ${order}`
+// order by name DESC -- builds unescaped SQL string
+const colors = sq.ret`'red', 'yellow','blue'`
+sq`${colors} c`
+// select * from (select 'red', 'yellow', 'blue') c
+```
+
+
+```javascript
+const firstName = 'John', lastName = 'Doe', age = 40, order = 'DESC'
+sq.frm`person`
+  .ret`*`
+// select * from person
+sq.frm`person`
+  .whr({ firstName })
+// select * from person
+// where first_name = 'John'
+sq.frm`person`
+  .whr`age > ${age}`
+  .ret`first_name`
+// select first_name
+// from person
+// where age > 40
+sq.frm`person`
+  .ins({ firstName, lastName, age })
+  .ret`id`
+// insert into person (first_name, last_name, age)
+// values ('John', 'Doe', 40)
+// returning id
+sq.ins`person`
+  .col`first_name, last_name`
+  .val`upper(${firstName}), upper(${lastName})`
+  .ret`id`
+// insert into person (first_name, lastName)
+// values(upper('John'), upper('Doe')) returning id
+sq.del`person`
+  .wht({ age })
+  .ret`id`
+
 // delete from person where age = 40 returning id
 sq`person``age < ${age}`.del
 // delete from person where age < 40
@@ -351,29 +404,47 @@ sq`person`.ord`last_name, first_name`.lim(10).off(7)
 
 ### offset
 
+### transactions
+
+```javascript
+await sq.trx(async trx => {
+  const created = await createSecret({ expires: '24 hours', type: 'code' }).one(trx)
+  const queried = await getSecret({ secret: created.secret }).one(trx)
+  const deleted = await deleteSecret({ secret: queried.secret }).one(trx)
+})
+
+```
+
 ### complex query examples
 
 
 ### create table
 
-```sql
-create table author (
-  author_id   SERIAL PRIMARY KEY,
-  first_name  TEXT,
-  last_name   TEXT,
-  birthday    DATE
-);
-create table book (
-  book_id     SERIAL PRIMARY KEY,
-  title       TEXT NOT NULL,
-  published   DATE,
-  author_id   INTEGER REFERENCES author (author_id)
-);
+TODO: REVISE: EXPERIMENTAL
+
+```javascript
+const person = sq
+  .tbl`person`
+  .col`id`                     `serial`
+                               .pk
+  .col`first_name`             `text not null`
+                               .idx
+  .col`last_name`              `text not null`
+  .col`age`                    `integer`
+                               .chk`age >= 0`
+  .col`mother`                 `integer`
+                               .del`cascade`
+                               .fk `person(id)`
+  .col`father`                 `integer`
+  .fk `mother`                 `person(id)`
+  .chk`first_name`             `char_length(first_name) <= 320)`
+  .unq`first_name, last_name, age`
+  .idx`last_name`
 ```
 
+
+
 ## API
-
-
 
 ### shared
 
@@ -419,17 +490,75 @@ create table book (
 
 ### execute
 
-#### bld
+#### trx: async (callback: async (trx: Transaction) => any) => any
 
-#### str
+__Description:__
 
-#### run
+  Runs the asynchronous callback function in the context of a transaction. A `Transaction` object `trx` is made available to the callback and should be passed to all queries that are part of the transaction.
 
-#### one
+__Returns:__
 
-#### all
+  the value return by the callback
 
+#### str: () => string
 
+__Description:__
+
+  builds a SQL query string representing the current context
+
+__Returns:__
+
+  a SQL query string representation of the current context
+
+#### run: async (trx?: Transaction) => void
+
+__Description:__
+
+  executes the query
+
+__Returns:__
+
+  a promise that resolves when the query is done
+
+#### one: async (trx?: Transaction) => any
+
+__Description:__
+
+  executes the query
+
+__Returns:__
+
+  a promise for the first row returned by the query or `undefined` if no rows were returned
+
+#### all: async (trx?: Transaction) => any[]
+
+__Description:__
+
+  Executes the query
+
+__Returns:__
+
+  a promise for an array of results (which may have length 0)
+
+#### exi: async (trx?: Transaction) => boolean
+
+__Description:__
+
+  executes the query
+
+__Returns:__
+
+  a promise that resolves to true if at least one row was returned by the query, false otherwise
+
+#### ctx: () => Context
+
+__Description:__
+
+  returns the query builder's internal context
+
+__Returns:__
+
+  returns the query builder's internal context
 
 ### where
 
