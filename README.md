@@ -10,7 +10,7 @@ Sqorn is a SQL query builder designed to make querying your database a joy. It u
 # Index
 
 * [Install](#install)
-* [Examples](#examples)
+* [Tutorial](#tutorial)
 * [API](#api)
 * [Roadmap](#roadmap)
 
@@ -21,6 +21,10 @@ npm install --save sqorn
 npm install --save pg # postgres is only database currently supported
 ```
 
+## Tutorial
+
+### Initialize
+
 ```javascript
 const sqorn = require('sqorn')
 const sq = sqorn({ client: 'pg', connection: {} })
@@ -30,9 +34,8 @@ const sq = sqorn({ client: 'pg', connection: {} })
 
 `sq` is an object with methods used to build and compile SQL queries.
 
-## Examples
 
-### Escaped SQL query
+### Raw Query
 
 
 ```sql
@@ -62,7 +65,7 @@ sq`book`
 
 Using `sq` as a template literal tag is shorthand for calling `.frm`.
 
-### Select 2
+### Where
 
 ```sql
 select age, job from person where first_name = 'Kaladin'
@@ -77,10 +80,11 @@ sq`person``first_name = ${'Kaladin'}``age, job`
 ```
 
 `.whr` specifies the `where` clause, which filters result rows. 
+
 All methods of `sq` escape template literal arguments, except when noted otherwise.
 
 
-### Select 3
+### Where Object
 
 ```javascript
 sq.frm`book`
@@ -92,24 +96,52 @@ sq`book`({ publishYear: 1984 })
 `.whr` also accepts object arguments. By default `sq` converts method arguments of type `Object` from `CamelCase` to `snake_case`.
 
 
-### where
-
-```javascript
-const title = 'Moby Dick'
-
-q`book`.where`title = ${title}`.all
-// or
-q`book`.where({ title }).all
-// or
-q`book``title = ${title}`.all
-// or
-q`book`({ title }).all
-
-```
+### Where Compound
 
 ```sql
-select * from book where title = 'Moby Dick'
+select * from book
+where not (title = 'Oathbringer')
+or (pages >= 200 and genre = 'fantasy')
 ```
+
+```javascript
+const title = 'Oathbringer', minPages = 200, genre = 'fantasy'
+
+sq.frm`book`
+  .whr`not (title = ${title})`
+  .whr`or (pages >= ${minPages} and genre = ${genre})`
+// or
+sq`book`(
+    sq.not({ title }),
+    { minPages: sq.l`pages >= ${minPages}`, genre }
+  )
+// or
+sq.frm`book`
+  .whr(sq.not({ title }))
+  .whr`or`
+  .whr({ minPages: sq.l`pages >= ${minPages}`, genre })
+// or
+sq`book`(
+  sq.or(
+    sq.not(sq.op`=`('title', title))
+    sq.and(
+      sq.op`>=`('pages', minPages)
+      sq.l`genre = ${genre}`,
+    )
+  )
+```
+
+**NOTE: SQL query strings generated from the calls above, though logically equivalent, may have varying parantheses and spacing.**
+
+Conditions generated from multiple calls to `.whr` are joined with the `new line` character (`\n`).
+
+`.whr` converts each object argument to the logical conjunction (`AND`) of the conditions represented by its properties.
+
+`.whr` uses logical disjunction (`OR`) to join the conditions represented by each object argument.
+
+`.not` negates one argument, `.and` conjuncts two arguments, and `.or` disjuncts two arguments.
+
+`.op` takes a template literaly naming a binary operator and returns a function that applies the operator to its two arguments.
 
 ### and
 
