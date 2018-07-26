@@ -1,173 +1,93 @@
-# sqorn
+# Sqorn
 
-**sqorn** is a SQL query builder designed to make querying your database a joy. It uses tagged template literals and promises to provide a concise, elegant API. sqorn makes queries short, structured, and intuitive while providing the full power of SQL. By default, sqorn streamlines query building by making assumptions about how database entities and query arguments are named.
+Sqorn is a SQL query builder designed to make querying your database a joy. It uses tagged template literals and promises to provide a concise yet powerful API. Sqorn makes queries short, structured, and intuitive without sacrificing the flexibility of SQL.
 
-TODO: make express sel - whr - ret SELECT only
-
-**CURRENT STATUS: unimplemented, just an idea**
-
-```javascript
-const firstName = 'John', lastName = 'Doe', age = 40, order = 'DESC'
-sq`person`
-// select * from person
-sq`person`({ firstName })
-// select * from person where first_name = 'John'
-sq`person``age > ${age}``first_name`
-// select first_name from person where age > 40
-sq`person``id`.ins({ firstName, lastName, age })
-// insert into person (first_name, last_name, age)
-// values ('John', 'Doe', 40) returning id
-sq`person``id`
-  .ins`first_name, last_name``upper(${firstName}), upper(${lastName})`
-// insert into person (first_name, lastName)
-// values(upper('John'), upper('Doe')) returning id
-sq`person`({ age })`id`.del
-// delete from person where age = 40 returning id
-sq`person``age < ${age}`.del
-// delete from person where age < 40
-sq`person p join company c on p.employer_id = c.id`
-  `p.id = ${23}``c.name`
-// select c.name from person p join company c on p.employer_id = c.id
-// where p.id = 23
-sq.wit`children`(sq`person``age < ${18}`)`children`()`first_name`
-// with children as (select * from "person" where age < 18)
-// select first_name from children`
-sq.l`name = ${firstName}`
-// name = 'John' -- builds escaped SQL string
-sq.ary`order by name ${order}`
-// order by name DESC -- builds unescaped SQL string
-const colors = sq.ret`'red', 'yellow','blue'`
-sq`${colors} c`
-// select * from (select 'red', 'yellow', 'blue') c
-```
-
-
-```javascript
-const firstName = 'John', lastName = 'Doe', age = 40, order = 'DESC'
-sq.frm`person`
-  .ret`*`
-// select * from person
-sq.frm`person`
-  .whr({ firstName })
-// select * from person
-// where first_name = 'John'
-sq.frm`person`
-  .whr`age > ${age}`
-  .ret`first_name`
-// select first_name
-// from person
-// where age > 40
-sq.frm`person`
-  .ins({ firstName, lastName, age }
-  .ret`id`
-// insert into person (first_name, last_name, age)
-// values ('John', 'Doe', 40)
-// returning id
-sq.frm`person`
-  .col`first_name, last_name`
-  .ins`upper(${firstName}), upper(${lastName})`
-  .ret`id`
-// insert into person (first_name, lastName)
-// values(upper('John'), upper('Doe')) returning id
-sq.del`person`
-  .whr({ age })
-  .ret`id`
-
-// delete from person where age = 40 returning id
-sq`person``age < ${age}`.del
-// delete from person where age < 40
-sq`person p join company c on p.employer_id = c.id`
-  `p.id = ${23}``c.name`
-// select c.name from person p join company c on p.employer_id = c.id
-// where p.id = 23
-sq.wit`children`(sq`person``age < ${18}`)`children`()`first_name`
-// with children as (select * from "person" where age < 18)
-// select first_name from children`
-sq.l`name = ${firstName}`
-// name = 'John' -- builds escaped SQL string
-sq.ary`order by name ${order}`
-// order by name DESC -- builds unescaped SQL string
-```
+**Sqorn is in early development. The API is subject to change and certain methods may not work. Contributors welcome.**
 
 # Index
 
 * [Install](#install)
 * [Examples](#examples)
 * [API](#api)
-* [Grammar](#grammar)
 * [Roadmap](#roadmap)
 
 ## Install
 
 ```sh
 npm install --save sqorn
+npm install --save pg # postgres is only database currently supported
 ```
 
 ```javascript
 const sqorn = require('sqorn')
-const q = sqorn({ url: `postgres://some.where` })
+const sq = sqorn({ client: 'pg', connection: {} })
 ```
+
+`sqorn` is the function that initializes and returns a query builder with the provided configuration.
+
+`sq` is an object with methods used to build and compile SQL queries.
 
 ## Examples
 
-### sql query
+### Escaped SQL query
 
-Create a `person` table
 
 ```sql
-create table person (
-  id          SERIAL PRIMARY KEY,
-  firstName   TEXT,
-  lastName    TEXT,
-  age         INTEGER
-)
+select * from person
 ```
 
 ```javascript
-sq.l`
-  create table person (
-    id          SERIAL PRIMARY KEY,
-    firstName   TEXT,
-    lastName    TEXT,
-    age         INTEGER
-  )
-`.run
+sq.l`select * from person`
 ```
 
-`q.sql` creates a single complete query. Execution is delayed until `.run` is called. `.run` returns a promise that resolves when the query is complete.
+`sq.l` creates a single complete escaped SQL query.
 
-### select
+### Select
 
 ```sql
 select * from book
 ```
 
 ```javascript
-q`book`.ret`*`.all
+sq.frm`book`
+  .ret`*`
 // or
-q`book`.all`*`
-// or
-q`book`.all
-
-// returns
-Promise<book[]>
+sq`book`
 ```
 
-Return a promise for an array of all columns of all books
-If none are found, returns a promise for an empty array.
-Return values will be in snake case
+`.frm` specifies the table to query and `.ret` specifies the selected columns. If `.ret` isn't called, select queries implicitly request all columns (`*`).
 
-### select columns
+Using `sq` as a template literal tag is shorthand for calling `.frm`.
 
-```javascript
-q`book`.ret`title, author, year`.all
-// or
-q`book`.all`title, author, year`
-```
+### Select 2
 
 ```sql
-select `title`, `author`, `year` from `books`
+select age, job from person where first_name = 'Kaladin'
 ```
+
+```javascript
+sq.frm`person`
+  .whr`first_name = ${'Kaladin'}`
+  .ret`age, job`
+// or
+sq`person``first_name = ${'Kaladin'}``age, job`
+```
+
+`.whr` specifies the `where` clause, which filters result rows. 
+All methods of `sq` escape template literal arguments, except when noted otherwise.
+
+
+### Select 3
+
+```javascript
+sq.frm`book`
+  .whr({ publishYear: 1984 })
+// or
+sq`book`({ publishYear: 1984 })
+```
+
+`.whr` also accepts object arguments. By default `sq` converts method arguments of type `Object` from `CamelCase` to `snake_case`.
+
 
 ### where
 
@@ -584,6 +504,91 @@ __Returns:__
 #### .roj
 
 #### .naj
+
+## Style Guide
+
+```javascript
+const firstName = 'John', lastName = 'Doe', age = 40, order = 'DESC'
+sq`person`
+// select * from person
+sq`person`({ firstName })
+// select * from person where first_name = 'John'
+sq`person``age > ${age}``first_name`
+// select first_name from person where age > 40
+sq`person``id`.ins({ firstName, lastName, age })
+// insert into person (first_name, last_name, age)
+// values ('John', 'Doe', 40) returning id
+sq`person``id`
+  .ins`first_name, last_name``upper(${firstName}), upper(${lastName})`
+// insert into person (first_name, lastName)
+// values(upper('John'), upper('Doe')) returning id
+sq`person`({ age })`id`.del
+// delete from person where age = 40 returning id
+sq`person``age < ${age}`.del
+// delete from person where age < 40
+sq`person p join company c on p.employer_id = c.id`
+  `p.id = ${23}``c.name`
+// select c.name from person p join company c on p.employer_id = c.id
+// where p.id = 23
+sq.wit`children`(sq`person``age < ${18}`)`children`()`first_name`
+// with children as (select * from "person" where age < 18)
+// select first_name from children`
+sq.l`name = ${firstName}`
+// name = 'John' -- builds escaped SQL string
+sq.ary`order by name ${order}`
+// order by name DESC -- builds unescaped SQL string
+const colors = sq.ret`'red', 'yellow','blue'`
+sq`${colors} c`
+// select * from (select 'red', 'yellow', 'blue') c
+```
+
+
+```javascript
+const firstName = 'John', lastName = 'Doe', age = 40, order = 'DESC'
+sq.frm`person`
+  .ret`*`
+// select * from person
+sq.frm`person`
+  .whr({ firstName })
+// select * from person
+// where first_name = 'John'
+sq.frm`person`
+  .whr`age > ${age}`
+  .ret`first_name`
+// select first_name
+// from person
+// where age > 40
+sq.frm`person`
+  .ins({ firstName, lastName, age }
+  .ret`id`
+// insert into person (first_name, last_name, age)
+// values ('John', 'Doe', 40)
+// returning id
+sq.frm`person`
+  .col`first_name, last_name`
+  .ins`upper(${firstName}), upper(${lastName})`
+  .ret`id`
+// insert into person (first_name, lastName)
+// values(upper('John'), upper('Doe')) returning id
+sq.del`person`
+  .whr({ age })
+  .ret`id`
+
+// delete from person where age = 40 returning id
+sq`person``age < ${age}`.del
+// delete from person where age < 40
+sq`person p join company c on p.employer_id = c.id`
+  `p.id = ${23}``c.name`
+// select c.name from person p join company c on p.employer_id = c.id
+// where p.id = 23
+sq.wit`children`(sq`person``age < ${18}`)`children`()`first_name`
+// with children as (select * from "person" where age < 18)
+// select first_name from children`
+sq.l`name = ${firstName}`
+// name = 'John' -- builds escaped SQL string
+sq.ary`order by name ${order}`
+// order by name DESC -- builds unescaped SQL string
+```
 
 ## Roadmap
 

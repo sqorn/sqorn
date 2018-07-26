@@ -4,7 +4,6 @@ declare module 'sqorn' {
 
   /**
    * The sqorn SQL query builder
-   * @private name
    */
   interface sq {
 
