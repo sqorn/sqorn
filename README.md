@@ -58,19 +58,19 @@ sq.frm`person`
 // from person
 // where age > 40
 sq.frm`person`
-  .ins({ firstName, lastName, age })
+  .ins({ firstName, lastName, age }
   .ret`id`
 // insert into person (first_name, last_name, age)
 // values ('John', 'Doe', 40)
 // returning id
-sq.ins`person`
+sq.frm`person`
   .col`first_name, last_name`
-  .val`upper(${firstName}), upper(${lastName})`
+  .ins`upper(${firstName}), upper(${lastName})`
   .ret`id`
 // insert into person (first_name, lastName)
 // values(upper('John'), upper('Doe')) returning id
 sq.del`person`
-  .wht({ age })
+  .whr({ age })
   .ret`id`
 
 // delete from person where age = 40 returning id
@@ -290,11 +290,18 @@ insert.run
 
 ```javascript
 const age = 23
-sq`person``count(*)`({ age }).upd({ age: age + 1})
+const increment = 2
+sq`person`({ age })`count(*)`
+  .upd({ age: sq.l`age + ${increment}`, updateTime: sq.l`now()`})
+// or
+sq.frm`person`
+  .whr`age = ${age}`
+  .upd`age = age + ${increment}, update_time = now()`
+  .ret`count(*)
 ```
 
 ```sql
-update person set age = 24 where age = 23
+update person set age = 24 where age = 23 returning count(*)
 ```
 
 ## upsert (insert conflict)
@@ -448,9 +455,7 @@ const person = sq
 
 ### shared
 
-#### wit
-
-#### rec
+#### wth
 
 #### frm
 
@@ -482,9 +487,13 @@ const person = sq
 
 ### insert
 
+#### ins
 
+#### val
 
 ### update
+
+#### upd
 
 
 
@@ -540,7 +549,7 @@ __Returns:__
 
   a promise for an array of results (which may have length 0)
 
-#### exi: async (trx?: Transaction) => boolean
+#### exs: async (trx?: Transaction) => boolean
 
 __Description:__
 
@@ -550,17 +559,7 @@ __Returns:__
 
   a promise that resolves to true if at least one row was returned by the query, false otherwise
 
-#### ctx: () => Context
-
-__Description:__
-
-  returns the query builder's internal context
-
-__Returns:__
-
-  returns the query builder's internal context
-
-### where
+### Where operators
 
 #### and
 
@@ -585,40 +584,6 @@ __Returns:__
 #### .roj
 
 #### .naj
-
-
-
-## Grammar
-
-```
-QUERY  ->   SELECT
-       ->   DELETE
-       ->   INSERT
-       ->   UPDATE
-
-WITH   ->   .wit  [ .rec ] [ __alias__  QUERY ]+
-
-SELECT -> [ WITH                                 ]
-                     __table__
-          [          __where__    [ __return__ ] ]
-          [ .grp     __group__    [ __having__ ] ]
-          [ .ord     __order__                   ]
-          [ .lim     __limit__                   ]
-          [ .off     __offset__                  ]
-
-DELETE -> [ WITH                                 ]
-                     __table__
-          [          __where__    [ __return__ ] ]
-            .del
-
-INSERT -> [ WITH                                 ]
-  TODO
-
-UPDATE -> [ WITH                                 ]
-  TODO               __table__
-          [          __where__    [ __return__ ] ]
-          [ .upd  ]
-```
 
 ## Roadmap
 
