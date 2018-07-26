@@ -141,3 +141,10 @@ test('select - `frm``whr`.ret', () => {
 //     ).str
 //   ).toBe(`insert into person (first_name, last_name) values ('John', 'Doe')`)
 // })
+
+test('select - .frm``.whr`${int}`', () => {
+  expect(sq.frm`person`.whr`age > ${7}`.bld).toEqual({
+    txt: 'select * from person where age > $1',
+    arg: [7]
+  })
+})

@@ -1,4 +1,4 @@
-const compile = require('./compile')
+const compile = require('./compile2')
 
 const chain = Symbol()
 const methods = Symbol()
@@ -12,11 +12,33 @@ function Builder(...args) {
 }
 
 Builder.prototype = {
+  // raw sql
+  l(...args) {
+    throw Error('Unimplemented')
+  },
+  // operators
+  not(arg) {
+    throw Error('Unimplemented')
+  },
+  and(a, b) {
+    throw Error('Unimplemented')
+  },
+  or(a, b) {
+    throw Error('Unimplemented')
+  },
+  // getter chain methods
   get del() {
     return this[chain]({ type: 'del' })
   },
+  // table
+  tbl() {
+    throw Error('Unimplemented')
+  },
   // query execution methods
   get str() {
+    return compile(this[methods]).txt
+  },
+  get bld() {
     return compile(this[methods])
   },
   async run(trx) {
@@ -29,9 +51,6 @@ Builder.prototype = {
     throw Error('Unimplemented')
   },
   async exs(trx) {
-    throw Error('Unimplemented')
-  },
-  async qry(trx) {
     throw Error('Unimplemented')
   },
   // transaction

@@ -29,7 +29,8 @@
     "strings"
   ],
   "devDependencies": {
-    "jest": "^23.4.1"
+    "jest": "^23.4.1",
+    "pg": "^7.4.3"
   },
   "files": [
     "src/**/*",
