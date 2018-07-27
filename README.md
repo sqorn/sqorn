@@ -1,7 +1,8 @@
 # Sqorn
 
-![version](https://img.shields.io/npm/v/sqorn.svg)
-![build status](https://img.shields.io/travis/eejdoowad/sqorn.svg)
+[![npm](https://img.shields.io/npm/v/sqorn.svg?maxAge=2592000)](https://www.npmjs.com/package/sqorn)
+[![npm](https://img.shields.io/travis/eejdoowad/sqorn.svg?maxAge=2592000)](https://travis-ci.org/eejdoowad/sqorn)
+
 
 Sqorn is a SQL query builder designed to make querying your database a joy. It uses tagged template literals and promises to provide a concise yet powerful API. Sqorn makes queries short, structured, and intuitive without sacrificing the flexibility of SQL.
 
