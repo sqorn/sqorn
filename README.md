@@ -625,10 +625,63 @@ sq.ary`order by name ${order}`
 // order by name DESC -- builds unescaped SQL string
 ```
 
+## FAQ
+
+### How does sqorn work?
+
+When a method on the query builder `sq` is called, it pushes an object containing the method name and arguments to an array named `methods`.
+
+```javascript
+sq.frm`person`.whr`age > ${7} and age < ${13}`.ret`name`
+// methods ===
+[ { type: 'frm', args: [ [ 'person' ] ] },
+  { type: 'whr', args: [ [ 'age > ', ' and age < ', '' ], 7, 13 ] },
+  { type: 'ret', args: [ [ '5' ] ] } ]
+
+```
+
+Certain methods like `.run` trigger the three-step compilation process:
+
+First, the entries in `methods` are processed sequentially to build a context object `ctx`.
+
+```javascript
+// ctx === context(methods) ===
+{ type: 'select',
+  frm: [ [ 'person' ] ],
+  whr: [ [ 'age > ', ' and age < ', '' ], 7, 13 ],
+  ret: [ [ '5' ] ] }
+```
+
+Second, a `Query` of type `ctx.type` is constructed. Each `Query` is constructed from a sequence of `clauses`, which are evaluated against `ctx`. Each clause returns an object with properties `txt` for its text component and `arg` for its parameterized arguments.
+
+```javascript
+select = Query(ctx)(
+  With,   // undefined
+  Select, // { txt: 'select age', arg: [] }
+  From,   // { txt: 'from person', arg: []}
+  Where,  // { txt: 'where age > $1 and age < $2, arg: [7, 13] }
+  Group,  // undefined
+  Having, // undefined
+  Order,  // undefined
+  Limit,  // undefined
+  Offset  // undefined
+)
+```
+
+Finally, the contributions of all clauses are joined together to construct a complete query object. This query object is passed to the underlying database library for execution.
+
+```javascript
+{ txt: 'select age from person where age > $1 and age < $2' 
+  arg: [7, 13] }
+```
+
 ## Roadmap
 
-* design api
-* build prototype
-* connect to node-postgres
-* find someone else to takeover =)
-* write tests
+* integrate pg
+* implement execution methods
+* support object parameters
+* complete implementation
+* add query validation
+* implement .str (for pg)
+* write tests for everything
+* table and constain creation / migration

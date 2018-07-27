@@ -3,8 +3,9 @@ const context = methods => {
   let exp = 'frm'
   const ctx = {
     type: 'select',
+    parameters: 0,
     val: [],
-    opt: { debug: false, separator: ' ', uppercase: false }
+    opt: { debug: false, separator: ' ', uppercase: false, client: 'pg' }
   }
   methods.forEach(method => {
     switch (method.type) {
@@ -50,9 +51,14 @@ const context = methods => {
         break
       // options
       case 'opt':
-        const { debug = false, separator = ' ', uppercase = false } =
+        const {
+          debug = false,
+          separator = ' ',
+          uppercase = false,
+          client = 'pg'
+        } =
           method.args || {}
-        ctx.opt = { debug, separator, uppercase }
+        ctx.opt = { debug, separator, uppercase, client }
         break
       case 'exp':
         switch (exp) {
@@ -114,45 +120,96 @@ const query = {
     )
 }
 
-// const From = ctx => ctx.frm && clause`from ${'frm'}`
+const Query = ctx => (...clauses) => {
+  let txt = []
+  const arg = []
+  clauses.forEach(clause => {
+    const compiled = clause(ctx)
+    if (compiled) {
+      txt.push(compiled.txt)
+      arg.push(...compiled.arg)
+    }
+  })
+  return { txt: txt.join(' '), arg }
+}
+
+const OptionalClause = (prefix, key) => ctx => {
+  if (!ctx[key]) return
+  const { txt, arg } = build(ctx, ctx[key])
+  return {
+    txt: `${prefix} ${txt}`,
+    arg
+  }
+}
+
+const RequiredClause = (prefix, key) => ctx => {
+  const { txt, arg } = build(ctx, ctx[key])
+  return {
+    txt: `${prefix} ${txt}`,
+    arg
+  }
+}
 
 // shared
 const With = ctx => undefined
-const From = ctx => ctx.frm && `from ${build(ctx.frm)}`
-const Where = ctx => ctx.whr && `where ${build(ctx.whr)}`
-const Returning = ctx => ctx.ret && `returning ${build(ctx.ret)}`
+const From = OptionalClause('from', 'frm')
+const Where = OptionalClause('where', 'whr')
+const Returning = OptionalClause('returning', 'ret')
 
 // select
-const Select = ctx => (ctx.ret ? `select ${build(ctx.ret)}` : `select *`)
-const Group = ctx => ctx.grp && `group by ${ctx.grp}`
-const Having = ctx => ctx.hav && `having ${ctx.hav}`
-const Order = ctx => ctx.ord && `order by ${ctx.ord}`
-const Limit = ctx => ctx.lim && `limit ${ctx.lim}`
-const Offset = ctx => ctx.off && `offset ${ctx.off}`
+const Select = ctx => {
+  if (ctx.ret) {
+    const { txt, arg } = build(ctx, ctx.ret)
+    return {
+      txt: `select ${txt}`,
+      arg
+    }
+  }
+  return {
+    txt: `select *`,
+    arg: []
+  }
+}
+const Group = OptionalClause('group by', 'grp')
+const Having = OptionalClause('having', 'hav')
+const Order = OptionalClause('order by', 'ord')
+const Limit = OptionalClause('limit', 'lim')
+const Offset = OptionalClause('offset', 'off')
 
 // delete
-const Delete = ctx => `delete`
+const Delete = ctx => ({ txt: 'delete', arg: [] })
 
 // insert
-const Insert = ctx => `insert into ${build(ctx.frm)} (${build(ctx.ins)})`
-const Values = ctx => `values ${Tuples(ctx)}`
-const Tuples = ctx => ctx.val.map(tuple => `(${build(tuple)})`).join(', ')
+const Insert = ctx => {
+  const frm = build(ctx, ctx.frm)
+  const ins = build(ctx, ctx.ins)
+  return {
+    txt: `insert into ${frm.txt} (${ins.txt})`,
+    arg: [...frm.arg, ...ins.arg]
+  }
+}
+const Values = ctx => {
+  const txt = []
+  const arg = []
+  ctx.val.forEach(val => {
+    const tuple = build(ctx, val)
+    txt.push(`(${tuple.txt})`)
+    arg.push(tuple.arg)
+  })
+  return {
+    txt: `values ${txt.join(', ')}`,
+    arg
+  }
+}
+// const Tuples = ctx => ctx.val.map(tuple => `(${build(tuple)})`).join(', ')
 
 // update
-const Update = ctx => `update ${build(ctx.frm)}`
-const Set_ = ctx => `set ${build(ctx.upd)}`
+const Update = RequiredClause('update', 'frm')
+const Set_ = RequiredClause('set', 'upd')
 
-const Query = ctx => (...clauses) =>
-  clauses
-    .map(clause => clause(ctx))
-    .filter(clause => clause !== undefined)
-    .map(clause => clause.trim())
-    .join(' ')
-
-const build = params => {
+const build = (ctx, params) => {
   if (isTaggedTemplate(params)) {
-    const [strings, ...args] = params
-    return buildTaggedTemplate(strings, args)
+    return buildTaggedTemplate(ctx, params)
   } else {
     throw Error('Cant build plain function calls yet')
   }
@@ -163,13 +220,17 @@ const isTaggedTemplate = args =>
   Array.isArray(args[0]) &&
   typeof args[0][0] === 'string'
 
-const buildTaggedTemplate = (strings, args) => {
-  let result = strings[0]
+const buildTaggedTemplate = (ctx, [strings, ...args]) => {
+  let txt = strings[0]
+  const arg = []
   for (let i = 0; i < args.length; i++) {
-    result += args[i] + strings[i + 1]
+    arg.push(args[i])
+    txt += parameter(ctx) + strings[i + 1]
   }
-  return result
+  return { txt: txt.trim(), arg }
 }
+
+const parameter = ctx => `$${++ctx.parameters}`
 
 /** Transforms array of method call objects to SQL query string */
 const compile = methods => {

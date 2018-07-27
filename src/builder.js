@@ -1,4 +1,4 @@
-const compile = require('./compile2')
+const compile = require('./compile')
 
 const chain = Symbol()
 const methods = Symbol()
@@ -36,6 +36,7 @@ Builder.prototype = {
   },
   // query execution methods
   get str() {
+    // TODO: escape queries using active client syntax
     return compile(this[methods]).txt
   },
   get bld() {
