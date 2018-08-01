@@ -13,6 +13,7 @@ Sqorn is a SQL query builder designed to make querying your database a joy. It u
 * [Install](#install)
 * [Tutorial](#tutorial)
 * [API](#api)
+* [FAQ](#faq)
 * [Roadmap](#roadmap)
 
 ## Install
@@ -405,6 +406,25 @@ const person = sq
   .idx`last_name`
 ```
 
+```javascript
+const person = sq.tbl`person`
+  .col`id`                     `serial`
+                               .pk
+  .col`first_name`             `text not null`
+                               .idx
+  .col`last_name`              `text not null`
+  .col`age`                    `integer`
+                               .chk`age >= 0`
+  .col`mother`                 `integer`
+                               .del`cascade`
+                               .fk `person(id)`
+  .col`father`                 `integer`
+  .fk `mother`                 `person(id)`
+  .chk`first_name`             `char_length(first_name) <= 320)`
+  .unq`first_name, last_name, age`
+  .idx`last_name`
+```
+
 
 
 ## API
@@ -633,11 +653,11 @@ sq.ary`order by name ${order}`
 When a method on the query builder `sq` is called, it pushes an object containing the method name and arguments to an array named `methods`.
 
 ```javascript
-sq.frm`person`.whr`age > ${7} and age < ${13}`.ret`name`
+sq.frm`person`.whr`age > ${20} and age < ${30}`.ret`name`
 // methods ===
 [ { type: 'frm', args: [ [ 'person' ] ] },
-  { type: 'whr', args: [ [ 'age > ', ' and age < ', '' ], 7, 13 ] },
-  { type: 'ret', args: [ [ '5' ] ] } ]
+  { type: 'whr', args: [ [ 'age > ', ' and age < ', '' ], 20, 30 ] },
+  { type: 'ret', args: [ [ 'name' ] ] } ]
 
 ```
 
@@ -649,8 +669,8 @@ First, the entries in `methods` are processed sequentially to build a context ob
 // ctx === context(methods) ===
 { type: 'select',
   frm: [ [ 'person' ] ],
-  whr: [ [ 'age > ', ' and age < ', '' ], 7, 13 ],
-  ret: [ [ '5' ] ] }
+  whr: [ [ 'age > ', ' and age < ', '' ], 20, 30 ],
+  ret: [ [ 'name' ] ] }
 ```
 
 Second, a `Query` of type `ctx.type` is constructed. Each `Query` is constructed from a sequence of `clauses`, which are evaluated against `ctx`. Each clause returns an object with properties `txt` for its text component and `arg` for its parameterized arguments.
@@ -669,12 +689,14 @@ select = Query(ctx)(
 )
 ```
 
-Finally, the contributions of all clauses are joined together to construct a complete query object. This query object is passed to the underlying database library for execution.
+Finally, the contributions from all clauses are joined together to construct a complete SQL query with parameterized arguments. This query is passed to the underlying database library for execution.
 
 ```javascript
 { txt: 'select age from person where age > $1 and age < $2' 
   arg: [7, 13] }
 ```
+
+
 
 ## Roadmap
 

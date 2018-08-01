@@ -5,7 +5,8 @@
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "test": "jest"
+    "test": "jest test/index.test.js",
+    "test:pg": "jest test/pg.test.js"
   },
   "main": "./src/index.js",
   "repository": {

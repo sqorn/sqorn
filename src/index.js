@@ -1,5 +1,5 @@
-const Builder = require('./builder')
+const createBuilder = require('./builder')
 
-const sqorn = () => new Builder()
+const sqorn = config => createBuilder(config)
 
 module.exports = sqorn

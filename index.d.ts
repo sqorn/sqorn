@@ -123,7 +123,7 @@ declare module 'sqorn' {
      * sq.col``.opt({ debug: true }).str
      * // (throws Error('Invalid query'))
      */
-    opt({ debug: boolean = false, separator: string = ' ', uppercase: boolean = false }): sq
+    opt({ debug, separator, uppercase }: { debug?: boolean, separator?: string, uppercase?: boolean}): sq
 
     /**
      * OPTIONS configuration - marks the query as a delete query
