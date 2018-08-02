@@ -1,3 +1,3 @@
 [build]
   publish = "docs/website/dist/Sqorn"
-  command = "cd docs/website; yarn install; yarn build" 
+  command = "cd docs/website; npm install; npm build" 
