@@ -87,12 +87,12 @@ class HomeSplash extends React.Component {
             {/* <Button href="#try">Try It Out</Button> */}
             <Button href={docUrl('tutorial.html', language)}>Tutorial</Button>
             <Button href={docUrl('api.html', language)}>API</Button>
-            <Button href={docUrl('examples.html', language)}>Examples</Button>
-            <Button href={docUrl('demo.html', language)}>Demo</Button>
+            {/* <Button href={docUrl('examples.html', language)}>Examples</Button> */}
+            {/* <Button href={docUrl('demo.html', language)}>Demo</Button> */}
             <Button href={docUrl('faq.html', language)}>FAQ</Button>
-            <Button href={docUrl('benchmarks.html', language)}>
+            {/* <Button href={docUrl('benchmarks.html', language)}>
               Benchmarks
-            </Button>
+            </Button> */}
             <Button href={'https://github.com/eejdoowad/sqorn'}>Github</Button>
           </PromoSection>
         </div>

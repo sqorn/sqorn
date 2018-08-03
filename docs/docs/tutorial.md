@@ -48,22 +48,22 @@ sq.l`select * from person`
 
 ### Update
 
-## Express Syntax
-
-### from - where - returning
-
-### Caveats
+### Express
 
 ## Advanced Queries
 
-### Where Conditions
+### Where
 
-### Joins
+### Join
 
-### Upserts
+### Upsert
 
-### Having, Group By, Limit, and Offset
+### Having and Group By
 
-### Subqueries and CTEs
+### Limit and Offset
+
+### Subqueries
+
+### With (CTEs)
 
 ## Transactions

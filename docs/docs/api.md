@@ -4,71 +4,250 @@ title: API
 sidebar_label: API
 ---
 
-## INTRODUCTION
 
-Typings
+## sqorn
 
-### sqorn
+Sqorn's root export `sqorn` is a function that creates a query builder instance using the provided configuration. The configuration is an object that specifies the database library, database connection details, and how queries should be constructed.
 
-```typescript
-sqorn: Configuration => sq
+Sqorn doesn't interface directly with databases. Instead, queries and results are communicated through an underlying database library. Currently only Postgres is supported via [**node-postgres**](https://node-postgres.com/).
+
+### node-postgres
+
+Sqorn supports [**node-postgres**](https://node-postgres.com/). Install *node-postgres* with `npm install --save pg`.
+
+Call `sqorn` and pass it an object with a property whose key is `pg` and whose value is the [connection configuration specified by node-postgres](https://node-postgres.com/features/connecting). The value may be `undefined` if the connection details are specified with environment variables.
+
+```javascript
+  const sqorn = require('sqorn')
+  const sq = sqorn({
+    pg: { connectionString: 'postgresql://postgres@localhost:5432/postgres' }
+    // or {   user: 'postgres', host: 'localhost', database: 'postgres', port: 3211 }
+  })
+  // sq is a query builder
 ```
 
-### sq
+## sq
 
-## QUERY
+`sq` is Sqorn's query building object. All API methods are properties of `sq` unless otherwise specified. Most methods serve as [template literal tags](https://developers.google.com/web/updates/2015/01/ES6-Template-Strings).
 
-### l
+Most methods of `sq` are chainable query-building methods. The first chainable method call on `sq` creates and returns a new query builder instance. Proceeding chainable method calls mutate and return the existing query builder instance.
 
-### raw
+Other methods of `sq` compile the existing query builder's internal state to construct a parameterized query object, which is issued to the database. These methods return a Promise for query results.
 
-## COMMON
+Given ```sq.frm`person`.whr`name = 'Bo'`.ret`name`.all() ```:
 
-### frm
+* `sq` is the root query building object
+* ```.frm`person` ``` creates a new query builder `qb`
+* ```.whr`name = 'Bo'` ``` mutates `qb`
+* ```.ret`name` ``` mutates `qb`
+* ```.all() ``` constructs a query from `qb`'s internal state
 
-### whr
+`sq` is also a function. The first call of `sq` is equivalent to calling [.frm](#frm), the second  call is equivalent to calling [`whr`](#whr), and the third call is equivalent to calling [`.ret`](#ret). Further calls are ignored.
 
-### ret
+The query above can be written as ```sq`person``name = 'Bo'``name`.all() ```. 
 
-### wth
+## Manual Queries
 
-### jon
+### .l
+
+Construct a SQL query string with parameterized arguments. The query string may be a single complete query or a fragment to be embedded in other queries. All arguments are parameterized, except if the argument was built with [`sq.raw`](#.raw) or if the template string character before the argument is `$`.
+
+#### .l Complete Query
+
+Construct a complete SQL query:
+
+```javascript
+sq.l`select * from person where name = ${'Nynaeve'} and age = ${17}`
+```
+```sql
+select * from person where name = $1 and age = $2
+-- arg = ['Nynaeve', 17]
+```
+
+#### .l Fragment
+
+Create query fragments to embed in other queries:
+
+```javascript
+const min = sq.l`age >= ${20}`
+const max = sq.l`age < ${30}`
+sq.l`select * from person where ${min} and ${max}`
+```
+```sql
+select * from person where age >= 20 and age = age < 30
+-- arg = [20, 30]
+```
+
+#### .l Raw Argument with `$` prefix
+
+Template string arguments immediately after the `$` character are not parameterized:
+
+```javascript
+const table = 'widget_corp_product'
+const shape = 'square'
+sq.l`select * from $${table} where shape = ${shape}`
+```
+```sql
+select * from widget_corp_product where shape = $1
+-- arg = ['square']
+```
+
+#### .l Raw Argument with `.raw`
+
+### .raw
+
+Construct a SQL query string without escaping arguments. The query string may be a single complete query or a fragment to be embedded in other queries.
+
+<span style="color: red">**To avoid SQL injection, avoid calling `.raw` except when ABSOLUTELY NECESSARY. NEVER pass user supplied arguments to `.raw`.**</span>
+
+#### .l Complete Query
+
+Construct a complete SQL query:
+
+```javascript
+sq.l`select * from person where name = ${'Nynaeve'} and age = ${17}`
+```
+```sql
+select * from person where name = $1 and age = $2
+-- arg = ['Nynaeve', 17]
+```
+
+#### .l Fragment
+
+Create query fragments to embed in other queries:
+
+```javascript
+const min = sq.l`age >= ${20}`
+const max = sq.l`age < ${30}`
+sq.l`select * from person where ${min} and ${max}`
+```
+```sql
+select * from person where age >= 20 and age = age < 30
+-- arg = [20, 30]
+```
+
+## Common Clauses
+
+### .frm
+
+FROM clause - specifies the query table
+
+Accepts a table name or a derived table (formed from subqueries or joins).
+
+#### .frm Explicit 
+
+Call `.frm` explicitly:
+
+```typescript
+sq.frm`book`
+```
+```sql
+select * from book
+```
+
+#### .frm Implicit 
+
+Calling `sq` as a function is equivalent to calling `.frm`:
+
+```typescript
+sq`book`
+```
+```sql
+select * from book
+```
+
+#### .frm Table Name
+
+Pass a table name string:
+
+<span style="color: red">**TO AVOID SQL INJECTION, DO NOT PASS A USER-DEFINED TABLE NAME**</span>
+
+```typescript
+sq.frm('book')
+```
+```sql
+select * from book
+```
+
+#### .frm Join
+
+Call .frm with a joined table:
+
+```typescript
+sq.frm`book join comment on book.id = comment.book_id`
+```
+```sql
+select * from book join comment on book.id = comment.book_id
+```
+
+#### .frm Subquery
+
+Insert a subquery into .frm:
+
+```typescript
+sq`${
+  sq`person``age > 17`
+} as adult``adult.job = 'student'``name`
+```
+```sql
+select name from (
+  select * from person where age > 17
+) as adult where adult.job = 'student'
+```
+
+##### .frm Raw
+
+To build a raw template string argument
+
+```typescript
+sq.frm`$${'widget_corp_department'} natural join $${'widget_corp_order'}`
+```
+```sql
+select * from widget_corp_department natural join widget_corp_order
+```
 
 
-## SELECT 
+### .whr
 
-### grp
+### .ret
 
-### hav
-
-### ord
-
-### lim
-
-### off
+### .wth
 
 
-## DELETE
+## Select Clauses 
 
-### del
+### .grp
 
+### .hav
 
-## INSERT
+### .ord
 
-### ins
+### .lim
 
-### val
-
-
-## UPDATE
-
-### upd
+### .off
 
 
+## Delete Clauses
 
-## EXECUTE
+### .del
 
-### all
+
+## Insert Clauses
+
+### .ins
+
+### .val
+
+
+## Update Clauses
+
+### .upd
+
+
+
+## Query Execution
+
+### .all
 
 : async (trx?: Transaction) => any[]
 
@@ -80,7 +259,7 @@ __Returns:__
 
   a promise for an array of results (which may have length 0)
 
-### one
+### .one
 
 : async (trx?: Transaction) => any
 
@@ -92,7 +271,7 @@ __Returns:__
 
   a promise for the first row returned by the query or `undefined` if no rows were returned
 
-### run
+### .run
 
 : async (trx?: Transaction) => void
 
@@ -105,7 +284,7 @@ __Returns:__
   a promise that resolves when the query is done
 
 
-### exs
+### .exs
 
 : async (trx?: Transaction) => boolean
 
@@ -117,7 +296,7 @@ __Returns:__
 
   a promise that resolves to true if at least one row was returned by the query, false otherwise
 
-### qry
+### .qry
 
 __Description:__
 
@@ -128,7 +307,7 @@ __Returns:__
   the value return by the callback
 
 
-### str
+### .str
 
 : () => string
 
@@ -140,20 +319,20 @@ __Returns:__
 
   a SQL query string representation of the current context
 
-## OPERATORS
+## Operators
 
-### and
+### .and
 
-### or
+### .or
 
-### not
+### .not
 
-### op
+### .op
 
-## MISCELLANEOUS
+## Miscellaneous
 
-### opt
+### .opt
 
-### trx
+### .trx
 
-### end
+### .end

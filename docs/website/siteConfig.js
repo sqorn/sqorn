@@ -34,10 +34,10 @@ const siteConfig = {
   headerLinks: [
     { doc: 'tutorial', label: 'Tutorial' },
     { doc: 'api', label: 'API' },
-    { doc: 'examples', label: 'Examples' },
-    { doc: 'demo', label: 'Demo' },
+    // { doc: 'examples', label: 'Examples' },
+    // { doc: 'demo', label: 'Demo' },
     { doc: 'faq', label: 'FAQ' },
-    { doc: 'benchmarks', label: 'Benchmarks' },
+    // { doc: 'benchmarks', label: 'Benchmarks' },
     { href: 'https://github.com/eejdoowad/sqorn', label: 'Github' }
     // { blog: true, label: 'Blog' }
   ],
@@ -73,7 +73,7 @@ const siteConfig = {
 
   highlight: {
     // Highlight.js theme to use for syntax highlighting in code blocks
-    theme: 'default'
+    theme: 'vs'
   },
 
   // Add custom scripts here that would be placed in <script> tags

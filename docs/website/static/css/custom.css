@@ -18,3 +18,7 @@
 .home-page-button {
   min-width: 100px;
 }
+
+code {
+  background-color: #f5f5f5 !important
+}

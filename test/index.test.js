@@ -259,3 +259,12 @@ describe('query - tagged template raw arg', () => {
     })
   })
 })
+
+describe('query - tagged template $raw arg', () => {
+  test('select - .frm`$${string}`', () => {
+    expect(sq.frm`$${'person'}`.qry()).toEqual({
+      txt: 'select * from person',
+      arg: []
+    })
+  })
+})

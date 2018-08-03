@@ -10,24 +10,30 @@ const isTaggedTemplate = args =>
 const parameter = ctx => `$${++ctx.parameters}`
 
 const buildTaggedTemplate = (ctx, [strings, ...args]) => {
-  let txt = strings[0]
+  let txt = ''
   const arg = []
-  for (let i = 0; i < args.length; i++) {
+  let i = 0
+  for (; i < args.length; i++) {
     const argument = args[i]
-    // console.log(Object.keys(argument.__proto__))
     if (argument[isBuilder]) {
       // merge subquery argument
       const subqry = argument.qry(ctx)
       ctx.parameters += arg.length
       arg.push(...subqry.arg)
-      txt += subqry.txt + strings[i + 1]
+      txt += strings[i] + subqry.txt
     } else {
-      // parameterize argument
-      arg.push(argument)
-      txt += parameter(ctx) + strings[i + 1]
+      const prevString = strings[i]
+      if (prevString[prevString.length - 1] === '$') {
+        // raw argument
+        txt += prevString.substr(0, prevString.length - 1) + args[i]
+      } else {
+        // parameterize argument
+        arg.push(argument)
+        txt += strings[i] + parameter(ctx)
+      }
     }
   }
-  return { txt: txt.trim(), arg }
+  return { txt: (txt + strings[i]).trim(), arg }
 }
 
 // TODO: should prob be merged into buildTaggedTemplate
