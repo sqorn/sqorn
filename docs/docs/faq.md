@@ -65,3 +65,14 @@ Finally, the contributions from all clauses are joined together to construct a c
 { txt: 'select age from person where age > $1 and age < $2' 
   arg: [7, 13] }
 ```
+
+## Is Sqorn production ready?
+
+Not yet. It still needs:
+
+* Comprehensive tests
+* Benchmarks
+* A track record
+* Active users
+
+Join us on [Github](https://github.com/eejdoowad/sqorn)
