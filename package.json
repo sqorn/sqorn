@@ -1,7 +1,7 @@
 {
   "name": "sqorn",
   "version": "0.0.3",
-  "description": "Concise javascript SQL query builder",
+  "description": "A Modern Javascript Library for Building SQL Queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
   "scripts": {
