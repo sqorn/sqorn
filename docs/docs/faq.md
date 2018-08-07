@@ -153,4 +153,22 @@ const sq.use(
   minAge(8),
   language('English')
 )
+
+
+
+const Person = sq.frm`person`
+const Gender = gender => sq.whr`gender = ${gender}`
+const isChild = sq.whr`age < 13`
+const Name = name => sq.whr`name = ${name}`
+
+const Child = sq.use(Person, isChild)
+const Girl = sq.use(Kid, Gender('female'))
+const Boy = sq.use(Kid, Gender('male'))
+
+const Movie = sq.frm`movie`
+const Genre = genre => sq.whr`genre = ${genre}`
+const Animation = sq.use(Movie, Genre('animation'))
+
+const kids = sq.frm`person`.whr`age < ${age}`
+const boys = kids.whr`gender = ${gender}`
 ```
