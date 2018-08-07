@@ -637,7 +637,12 @@ sq`person p join company c on p.employer_id = c.id`
   `p.id = ${23}``c.name`
 // select c.name from person p join company c on p.employer_id = c.id
 // where p.id = 23
-sq`person`({name: 'Ed' })
+sq`person`({ name: 'Ed' }).upd({ name: 'Edward' })
+Person({ name: 'Ed' })
+Person({ name: 'Ed' }).upd({ name: 'Edward', age: sq.l`age + 1` })
+Person.ins({ name: 'Ed' })
+Person.del({ name: 'Ed' })
+
 sq.wit`children`(sq`person``age < ${18}`)`children`()`first_name`
 // with children as (select * from "person" where age < 18)
 // select first_name from children`

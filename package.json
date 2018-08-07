@@ -1,6 +1,6 @@
 {
   "name": "sqorn",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A Modern Javascript Library for Building SQL Queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -39,6 +39,7 @@
   },
   "files": [
     "src/**/*",
-    "index.d.ts"
+    "index.d.ts",
+    "dist/sqorn.web.js"
   ]
 }
