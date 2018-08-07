@@ -30,7 +30,8 @@ const sq = require('sqorn')({
 
 ## Basic Queries
 
-`sq` is the query-building interface. It has methods for building and executing SQL queries. Query-building methods are chainable and callable as template literal tags.
+`sq` is the query-building interface. It has methods for building and executing SQL queries. Query-building methods are chainable and callable as template literal tags. Execution methods return a Promise for results.
+
 ### Manual
 
 Construct a query manually with `sq.l`. 
@@ -49,10 +50,12 @@ getPeople.qry
   arg: [20, 30] }
 ```
 
-Execute the query and get back a Promise for all result rows with `.all`
+Execute the query and get back a Promise for all result rows with `.all`. If you need just the first result, call `.one`. If you need to know if a matching result exists, call `.exs`.
 
 ```js
-const people = await getPeople.all()
+const people = await getPeople.all()       // Array<Person>
+const firstPerson =  await getPeople.one() // Person or undefined
+const personExists = await getPeople.exs() // true or false
 ```
 
 When you need a raw unparameterized argument, prefix it with `$`.
@@ -126,6 +129,26 @@ sq.frm`person`.whr({ firstName: 'Kaladin' }).qry
   arg: ['Kaladin'] }
 ```
 
+If you need a non-equality condition, add a property whose value is created with `sq.l`. the property's key will be ignored.
+
+```js
+const condMinYear = sq.l`year >= ${20}`
+const condMaxYear = sq.l`year < ${30}`
+sq.frm`person`.whr({ condMinYear, condMaxYear }).qry
+
+{ txt: 'select * from person where year >= $1 and year < $2'
+  arg: [20, 30] }
+```
+
+Multiple objects passed to `.whr` are joined with `or`.
+
+```js
+sq.frm`person`.whr({ name: 'Rob' }, { name: 'Bob' }).qry
+
+{ txt: 'select * from person where name = $1 or name = $2'
+  arg: ['Rob', 'Bob'] }
+```
+
 [Advanced Queries - Where](#where-1) explains how to build complex `where` conditions.
 
 #### Returning
@@ -172,7 +195,7 @@ sq.frm('person').whr({ name }).ret('age')
 
 #### Additional Clauses
 
-The [Advanced Queries](#advanced-queries) advanced queries section explains how to build [`with`](#with), [`having`](#having-and-group-by), [`group by`](#having-and-group-by), [`limit`](#limit-and-offset), and [`offset`](#limit-and-offset) clauses.
+The [Advanced Queries](#advanced-queries) section explains how to build [`with`](#with), [`having`](#having-and-group-by), [`group by`](#having-and-group-by), [`limit`](#limit-and-offset), and [`offset`](#limit-and-offset) clauses.
 
 ### Delete
 
@@ -182,7 +205,7 @@ The [Advanced Queries](#advanced-queries) advanced queries section explains how 
 sq.frm`person`.del.qry
 sq.del.frm`person`.qry // equivalent
 
-{ txt: 'delete * from person'
+{ txt: 'delete from person'
   arg: [] }
 ```
 
@@ -192,7 +215,7 @@ Filter the rows to delete with `.whr`
 const id = 723
 sq.frm`person`.whr`id = ${id}`.del.qry
 
-{ txt: 'delete * from person where id = $1'
+{ txt: 'delete from person where id = $1'
   arg: [723] }
 ```
 
@@ -202,7 +225,7 @@ Return the deleted rows with `.ret`
 const id = 723
 sq.frm`person`.ret`name`.del.qry
 
-{ txt: 'delete * from person returning name'
+{ txt: 'delete from person returning name'
   arg: [723] }
 ```
 
@@ -211,15 +234,92 @@ sq.frm`person`.ret`name`.del.qry
 ```js
 sq`person`({ job: 'student' })`name`.del.qry
 
-{ txt: 'delete * from person where job = $1 returning name'
+{ txt: 'delete from person where job = $1 returning name'
   arg: ['student'] }
 ```
 
 ### Insert
 
+`Insert` queries use `.ins` and `.val` to specify the columns and values to insert.
+
+```js
+sq.frm`person`
+  .ins`first_name, last_name`
+  .val`${'Shallan'}, ${'Davar'}`
+  .val`${'Navani'}, ${'Kholin'}`
+  .qry
+
+{ txt: 'insert into person (first_name, last_name) values ($1, $2), ($3, $4)'
+  arg: ['Shallan', 'Davar', 'Navani', 'Kholin'] }
+```
+
+You can pass `.ins` column names as strings. You must then pass`.val` corresponding row values. `null` values are inserted as `NULL` while `undefined` values are inserted as `DEFAULT`.
+
+```js
+sq.frm`book`
+  .ins('title', 'year')
+  .val('The Way of Kings', years[0])
+  .val('Words of Radiance', null)
+  .val('Oathbringer')
+  .qry
+
+{ txt: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)'
+  arg: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
+```
+
+When passed an object, `.ins` can be called multiple times to insert multiple rows. Column names are inferred from object keys.
+
+```js
+sq.frm`book`
+  .ins({ title: 'The Way of Kings', year: 2010 })
+  .ins({ title: 'Words of Radiance', year: null })
+  .ins({ title: 'Oathbringer' })
+  .qry
+
+{ txt: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)'
+  arg: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
+```
+
+`.ret` specifies the returning cluase. [Express syntax](#express-syntax) may be used to specify `.frm` and `.ret`.
+
+```js
+sq.frm`book`.ins({ title: 'Squirrels and Acorns' }).ret`id`.qry
+sq`book`()`id`.ins({ title: 'Squirrels and Acorns' }).qry
+
+{ txt: 'insert into book (title) values ($1) returning id',
+  arg: ['Squirrels and Acorns'] }
+```
+
 ### Update
 
-### Express
+`Update` queries use `.upd` to specify values to update. `.upd` can be called multiple times.
+
+```js
+sq.frm`person`.upd`age = age + 1, processed = true`.upd`name = ${'Sally'}`.qry
+
+{ txt: 'update person set age = age + 1, processed = true, name = $1'
+  arg: ['Sally'] }
+```
+
+`.upd` also accepts an update object.
+
+```js
+sq.frm`person`
+  .whr({ firstName: 'Rob' })
+  .upd({ firstName: 'Robert', nickname: 'Rob' })
+  .qry
+
+{ txt: 'update person where first_name = $1 set first_name = $1, nickname = $3'
+  arg: ['Rob', 'Robert', 'Rob'] }
+```
+[Express syntax](#express-syntax) works too.
+
+```js
+sq`person`({ firstName: 'Rob' })`id`.upd({ firstName: 'Robert'}).qry
+
+{ txt: 'update person where first_name = $1 set first_name = $2 returning id'
+  arg: ['Rob', 'Robert'] }
+```
 
 ## Advanced Queries
 

@@ -70,9 +70,87 @@ Finally, the contributions from all clauses are joined together to construct a c
 
 Not yet. It still needs:
 
+* A stable API
 * Comprehensive tests
 * Benchmarks
 * A track record
 * Active users
 
 Join us on [Github](https://github.com/eejdoowad/sqorn)
+
+## Are there Complex Example Queries?
+
+This section is still a work in progress
+
+```js
+
+getUser()
+
+const Post = sq.frm`post`
+const WhereUser = user => user && sq.whr({ user })
+const WhereTopic = topic => topic && sq.whr({ topic })
+const getTimeRange = time => {
+    switch (time) {
+      case 'day': return '1 day'
+      case 'week': return '7 days'
+      case 'month': return '30 days'
+      case 'year': return '365 days'
+  }
+}
+const WhereTime = time => {
+  const timeRange = getTimeRange(time)
+  return timeRange && sq.whr`create_time >= now() - $${timeRange}`
+}
+const OrderBy = sq.ord`score asc`
+const Limit = limit => limit && sq.lim(limit)
+const Return = sq.ret`id, title, topic, user`
+
+const getTopPosts = ({ time, topic, user, limit = 25 }) => sq.use(
+  Post,
+  WhereUser(user),
+  WhereTopic(topic),
+  WhereTime(time),
+  OrderBy,
+  Limit(limit),
+  Return
+)
+
+const getTopPosts2 = ({ time, topic, user, limit = 25 }) => {
+  const mq = sq.mut.frm`post`
+  if (user) {
+    mq.whr({ user })
+  }
+  if (topic) {
+    mq.whr({ topic })
+  }
+  let range
+  if (time === 'day') {
+    range = '1 day'
+  } else if (time === 'week') {
+    range = '7 days'
+  } else if (time === 'month') {
+    range = '30 days'
+  } else if (time === 'year') {
+    range = '365 days'
+  }
+  if (range) {
+    mq.whr`create_time >= now() - ${range}`
+  }
+  mq.ord`score asc`
+  mq.lim(limit)
+  mq.ret`id, title, topic, user`
+  return mq.imm
+}
+
+const minAge = age => sq.whr`age >= ${age}`
+const language = language => sq.whr({ language })
+const productionTable = production => sq.frm(production ? 'book' : 'book_test')
+const columns = sq.ret`title, author`
+
+const sq.use(
+  productionTable(true),
+  columns
+  minAge(8),
+  language('English')
+)
+```

@@ -7,7 +7,7 @@ const { isBuilder } = require('./constants')
 const createBuilder = config => {
   function Builder() {
     function fn(...args) {
-      return Builder.prototype.chain({ type: 'exp', args }, fn.methods)
+      return Builder.prototype.chain.call(fn, { type: 'exp', args })
     }
     Object.setPrototypeOf(fn, Builder.prototype)
     return fn
@@ -81,14 +81,10 @@ const createBuilder = config => {
       }
     },
     // chain method
-    chain(method, existing) {
-      let self = this
-      if (!this.hasOwnProperty('methods')) {
-        self = new Builder()
-        self.methods = existing || []
-      }
-      self.methods.push(method)
-      return self
+    chain(method) {
+      const next = new Builder()
+      next.methods = [...(this.methods || []), method]
+      return next
     }
   }
   // standard chain methods

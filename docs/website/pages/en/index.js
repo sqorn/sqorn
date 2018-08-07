@@ -111,20 +111,70 @@ const Block = props => (
   </Container>
 )
 
+const queries = [
+  {
+    sq: "sq`person`({ firstName: 'Rob' })`id`",
+    txt: "select id from person where first_name = 'Rob'"
+  }
+]
+
 const Features = props => (
   <Block layout="fourColumn">
     {[
       {
-        content: 'This is the content of my feature',
-        image: imgUrl('docusaurus.svg'),
+        // image: imgUrl('docusaurus.svg'),
+        title: 'Boilerplate-Free',
         imageAlign: 'top',
-        title: 'Feature One'
+        content: `CRUD operations are dead simple
+
+${'```js'}
+
+// SELECT
+${"sq`person`({ firstName: 'Rob' })`id`"}
+"select id from person where first_name = 'Rob'"
+
+// DELETE
+${'sq`book`({ id: 7 })`title`.del'}
+"delete from book where id = 7 returning title"
+
+// INSERT
+${"sq`person`.ins({ firstName: 'Rob' })"}
+"insert into person (first_name) values ('Rob')"
+
+// UPDATE
+${"sq`person`({ id: 23 }).upd`name = ${'Rob'}`"}
+"update person where id = 23 set name = 'Rob'"
+
+
+${'```'}
+`
       },
       {
-        content: 'The content of my second feature',
-        image: imgUrl('docusaurus.svg'),
+        title: 'Flexible and Composable',
+        // image: imgUrl('docusaurus.svg'),
         imageAlign: 'top',
-        title: 'Feature Two'
+        content: `Complex queries can be composed from simple parts
+${'```js'}
+// CHAIN CLAUSES
+${'const books = sq.frm`book`'}
+${'const oldBooks = books.whr`publishYear < 1900`'}
+${"const oldFantasyBooks = books.whr`genre = 'Fantasy'`"}
+${'const numOldFantasyBooks = books.ret`count(*) count`'}
+${'const { count } = await numOldFantasyBooks.one()'}
+
+// BUILD NEW QUERIES FROM EXISTING QUERIES
+const lang = language => sq.whr({ language })
+${'const distinctAuthors = sq.ret`distinct author`'}
+const oldEnglishBookAuthors = sq.use(
+  oldBooks, lang('English'), distinctAuthors)
+const authors = await oldEnglishBookAuthors.all()
+
+// EMBED SUBQUERIES
+${"const tomorrow = sq.ret`now() + '1 day'`"}
+${'const time = sq.ret`now() now, ${tomorrow} tomorrow`'}
+const { now, tomorrow } = await time.one()
+${'```'}
+`
       }
     ]}
   </Block>
@@ -133,10 +183,20 @@ const Features = props => (
 const FeatureCallout = props => (
   <div
     className="productShowcaseSection paddingBottom"
-    style={{ textAlign: 'center' }}
+    style={{ textAlign: 'center', display: 'flex', flexDirection: 'column' }}
   >
-    <h2>Feature Callout</h2>
-    <MarkdownBlock>These are features of this project</MarkdownBlock>
+    <h2>Features</h2>
+    <ul style={{ margin: 'auto', fontSize: '1.15em' }}>
+      {[
+        'Simple, Consistent, Ergonomic API',
+        'Uses Promises and Tagged Templates',
+        'Composable Query Builder',
+        'Secure Parameterized Queries',
+        'Typescript Declarations',
+        'Supports Postgres',
+        'Transactions'
+      ].map(feature => <li style={{ textAlign: 'left' }}>{feature}</li>)}
+    </ul>
   </div>
 )
 
@@ -216,12 +276,12 @@ class Index extends React.Component {
     return (
       <div>
         <HomeSplash language={language} />
-        <div className="mainContainer">
+        <div className="mainContainer" style={{ paddingTop: 0 }}>
           <Features />
           <FeatureCallout />
-          <LearnHow />
+          {/* <LearnHow />
           <TryOut />
-          <Description />
+          <Description /> */}
           {/* <Showcase language={language} /> */}
         </div>
       </div>
