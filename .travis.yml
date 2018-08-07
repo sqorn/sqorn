@@ -1,7 +1,14 @@
 language: node_js
 node_js:
-  - "8"
-
+- '8'
 cache:
   directories:
-  - "node_modules"
+  - node_modules
+deploy:
+  provider: npm
+  email: eejdoowad@gmail.com
+  api_key:
+    secure: nQa/oR6h21jH41NtQu9P7U0RUoKrkNsJu31T9jztY5kExR6CM3lgUHiSAPO5vkKg/nYdj404X1b09Qvc8CMNIex4emnSo8DxJ2PDHDWzs3ViaPY++IVgbYEgz1ODsxqyILm9r6SRBPmaLfnCIaavGmNtqHBcKC+biua9QQ0O9p2q0q13w5485bCYgRqGK7ZDBcc2SmZXla4xE/aQRhb4IziP8g7P12IAmcsFHyR8uNI7Sl4/6/2RK9CWQOXzQSncfzpYtjg1t1Z6fyavRqiYcjKEpkXW5s6WQ1yHdDEej36Xelhqdg4d583kwlWFu8i93Z923T7sfJjPuY6G26lLWlErgrVo6eDpIQfXkKzMOQbtt/ov3rWYSxbGvq90oyloFs6NHeJI/3/YwpA3eBrzEO5ARWAI3U4A/gSD90D/Ea9xutGmzK38Mhu4Xwle8aH4vcGA8hpHOk8m1rFSfnm7ilFDg/Q0RbiEId01MLzwVU4fDFyekysi6KWCBtivNq90yyepi0UAHv2Kcf6t4z5wUEBO9FKX7lpZrq0wzb7hSZ0qnoJlQbDUDNVpq5TTEhTkGLcO/G57WzdGWxS6zx2iAcwv7zoefCF8ppoMXbArfipNHkZEzA8Q85PmDDGNKNj7a84S+xxfORz6YicwZ4krWgOM1xICH0DJM/CM+nNtuPg=
+  on:
+    tags: true
+    repo: eejdoowad/sqorn
