@@ -35,7 +35,7 @@ const siteConfig = {
     { doc: 'tutorial', label: 'Tutorial' },
     { doc: 'api', label: 'API' },
     // { doc: 'examples', label: 'Examples' },
-    // { doc: 'demo', label: 'Demo' },
+    { page: 'demo', label: 'Demo' },
     { doc: 'faq', label: 'FAQ' },
     // { doc: 'benchmarks', label: 'Benchmarks' },
     { href: 'https://github.com/eejdoowad/sqorn', label: 'Github' }
