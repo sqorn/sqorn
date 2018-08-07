@@ -12,3 +12,4 @@ deploy:
   on:
     tags: true
     repo: eejdoowad/sqorn
+  skip_cleanup: true
