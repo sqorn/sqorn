@@ -98,7 +98,7 @@ select * from widget_corp_product where shape = $1
 
 Construct a SQL query string without escaping arguments. The query string may be a single complete query or a fragment to be embedded in other queries.
 
-<span style="color: red">**To avoid SQL injection, avoid calling `.raw` except when ABSOLUTELY NECESSARY. NEVER pass user supplied arguments to `.raw`.**</span>
+<span style="color: red">**To prevent SQL injection, never call `.raw` with user-supplied data</span>
 
 #### .l Complete Query
 

@@ -1,12 +1,13 @@
 {
   "name": "sqorn",
   "version": "0.0.7",
-  "description": "A Modern Javascript Library for Building SQL Queries",
+  "description": "A Javascript Library for Building Composable SQL Queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
   "scripts": {
     "test": "jest test/index.test.js",
     "test:pg": "jest test/pg.test.js",
+    "test:tutorial": "jest test/tutorial.test.js",
     "build:web": "webpack",
     "prepublishOnly": "npm run build:web"
   },

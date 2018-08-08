@@ -150,7 +150,7 @@ ${'```'}
 `
       },
       {
-        title: 'Flexible and Composable',
+        title: 'Composable',
         // image: imgUrl('docusaurus.svg'),
         imageAlign: 'top',
         content: `Complex queries can be composed from simple parts

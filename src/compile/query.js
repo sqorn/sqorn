@@ -17,7 +17,7 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
     const argument = args[i]
     if (argument[isBuilder]) {
       // merge subquery argument
-      const subqry = argument.qry(ctx)
+      const subqry = argument.bld(ctx)
       ctx.parameters += arg.length
       arg.push(...subqry.arg)
       txt += strings[i] + subqry.txt

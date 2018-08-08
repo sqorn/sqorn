@@ -41,22 +41,25 @@ const createBuilder = config => {
       // TODO: escape queries using active client syntax
       return compile(this.methods, config).txt
     },
-    qry(inheritedCtx) {
+    bld(inheritedCtx) {
       const ctx = context(this.methods, inheritedCtx)
       return query[ctx.type](ctx)
     },
+    get qry() {
+      return this.bld()
+    },
     async run(trx) {
-      await this.client.query(this.qry(), trx)
+      await this.client.query(this.bld(), trx)
     },
     async one(trx) {
-      const rows = this.client.query(this.qry(), trx)
+      const rows = this.client.query(this.bld(), trx)
       return rows[0]
     },
     async all(trx) {
-      return this.client.query(this.qry(), trx)
+      return this.client.query(this.bld(), trx)
     },
     async exs(trx) {
-      return this.client.query(this.qry(), trx).length > 0
+      return this.client.query(this.bld(), trx).length > 0
     },
     // transaction
     async trx(fn) {
@@ -77,7 +80,7 @@ const createBuilder = config => {
       return {
         mtd: this.mtd,
         ctx: this.ctx,
-        qry: this.qry()
+        qry: this.qry
       }
     },
     // chain method

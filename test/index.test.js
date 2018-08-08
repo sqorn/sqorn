@@ -8,7 +8,7 @@ describe('sql query - tagged template', () => {
 
   test('sql    - .l``', () => {
     expect(
-      sq.l`select * from person where name = 'Bob' and age > 7`.qry()
+      sq.l`select * from person where name = 'Bob' and age > 7`.qry
     ).toEqual({
       txt: `select * from person where name = 'Bob' and age > 7`,
       arg: []
@@ -23,7 +23,7 @@ describe('raw query - tagged template', () => {
 
   test('raw    - .raw``', () => {
     expect(
-      sq.raw`select * from person where name = 'Bob' and age > 7`.qry()
+      sq.raw`select * from person where name = 'Bob' and age > 7`.qry
     ).toEqual({
       txt: `select * from person where name = 'Bob' and age > 7`,
       arg: []
@@ -176,28 +176,28 @@ describe('express query - tagged template', () => {
 
 describe('select query - tagged template args', () => {
   test('select - .frm``.whr`${int}`', () => {
-    expect(sq.frm`person`.whr`age > ${7}`.qry()).toEqual({
+    expect(sq.frm`person`.whr`age > ${7}`.qry).toEqual({
       txt: 'select * from person where age > $1',
       arg: [7]
     })
   })
 
   test('select - .frm``.whr`${int}${int}`', () => {
-    expect(sq.frm`person`.whr`age >= ${20} and age <= ${29}`.qry()).toEqual({
+    expect(sq.frm`person`.whr`age >= ${20} and age <= ${29}`.qry).toEqual({
       txt: 'select * from person where age >= $1 and age <= $2',
       arg: [20, 29]
     })
   })
 
   test('select - .frm``.whr`${string}`', () => {
-    expect(sq.frm`person`.whr`name = ${'bob'}`.qry()).toEqual({
+    expect(sq.frm`person`.whr`name = ${'bob'}`.qry).toEqual({
       txt: 'select * from person where name = $1',
       arg: ['bob']
     })
   })
 
   test('select - .frm``.whr`${object}`', () => {
-    expect(sq.frm`person`.whr`name = ${'bob'}`.qry()).toEqual({
+    expect(sq.frm`person`.whr`name = ${'bob'}`.qry).toEqual({
       txt: 'select * from person where name = $1',
       arg: ['bob']
     })
@@ -206,7 +206,7 @@ describe('select query - tagged template args', () => {
 
 describe('sql query - tagged template args', () => {
   test('select - .l`${int}`', () => {
-    expect(sq.l`select * from person where age > ${7}`.qry()).toEqual({
+    expect(sq.l`select * from person where age > ${7}`.qry).toEqual({
       txt: 'select * from person where age > $1',
       arg: [7]
     })
@@ -214,7 +214,7 @@ describe('sql query - tagged template args', () => {
 
   test('select - .l`${int}${string}`', () => {
     expect(
-      sq.l`select * from person where age > ${7} or name = ${'Bob'}`.qry()
+      sq.l`select * from person where age > ${7} or name = ${'Bob'}`.qry
     ).toEqual({
       txt: `select * from person where age > $1 or name = $2`,
       arg: [7, 'Bob']
@@ -224,7 +224,7 @@ describe('sql query - tagged template args', () => {
 
 describe('raw query - tagged template args', () => {
   test('select - .raw`${int}`', () => {
-    expect(sq.raw`select * from person where age > ${7}`.qry()).toEqual({
+    expect(sq.raw`select * from person where age > ${7}`.qry).toEqual({
       txt: 'select * from person where age > 7',
       arg: []
     })
@@ -232,7 +232,7 @@ describe('raw query - tagged template args', () => {
 
   test('select - .raw`${int}${string}`', () => {
     expect(
-      sq.raw`select * from person where age > ${7} or name = '${'Bob'}'`.qry()
+      sq.raw`select * from person where age > ${7} or name = '${'Bob'}'`.qry
     ).toEqual({
       txt: `select * from person where age > 7 or name = 'Bob'`,
       arg: []
@@ -244,7 +244,7 @@ describe('query - tagged template sql arg', () => {
   test('select - .l`${sq``}`', () => {
     const sub = sq`person``age > 7`
     const qry = sq`(${sub})`.ret`name`
-    expect(qry.qry()).toEqual({
+    expect(qry.qry).toEqual({
       txt: 'select name from (select * from person where age > 7)',
       arg: []
     })
@@ -253,7 +253,7 @@ describe('query - tagged template sql arg', () => {
 
 describe('query - tagged template raw arg', () => {
   test('select - .frm`${.raw`${string}`}`', () => {
-    expect(sq.frm`${sq.raw`person`}`.qry()).toEqual({
+    expect(sq.frm`${sq.raw`person`}`.qry).toEqual({
       txt: 'select * from person',
       arg: []
     })
@@ -262,7 +262,7 @@ describe('query - tagged template raw arg', () => {
 
 describe('query - tagged template $raw arg', () => {
   test('select - .frm`$${string}`', () => {
-    expect(sq.frm`$${'person'}`.qry()).toEqual({
+    expect(sq.frm`$${'person'}`.qry).toEqual({
       txt: 'select * from person',
       arg: []
     })

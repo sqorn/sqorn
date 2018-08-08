@@ -28,11 +28,13 @@ const sq = require('sqorn')({
 })
 ```
 
-## Basic Queries
+`sq` is the query-building interface. It has methods for building and executing SQL queries. 
 
-`sq` is the query-building interface. It has methods for building and executing SQL queries. Query-building methods are chainable and callable as template literal tags. Execution methods return a Promise for results.
+Query-building methods are chainable. They return an new, updated, immutable query-building instance. All methods can be called as either regular functions or as template literal tags.
 
-### Manual
+Execution methods return a Promise for results. 
+
+## Manual Queries
 
 Construct a query manually with `sq.l`. 
 
@@ -68,9 +70,9 @@ sql`select * from $${'test_table'}`.qry
 ```
 
 
-### Select
+## Select Queries
 
-#### From
+### From
 
 The simplest `select` query gets all rows from a table. Specify a `from` clause with `.frm`.
 
@@ -99,13 +101,32 @@ sq.frm`book left join author on book.author_id = author.id`.qry
   arg: [] }
 ```
 
-#### Where
+Only the last call to `.frm` is used.
+
+```js
+sq.frm`book`.frm`person`.qry
+
+{ txt: 'select * from person',
+  arg: [] }
+```
+
+
+
+### Where
 
 Filter result rows by adding a `where` clause with `.whr`.
 
 ```js
-const genre = 'Fantasy', year = 2000
-sq.frm`book`.whr`genre = ${genre} and year = ${minYear}`.qry
+sq.frm`book`.whr`genre = ${'Fantasy'}`.qry
+
+{ txt: 'select * from book where genre = $1',
+  arg: ['Fantasy'] }
+```
+
+Multiple `.whr` calls are joined with `and`.
+
+```js
+sq.frm`book`.whr`genre = ${'Fantasy'}`.whr`year = ${2000}`.qry
 
 { txt: 'select * from book where genre = $1 and year = $2',
   arg: ['Fantasy', 2000] }
@@ -136,7 +157,7 @@ const condMinYear = sq.l`year >= ${20}`
 const condMaxYear = sq.l`year < ${30}`
 sq.frm`person`.whr({ condMinYear, condMaxYear }).qry
 
-{ txt: 'select * from person where year >= $1 and year < $2'
+{ txt: 'select * from person where year >= $1 and year < $2',
   arg: [20, 30] }
 ```
 
@@ -145,13 +166,13 @@ Multiple objects passed to `.whr` are joined with `or`.
 ```js
 sq.frm`person`.whr({ name: 'Rob' }, { name: 'Bob' }).qry
 
-{ txt: 'select * from person where name = $1 or name = $2'
+{ txt: 'select * from person where name = $1 or name = $2',
   arg: ['Rob', 'Bob'] }
 ```
 
 [Advanced Queries - Where](#where-1) explains how to build complex `where` conditions.
 
-#### Returning
+### Returning
 
 Specify selected columns with `.ret`.
 
@@ -171,7 +192,16 @@ sq.frm`book`.ret('title', 'author').qry
   arg: [] }
 ```
 
-#### Express Syntax
+Call `.ret` multiple times to return additional columns.
+
+```js
+sq.frm`book`.ret('title', 'author').ret`id`.qry
+
+{ txt: 'select title, author, id from book',
+  arg: [] }
+```
+
+### Express Syntax
 
 The first, second, and third calls of `sq` are equivalent to calling `.frm`, `.whr`, and `.ret` respectively.
 
@@ -193,9 +223,11 @@ sq.frm`person`.whr`name = ${name}`.ret`age`
 sq.frm('person').whr({ name }).ret('age')
 ```
 
-#### Additional Clauses
+### Additional Clauses
 
 The [Advanced Queries](#advanced-queries) section explains how to build [`with`](#with), [`having`](#having-and-group-by), [`group by`](#having-and-group-by), [`limit`](#limit-and-offset), and [`offset`](#limit-and-offset) clauses.
+
+## Manipulation Queries
 
 ### Delete
 
@@ -205,28 +237,26 @@ The [Advanced Queries](#advanced-queries) section explains how to build [`with`]
 sq.frm`person`.del.qry
 sq.del.frm`person`.qry // equivalent
 
-{ txt: 'delete from person'
+{ txt: 'delete from person',
   arg: [] }
 ```
 
 Filter the rows to delete with `.whr`
 
 ```js
-const id = 723
-sq.frm`person`.whr`id = ${id}`.del.qry
+sq.frm`person`.whr`id = ${723}`.del.qry
 
-{ txt: 'delete from person where id = $1'
+{ txt: 'delete from person where id = $1',
   arg: [723] }
 ```
 
 Return the deleted rows with `.ret`
 
 ```js
-const id = 723
 sq.frm`person`.ret`name`.del.qry
 
-{ txt: 'delete from person returning name'
-  arg: [723] }
+{ txt: 'delete from person returning name',
+  arg: [] }
 ```
 
 [Express syntax](#express-syntax) works too.
@@ -234,8 +264,17 @@ sq.frm`person`.ret`name`.del.qry
 ```js
 sq`person`({ job: 'student' })`name`.del.qry
 
-{ txt: 'delete from person where job = $1 returning name'
+{ txt: 'delete from person where job = $1 returning name',
   arg: ['student'] }
+```
+
+`.del` is idempotent.
+
+```js
+sq`book`.del.del.del.qry
+
+{ txt: 'delete from book',
+  arg: [] }
 ```
 
 ### Insert
@@ -249,7 +288,7 @@ sq.frm`person`
   .val`${'Navani'}, ${'Kholin'}`
   .qry
 
-{ txt: 'insert into person (first_name, last_name) values ($1, $2), ($3, $4)'
+{ txt: 'insert into person (first_name, last_name) values ($1, $2), ($3, $4)',
   arg: ['Shallan', 'Davar', 'Navani', 'Kholin'] }
 ```
 
@@ -263,7 +302,7 @@ sq.frm`book`
   .val('Oathbringer')
   .qry
 
-{ txt: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)'
+{ txt: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
   arg: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
 ```
 
@@ -276,7 +315,7 @@ sq.frm`book`
   .ins({ title: 'Oathbringer' })
   .qry
 
-{ txt: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)'
+{ txt: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
   arg: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
 ```
 
@@ -321,20 +360,37 @@ sq`person`({ firstName: 'Rob' })`id`.upd({ firstName: 'Robert'}).qry
   arg: ['Rob', 'Robert'] }
 ```
 
+Call `.upd` multiple times to update additional columns.
+
+```js
+sq.frm`person`
+  .whr({ firstName: 'Rob' })
+  .upd({ firstName: 'Robert' })
+  .upd({ nickname: 'Rob' })
+  .qry
+
+{ txt: 'update person where first_name = $1 set first_name = $1, nickname = $3'
+  arg: ['Rob', 'Robert', 'Rob'] }
+```
+
+### Upsert
+
+## Composing Queries
+
+### Subqueries
+
+### With (CTEs)
+
+### sq.use
+
+## Transactions
+
 ## Advanced Queries
 
 ### Where
 
 ### Join
 
-### Upsert
-
 ### Having and Group By
 
 ### Limit and Offset
-
-### Subqueries
-
-### With (CTEs)
-
-## Transactions

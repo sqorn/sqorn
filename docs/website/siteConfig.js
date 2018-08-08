@@ -16,7 +16,7 @@ const users = [
 
 const siteConfig = {
   title: 'Sqorn',
-  tagline: 'A Modern Javascript Library for Building SQL Queries',
+  tagline: 'A Javascript Library for Building Composable SQL Queries',
   url: 'https://sqorn.org',
   baseUrl: '/',
   // For github.io type URLs, you would set the url and baseUrl like:
@@ -35,8 +35,8 @@ const siteConfig = {
     { doc: 'tutorial', label: 'Tutorial' },
     { doc: 'api', label: 'API' },
     // { doc: 'examples', label: 'Examples' },
-    { page: 'demo', label: 'Demo' },
     { doc: 'faq', label: 'FAQ' },
+    { page: 'demo', label: 'Demo' },
     // { doc: 'benchmarks', label: 'Benchmarks' },
     { href: 'https://github.com/eejdoowad/sqorn', label: 'Github' }
     // { blog: true, label: 'Blog' }
