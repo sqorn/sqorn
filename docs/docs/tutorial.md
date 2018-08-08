@@ -336,7 +336,7 @@ sq`book`()`id`.ins({ title: 'Squirrels and Acorns' }).qry
 ```js
 sq.frm`person`.upd`age = age + 1, processed = true`.upd`name = ${'Sally'}`.qry
 
-{ txt: 'update person set age = age + 1, processed = true, name = $1'
+{ txt: 'update person set age = age + 1, processed = true, name = $1',
   arg: ['Sally'] }
 ```
 
@@ -348,7 +348,7 @@ sq.frm`person`
   .upd({ firstName: 'Robert', nickname: 'Rob' })
   .qry
 
-{ txt: 'update person where first_name = $1 set first_name = $1, nickname = $3'
+{ txt: 'update person where first_name = $1 set first_name = $1, nickname = $3',
   arg: ['Rob', 'Robert', 'Rob'] }
 ```
 [Express syntax](#express-syntax) works too.
@@ -356,7 +356,7 @@ sq.frm`person`
 ```js
 sq`person`({ firstName: 'Rob' })`id`.upd({ firstName: 'Robert'}).qry
 
-{ txt: 'update person where first_name = $1 set first_name = $2 returning id'
+{ txt: 'update person where first_name = $1 set first_name = $2 returning id',
   arg: ['Rob', 'Robert'] }
 ```
 
@@ -369,7 +369,7 @@ sq.frm`person`
   .upd({ nickname: 'Rob' })
   .qry
 
-{ txt: 'update person where first_name = $1 set first_name = $1, nickname = $3'
+{ txt: 'update person where first_name = $1 set first_name = $1, nickname = $3',
   arg: ['Rob', 'Robert', 'Rob'] }
 ```
 

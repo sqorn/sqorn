@@ -62,6 +62,7 @@ const Logo = props => (
 
 const ProjectTitle = props => (
   <h2 className="projectTitle">
+    <img src="img/logo_blue.svg" style={{ height: '1.3em' }} />{' '}
     {siteConfig.title}
     <small>{siteConfig.tagline}</small>
   </h2>
