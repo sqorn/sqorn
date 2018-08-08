@@ -385,6 +385,39 @@ sq.frm`person`
 
 ## Transactions
 
+`.trx` starts a transaction. It can be called in two ways:
+
+### Transaction Callback
+
+The easiest way to execute queries within a transaction is to pass `.trx` an asynchronous callback. If any query within the callback fails, all will be rolled back.
+
+Make sure to pass all queries the transaction object `trx` or they won't be executed in the context of the transaction.
+
+```js
+await sq.trx(async trx => {
+  const { id } = await Account.ins({ email: 'jo@jo.com' }).one(trx)
+  await Authorization.ins({ accountId: id, password: 'secret' }).run(trx)
+})
+```
+
+### Transaction Value
+
+If you need more flexibility, call `.trx` without any arguments and it will return a transaction object `trx`.
+
+Pass `trx` to a query to add it to a transaction. When you're done, call `trx.commit()`. If there is an error, call `trx.rollback()`.
+
+```js
+let trx
+try {
+  trx = await sq.trx()
+  const { id } = await Account.ins({ email: 'jo@jo.com' }).one(trx)
+  await Authorization.ins({ accountId: id, password: 'secret' }).run(trx)
+  await trx.commit()
+} catch (error) {
+  await trx.rollback()
+}
+```
+
 ## Advanced Queries
 
 ### Where
