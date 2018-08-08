@@ -223,9 +223,13 @@ sq.frm`person`.whr`name = ${name}`.ret`age`
 sq.frm('person').whr({ name }).ret('age')
 ```
 
-### Additional Clauses
+### Having
 
-The [Advanced Queries](#advanced-queries) section explains how to build [`with`](#with), [`having`](#having-and-group-by), [`group by`](#having-and-group-by), [`limit`](#limit-and-offset), and [`offset`](#limit-and-offset) clauses.
+### Group By
+
+### Limit
+
+### Offset
 
 ## Manipulation Queries
 
@@ -383,6 +387,12 @@ sq.frm`person`
 
 ### sq.use
 
+## Complex Clauses
+
+### Where
+
+### Join
+
 ## Transactions
 
 `.trx` starts a transaction. It can be called in two ways:
@@ -417,13 +427,3 @@ try {
   await trx.rollback()
 }
 ```
-
-## Advanced Queries
-
-### Where
-
-### Join
-
-### Having and Group By
-
-### Limit and Offset
