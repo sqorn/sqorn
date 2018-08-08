@@ -8,7 +8,7 @@ const preamble = `
 const source = `const kid = sq.frm\\\`person\\\`.whr\\\`age < ${13}\\\`
 const boy = kid.whr\\\`gender = 'male'\\\`
 
-boy.ret\\\`id, name, age\\\`.qry()
+boy.ret\\\`id, name, age\\\`.qry
 `
 
 const createRunkitEmbed = `
