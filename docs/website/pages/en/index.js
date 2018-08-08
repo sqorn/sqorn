@@ -153,7 +153,7 @@ ${'```'}
         title: 'Composable',
         // image: imgUrl('docusaurus.svg'),
         imageAlign: 'top',
-        content: `Complex queries can be composed from simple parts
+        content: `Build complex queries from simple parts
 ${'```js'}
 // CHAIN CLAUSES
 ${'const books = sq.frm`book`'}

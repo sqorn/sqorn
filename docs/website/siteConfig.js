@@ -16,7 +16,7 @@ const users = [
 
 const siteConfig = {
   title: 'Sqorn',
-  tagline: 'A Javascript Library for Building Composable SQL Queries',
+  tagline: 'A Javascript Library for Building SQL Queries',
   url: 'https://sqorn.org',
   baseUrl: '/',
   // For github.io type URLs, you would set the url and baseUrl like:
