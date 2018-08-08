@@ -1,5 +1,4 @@
-# <img src="docs/website/static/img/logo_blue.svg" height="38px"/> <span style="color: #2979f">[Sqorn](https://sqorn.org/img/logo_blue.svg)</span> &middot; [![License](https://img.shields.io/github/license/eejdoowad/sqorn.svg)](https://github.com/eejdoowad/sqorn/blob/master/LICENSE) [![npm](https://img.shields.io/npm/v/sqorn.svg)](https://www.npmjs.com/package/sqorn) [![npm](https://img.shields.io/travis/eejdoowad/sqorn.svg)](https://travis-ci.org/eejdoowad/sqorn) ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
-
+# [<img src="docs/website/static/img/logo_blue.svg" height="38px"/> <span style="color: #2979f">Sqorn</span>](https://sqorn.org) &middot; [![License](https://img.shields.io/github/license/eejdoowad/sqorn.svg)](https://github.com/eejdoowad/sqorn/blob/master/LICENSE) [![npm](https://img.shields.io/npm/v/sqorn.svg)](https://www.npmjs.com/package/sqorn) [![npm](https://img.shields.io/travis/eejdoowad/sqorn.svg)](https://travis-ci.org/eejdoowad/sqorn) ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
 Sqorn is a Javascript library for building SQL queries.
 
@@ -7,7 +6,7 @@ Sqorn is a Javascript library for building SQL queries.
 
 **Boilerplate free:** Sqorn provides **concise** syntax for common CRUD operations.
 
-<p style="color: red">Sqorn is in early development. The API is subject to change and not yet fully implemented.</p>
+**Sqorn is in early development. The API is subject to change and not yet fully implemented.**
 
 ## Install
 
