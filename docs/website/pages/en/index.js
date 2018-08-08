@@ -128,23 +128,23 @@ const Features = props => (
         content: `CRUD operations are dead simple
 
 ${'```js'}
+${'const Person = sq`person`, Book = sq`book`'}
 
 // SELECT
-${"sq`person`({ firstName: 'Rob' })`id`"}
-"select id from person where first_name = 'Rob'"
+${'const children = await Person`age < 13`'}
+"select * from person where age < 13"
 
 // DELETE
-${'sq`book`({ id: 7 })`title`.del'}
+${'const [deleted] = await Book({ id: 7 })`title`.del'}
 "delete from book where id = 7 returning title"
 
 // INSERT
-${"sq`person`.ins({ firstName: 'Rob' })"}
+${"await Person.ins({ firstName: 'Rob' })"}
 "insert into person (first_name) values ('Rob')"
 
 // UPDATE
-${"sq`person`({ id: 23 }).upd`name = ${'Rob'}`"}
+${"await Person({ id: 23 }).upd({ name: 'Rob' })"}
 "update person where id = 23 set name = 'Rob'"
-
 
 ${'```'}
 `
@@ -158,8 +158,8 @@ ${'```js'}
 // CHAIN CLAUSES
 ${'const books = sq.frm`book`'}
 ${'const oldBooks = books.whr`publishYear < 1900`'}
-${"const oldFantasyBooks = books.whr`genre = 'Fantasy'`"}
-${'const numOldFantasyBooks = books.ret`count(*) count`'}
+${"const oldFantasyBooks = oldBooks.whr`genre = 'Fantasy'`"}
+${'const numOldFantasyBooks = oldFantasyBooks.ret`count(*) count`'}
 ${'const { count } = await numOldFantasyBooks.one()'}
 
 // BUILD NEW QUERIES FROM EXISTING QUERIES

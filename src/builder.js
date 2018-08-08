@@ -55,6 +55,7 @@ const createBuilder = config => {
       const rows = this.client.query(this.bld(), trx)
       return rows[0]
     },
+    // TODO: add then methods equivalent to .all() with no args
     async all(trx) {
       return this.client.query(this.bld(), trx)
     },

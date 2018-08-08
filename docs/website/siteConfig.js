@@ -42,6 +42,12 @@ const siteConfig = {
     // { blog: true, label: 'Blog' }
   ],
 
+  algolia: {
+    apiKey: '4f6441bc3ef3f696189b04d115eef1a1',
+    indexName: 'sqorn',
+    algoliaOptions: {} // Optional, if provided by Algolia
+  },
+
   // If you have users set above, you add it here:
   users,
 
