@@ -59,6 +59,7 @@ const context = (methods, inherited = {}) => {
         ctx.ins = method.args
         break
       case 'val':
+        ctx.type = 'insert'
         ctx.val.push(method.args)
         break
       // update

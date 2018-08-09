@@ -107,22 +107,25 @@ const Delete = ctx => ({ txt: 'delete', arg: [] })
 
 // insert clauses
 
-const Insert = ctx => {
-  const frm = build(ctx, ctx.frm)
+const Insert = OptionalClause('insert into', 'frm')
+
+const Columns = ctx => {
+  if (!ctx.ins) return
   const ins = build(ctx, ctx.ins)
   return {
-    txt: `insert into ${frm.txt} (${ins.txt})`,
-    arg: [...frm.arg, ...ins.arg]
+    txt: `(${ins.txt})`,
+    arg: ins.arg
   }
 }
 
 const Values = ctx => {
+  if (ctx.val.length == 0) return
   const txt = []
   const arg = []
   ctx.val.forEach(val => {
     const tuple = build(ctx, val)
     txt.push(`(${tuple.txt})`)
-    arg.push(tuple.arg)
+    arg.push(...tuple.arg)
   })
   return {
     txt: `values ${txt.join(', ')}`,
@@ -132,8 +135,8 @@ const Values = ctx => {
 
 // update clauses
 
-const Update = RequiredClause('update', 'frm')
-const Set_ = RequiredClause('set', 'upd')
+const Update = OptionalClause('update', 'frm')
+const Set_ = OptionalClause('set', 'upd')
 
 // Escaped SQL
 const SQL = ctx => build(ctx, ctx.l)
@@ -183,6 +186,7 @@ const query = {
   insert: Query(
     With,
     Insert,
+    Columns,
     Values,
     Returning
   ),

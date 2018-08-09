@@ -393,6 +393,33 @@ sq.frm`person`
 
 ### Join
 
+`.jni`, `.jnf`, `.jnl`, `.jnr`, `.jnn`, `.jnc`
+`.ijn`, `.fjn`, `.ljn`, `.rjn`, `.njn`, `.cjn`
+
+#### (Inner) Join
+
+`.jni` takes a table to join and returns a function that expects a `where` condition to join on.
+
+```js
+sq.frm`book`
+  .inj`author`.on`book.author_id = author.id`
+  .whr`book.title = ${'OathBringer'}`
+  .ret`author.first_name, author.last_name`
+```
+
+
+
+#### Full (Outer) Join
+
+#### Left (Outer) Join
+
+#### Right (Outer) Join
+
+#### Natural Join
+
+#### Cross Join
+
+
 ## Transactions
 
 `.trx` starts a transaction. It can be called in two ways:

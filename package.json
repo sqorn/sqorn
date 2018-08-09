@@ -6,6 +6,7 @@
   "license": "MIT",
   "scripts": {
     "test": "jest test/index.test.js",
+    "test:unit": "jest test/unit/**",
     "test:pg": "jest test/pg.test.js",
     "test:tutorial": "jest test/tutorial.test.js",
     "build:web": "webpack",
