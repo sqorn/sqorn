@@ -1,7 +1,6 @@
-const compile = require('./compile')
 const createClient = require('./client')
-const context = require('./compile/context')
-const query = require('./compile/query/index.js')
+const context = require('./context')
+const query = require('./query')
 const { isBuilder } = require('./constants')
 
 const createBuilder = config => {
@@ -37,10 +36,6 @@ const createBuilder = config => {
       throw Error('Unimplemented')
     },
     // query execution methods
-    get str() {
-      // TODO: escape queries using active client syntax
-      return compile(this.methods, config).txt
-    },
     bld(inheritedCtx) {
       const ctx = context(this.methods, inheritedCtx)
       return query[ctx.type](ctx)

@@ -1,4 +1,4 @@
-const { isBuilder } = require('../../../constants')
+const { isBuilder } = require('../constants')
 
 const parameter = (ctx, val) => {
   ctx.arg.push(val)
