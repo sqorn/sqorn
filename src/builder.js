@@ -37,7 +37,7 @@ const createBuilder = config => {
     },
     // query execution methods
     bld(inheritedCtx) {
-      const ctx = context(this.methods, inheritedCtx)
+      const ctx = context(this.method, inheritedCtx)
       return query[ctx.type](ctx)
     },
     get qry() {
@@ -70,7 +70,7 @@ const createBuilder = config => {
       return this.methods
     },
     get ctx() {
-      return context(this.methods)
+      return context(this.method)
     },
     get dbg() {
       return {
@@ -82,7 +82,8 @@ const createBuilder = config => {
     // chain method
     chain(method) {
       const next = new Builder()
-      next.methods = [...(this.methods || []), method]
+      method.prev = this.method
+      next.method = method
       return next
     }
   }

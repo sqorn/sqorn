@@ -26,10 +26,10 @@ const query = (...clauses) => ctx => {
 }
 
 module.exports = {
+  sql: query(sql),
+  raw: query(raw),
   select: query(wth, sel, frm, whr, grp, hav, ord, lim, off),
   delete: query(wth, del, frm, whr, ret),
   insert: query(wth, ins, col, val, ret),
-  update: query(upd, set, whr, ret),
-  sql: query(sql),
-  raw: query(raw)
+  update: query(upd, set, whr, ret)
 }

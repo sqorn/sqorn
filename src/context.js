@@ -1,5 +1,5 @@
 /** Transforms array of method call objects to context object */
-const context = (methods, inherited = {}) => {
+const context = (method, inherited = {}) => {
   // extract ctx inherited by subquery from parent query
   const {
     parameters = 0,
@@ -20,9 +20,16 @@ const context = (methods, inherited = {}) => {
     txt: '',
     arg: []
   }
-  // process methods to create ctx
+
+  // follow method links to construct methods array (in reverse)
+  const methods = []
+  for (; method !== undefined; method = method.prev) {
+    methods.push(method)
+  }
+  // build methods object by processing methods in call order
   let exp = 'frm'
-  methods.forEach(method => {
+  for (let i = methods.length; i >= 0; ++i) {
+    const method = methods[i]
     switch (method.type) {
       // escape
       case 'l':
@@ -95,7 +102,7 @@ const context = (methods, inherited = {}) => {
         }
         break
     }
-  })
+  }
   return ctx
 }
 
