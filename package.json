@@ -5,10 +5,8 @@
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
   "scripts": {
-    "test": "jest test/index.test.js",
-    "test:unit": "jest test/unit/**",
-    "test:pg": "jest test/pg.test.js",
-    "test:tutorial": "jest test/tutorial.test.js",
+    "test": "jest test/builder/**",
+    "test:db": "jest test/database/**",
     "build:web": "webpack",
     "prepublishOnly": "npm run build:web"
   },
@@ -43,5 +41,9 @@
     "src/**/*",
     "index.d.ts",
     "dist/sqorn.web.js"
-  ]
+  ],
+  "dependencies": {
+    "lodash.camelcase": "^4.3.0",
+    "lodash.snakecase": "^4.1.1"
+  }
 }

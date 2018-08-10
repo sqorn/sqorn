@@ -9,8 +9,8 @@ async function setupDatabase() {
       connectionString: 'postgresql://postgres@localhost:5432/postgres'
     }
   })
-  await sq.l`drop database if exists ${sq.raw`${db_name}`}`.run()
-  await sq.l`create database ${sq.raw`${db_name}`}`.run()
+  await sq.l`drop database if exists $${db_name}`.run()
+  await sq.l`create database $${db_name}`.run()
   sq.end()
 }
 

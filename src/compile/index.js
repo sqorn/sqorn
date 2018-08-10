@@ -1,5 +1,5 @@
 const context = require('./context')
-const query = require('./query')
+const query = require('./query/index.js')
 
 /** Transforms array of method call objects to SQL query string */
 const compile = methods => {

@@ -14,8 +14,11 @@ const context = (methods, inherited = {}) => {
   const ctx = {
     type: 'select',
     parameters,
+    whr: [],
     val: [],
-    opt
+    opt,
+    strings: [],
+    values: []
   }
   // process methods to create ctx
   let exp = 'frm'
@@ -37,7 +40,7 @@ const context = (methods, inherited = {}) => {
         ctx.frm = method.args
         break
       case 'whr':
-        ctx.whr = method.args
+        ctx.whr.push(method.args)
         break
       case 'ret':
         ctx.ret = method.args

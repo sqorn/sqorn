@@ -1,7 +1,7 @@
 const compile = require('./compile')
 const createClient = require('./client')
 const context = require('./compile/context')
-const query = require('./compile/query')
+const query = require('./compile/query/index.js')
 const { isBuilder } = require('./constants')
 
 const createBuilder = config => {

@@ -1,5 +1,4 @@
-const sqorn = require('../src/index.js')
-const sq = sqorn()
+const { sq, query } = require('../tape')
 
 describe('sql query - tagged template', () => {
   test('sql    - .l``', () => {
