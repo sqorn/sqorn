@@ -1,1 +1,1 @@
-module.exports = ctx => ({ txt: 'delete', arg: [] })
+module.exports = ctx => 'delete '

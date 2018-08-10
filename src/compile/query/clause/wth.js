@@ -1,1 +1,1 @@
-module.exports = ctx => undefined
+module.exports = ctx => ''

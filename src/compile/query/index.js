@@ -18,16 +18,11 @@ const sql = require('./clause/sql')
 const raw = require('./clause/raw')
 
 const query = (...clauses) => ctx => {
-  const txt = []
-  const arg = []
-  clauses.forEach(clause => {
-    const compiled = clause(ctx)
-    if (compiled) {
-      txt.push(compiled.txt)
-      arg.push(...compiled.arg)
-    }
-  })
-  return { txt: txt.join(' '), arg }
+  const txt = clauses
+    .map(clause => clause(ctx))
+    .filter(txt => txt)
+    .join(' ')
+  return { txt: txt, arg: ctx.arg }
 }
 
 module.exports = {

@@ -17,8 +17,8 @@ const context = (methods, inherited = {}) => {
     whr: [],
     val: [],
     opt,
-    strings: [],
-    values: []
+    txt: '',
+    arg: []
   }
   // process methods to create ctx
   let exp = 'frm'

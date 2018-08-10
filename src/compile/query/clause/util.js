@@ -1,6 +1,9 @@
 const { isBuilder } = require('../../../constants')
 
-const parameter = ctx => `$${++ctx.parameters}`
+const parameter = (ctx, val) => {
+  ctx.arg.push(val)
+  return `$${++ctx.parameters}`
+}
 
 const isTaggedTemplate = args =>
   Array.isArray(args) &&
@@ -8,39 +11,26 @@ const isTaggedTemplate = args =>
   typeof args[0][0] === 'string'
 
 const buildTaggedTemplate = (ctx, [strings, ...args]) => {
-  let txt = ''
-  const arg = []
   let i = 0
+  let txt = ''
   for (; i < args.length; i++) {
     const argument = args[i]
-    if (argument[isBuilder]) {
-      // merge subquery argument
-      const subqry = argument.bld(ctx)
-      ctx.parameters += arg.length
-      arg.push(...subqry.arg)
-      txt += strings[i] + subqry.txt
+    const prevString = strings[i]
+    if (prevString[prevString.length - 1] === '$') {
+      // raw argument
+      txt += prevString.substr(0, prevString.length - 1)
+      txt += args[i]
+    } else if (argument[isBuilder]) {
+      // sql builder argument
+      txt += prevString
+      argument.bld(ctx)
     } else {
-      const prevString = strings[i]
-      if (prevString[prevString.length - 1] === '$') {
-        // raw argument
-        txt += prevString.substr(0, prevString.length - 1) + args[i]
-      } else {
-        // parameterize argument
-        arg.push(argument)
-        txt += strings[i] + parameter(ctx)
-      }
+      // parameterized argument
+      txt += prevString + parameter(ctx, argument)
     }
   }
-  return { txt: (txt + strings[i]).trim(), arg }
-}
-
-// TODO: should prob be merged into buildTaggedTemplate
-const buildRawTemplate = ([strings, ...args]) => {
-  let txt = strings[0]
-  for (let i = 0; i < args.length; i++) {
-    txt += args[i] + strings[i + 1]
-  }
-  return { txt, arg: [] }
+  txt += strings[i]
+  return txt
 }
 
 const build = (ctx, params) => {
@@ -55,6 +45,5 @@ module.exports = {
   parameter,
   isTaggedTemplate,
   buildTaggedTemplate,
-  buildRawTemplate,
   build
 }
