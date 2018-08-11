@@ -1,6 +1,10 @@
-const sqorn = require('../src/index.js')
-
+const sqorn = require('../../src')
 const db_name = 'sqorn_pg_test'
+
+const query = ({ name, qry, res }) =>
+  test(name, async () => {
+    expect(await qry).toEqual(res)
+  })
 
 async function setupDatabase() {
   const sq = sqorn({
@@ -14,9 +18,8 @@ async function setupDatabase() {
   sq.end()
 }
 
-let sq
 async function setupSQ() {
-  sq = sqorn({
+  return sqorn({
     client: 'pg',
     connection: {
       // username: postgres, no password, database name: sqorn_test
@@ -25,30 +28,27 @@ async function setupSQ() {
   })
 }
 
-beforeAll(async () => {
-  await setupDatabase()
-  await setupSQ()
-})
-afterAll(async () => {
-  sq.end()
-})
-
-test('database starts empty', async () => {
-  const tables = await sq`pg_catalog.pg_tables``schemaname = 'public'`.all()
-  expect(tables.length).toBe(0)
-  // expect(sq`pg_catalog.pg_tables``schemaname = 'public'``tablename name`.all()).toBe(true)
-})
-
-test('database starts empty', async () => {
-  const tables = await sq`pg_catalog.pg_tables``schemaname = 'public'`.all()
-  expect(tables.length).toBe(0)
-  // expect(sq`pg_catalog.pg_tables``schemaname = 'public'``tablename name`.all()).toBe(true)
-})
-
-test('select - .frm``', () => {
-  expect(sq.frm`person`.str).toBe('select * from person')
-})
-
-test('select - .frm``', async () => {
-  expect(await sq.frm`book`.all()).toBe('select * from person')
+describe('pg', () => {
+  let sq
+  beforeAll(async () => {
+    await setupDatabase()
+    sq = await setupSQ()
+  })
+  afterAll(async () => {
+    sq.end()
+  })
+  describe('setup database', () => {
+    test('database starts empty', async () => {
+      const tables = await sq`pg_catalog.pg_tables``schemaname = 'public'`.all()
+      expect(tables.length).toBe(0)
+      // expect(sq`pg_catalog.pg_tables``schemaname = 'public'``tablename name`.all()).toBe(true)
+    })
+  })
+  describe('populate', () => {
+    query({
+      name: 'select - .frm``',
+      qry: sq.frm`book`.all(),
+      res: []
+    })
+  })
 })
