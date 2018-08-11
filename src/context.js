@@ -28,7 +28,7 @@ const context = (method, inherited = {}) => {
   }
   // build methods object by processing methods in call order
   let exp = 'frm'
-  for (let i = methods.length; i >= 0; ++i) {
+  for (let i = methods.length - 1; i >= 0; --i) {
     const method = methods[i]
     switch (method.type) {
       // escape

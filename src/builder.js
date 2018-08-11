@@ -65,10 +65,6 @@ const createBuilder = config => {
     async end() {
       return this.client.end()
     },
-    // internal debugging methods
-    get mtd() {
-      return this.methods
-    },
     get ctx() {
       return context(this.method)
     },
