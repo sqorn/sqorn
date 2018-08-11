@@ -23,7 +23,7 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
     } else if (argument[isBuilder]) {
       // sql builder argument
       txt += prevString
-      argument.bld(ctx)
+      txt += argument.bld(ctx).txt
     } else {
       // parameterized argument
       txt += prevString + parameter(ctx, argument)

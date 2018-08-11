@@ -6,4 +6,4 @@ module.exports = ctx => {
   return txt && 'values ' + txt
 }
 
-const values = ctx => ctx.val.map(val => '(' + build(ctx, val) + ')').join(' ')
+const values = ctx => ctx.val.map(val => '(' + build(ctx, val) + ')').join(', ')

@@ -92,7 +92,7 @@ const context = (method, inherited = {}) => {
             exp = 'whr'
             break
           case 'whr':
-            ctx.whr = method.args
+            ctx.whr.push(method.args)
             exp = 'ret'
             break
           case 'ret':

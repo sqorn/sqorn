@@ -22,14 +22,14 @@ const query = (...clauses) => ctx => {
     .map(clause => clause(ctx))
     .filter(txt => txt)
     .join(' ')
-  return { txt: txt, arg: ctx.arg }
+  return { txt, arg: ctx.arg }
 }
 
 module.exports = {
   sql: query(sql),
   raw: query(raw),
   select: query(wth, sel, frm, whr, grp, hav, ord, lim, off),
-  delete: query(wth, del, frm, whr, ret),
+  delete: query(wth, del, whr, ret),
   insert: query(wth, ins, col, val, ret),
   update: query(upd, set, whr, ret)
 }
