@@ -4,6 +4,9 @@
   "description": "A Javascript Library for Building SQL Queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
+  "engines": {
+    "node": ">=8"
+  },
   "scripts": {
     "test": "jest test/builder/**",
     "test:db": "jest test/database/**",
