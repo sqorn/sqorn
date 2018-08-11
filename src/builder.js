@@ -22,18 +22,19 @@ const createBuilder = config => {
       return this.bld()
     },
     // execution methods
-    async run(trx) {
-      await this.client.query(this.bld(), trx)
-    },
     async one(trx) {
-      const rows = this.client.query(this.bld(), trx)
+      const rows = await this.client.query(this.bld(), trx)
       return rows[0]
     },
     async all(trx) {
       return this.client.query(this.bld(), trx)
     },
-    async then() {
-      return this.client.query(this.bld())
+    async then(resolve, reject) {
+      try {
+        resolve(this.all())
+      } catch (error) {
+        reject(error)
+      }
     },
     // miscellaneous methods
     async trx(fn) {

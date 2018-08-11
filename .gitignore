@@ -1,6 +1,7 @@
 dist
 coverage
 node_modules
+examples/**/package-lock.json
 npm-debug.log
 debug.log
 .DS_Store

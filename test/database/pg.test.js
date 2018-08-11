@@ -8,8 +8,7 @@ const query = ({ name, qry, res }) =>
 
 async function setupDatabase() {
   const sq = sqorn({
-    client: 'pg',
-    connection: {
+    pg: {
       connectionString: 'postgresql://postgres@localhost:5432/postgres'
     }
   })
@@ -20,8 +19,7 @@ async function setupDatabase() {
 
 async function setupSQ() {
   return sqorn({
-    client: 'pg',
-    connection: {
+    pg: {
       // username: postgres, no password, database name: sqorn_test
       connectionString: `postgresql://postgres@localhost:5432/${db_name}`
     }
