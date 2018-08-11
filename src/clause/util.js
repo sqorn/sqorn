@@ -16,14 +16,13 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
   for (; i < args.length; i++) {
     const argument = args[i]
     const prevString = strings[i]
-    if (prevString[prevString.length - 1] === '$') {
+    const lastCharIndex = prevString.length - 1
+    if (prevString[lastCharIndex] === '$') {
       // raw argument
-      txt += prevString.substr(0, prevString.length - 1)
-      txt += args[i]
+      txt += prevString.substr(0, lastCharIndex) + args[i]
     } else if (argument[isBuilder]) {
       // sql builder argument
-      txt += prevString
-      txt += argument.bld(ctx).txt
+      txt += prevString + argument.bld(ctx).txt
     } else {
       // parameterized argument
       txt += prevString + parameter(ctx, argument)
