@@ -310,7 +310,9 @@ sq.frm`book`
   arg: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
 ```
 
-When passed an object, `.ins` can be called multiple times to insert multiple rows. Column names are inferred from object keys.
+When called as a template string or passed string column names, `.ins` may only be called once.
+
+When passed an object, `.ins` can be called multiple times to insert multiple rows. Column names are inferred from examining all object keys.
 
 ```js
 sq.frm`book`
@@ -323,7 +325,20 @@ sq.frm`book`
   arg: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
 ```
 
-`.ret` specifies the returning cluase. [Express syntax](#express-syntax) may be used to specify `.frm` and `.ret`.
+Alternatively, multiple objects may be passed to `.ins`
+
+```js
+sq.frm`book`
+  .ins({ title: 'The Way of Kings', year: 2010 },
+       { title: 'Words of Radiance', year: null },
+       { title: 'Oathbringer' })
+  .qry
+
+{ txt: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
+  arg: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
+```
+
+`.ret` specifies the returning clause. [Express syntax](#express-syntax) may be used to specify `.frm` and `.ret`.
 
 ```js
 sq.frm`book`.ins({ title: 'Squirrels and Acorns' }).ret`id`.qry

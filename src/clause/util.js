@@ -6,9 +6,7 @@ const parameter = (ctx, val) => {
 }
 
 const isTaggedTemplate = args =>
-  Array.isArray(args) &&
-  Array.isArray(args[0]) &&
-  typeof args[0][0] === 'string'
+  Array.isArray(args[0]) && typeof args[0][0] === 'string'
 
 const buildTaggedTemplate = (ctx, [strings, ...args]) => {
   let i = 0

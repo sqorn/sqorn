@@ -3,41 +3,76 @@ const sqorn = require('../../src')
 
 const server = 'postgresql://postgres@localhost:5432/'
 const adminDatabase = 'postgres'
-const database = 'sqorn_postgres_example'
+const appDatabase = 'sqorn_postgres_example'
 
 async function main() {
-  try {
-    // create new database
-    let sq = sqorn({ pg: { connectionString: server + adminDatabase } })
-    console.log('connected')
-    await sq.l`drop database if exists $${database}`
-    console.log('dropped')
-    await sq.l`create database $${database}`
-    console.log('created')
-    sq.end()
-    console.log('disconnected')
-    return
-    // create tables
-    sq = sqorn({ pg: { connectionString: server + database } })
-    await sq.l`create table author (
-      id              serial primary key,
-      first_name      text,
-      last_name       text,
-      birthday        date
-    )`
-    await sq.l`create table book (
-      id              serial primary key,
-      title           text,
-      genre           text,
-      publish_year    integer,
-      author_id       integer,
-                      foreign key (author_id) references author (id)
-    )`
-    sq.end()
-    // in your terminal, start 'psql' and run '\list' to see your new database
-  } catch (error) {
-    throw error
-  }
+  // connect to admin database
+  let sq = sqorn({ pg: { connectionString: server + adminDatabase } })
+  // delete app database if it exists
+  await sq.l`drop database if exists $${appDatabase}`
+  // create app database
+  await sq.l`create database $${appDatabase}`
+  // disconnect from admin database
+  sq.end()
+  // connect to created database
+  sq = sqorn({ pg: { connectionString: server + database } })
+  // create author table
+  await sq.l`create table author (
+    id              serial primary key,
+    first_name      text,
+    last_name       text,
+    birthday        date
+  )`
+  // create book table
+  await sq.l`create table book (
+    id              serial primary key,
+    title           text,
+    genre           text,
+    publish_year    integer,
+    author_id       integer,
+                    foreign key (author_id) references author (id)
+  )`
+  // populate author table
+  const [sanderson, jordan, tolkien] = await sq`author`.ret`id`.ins(
+    {
+      firstName: 'Brandon',
+      lastName: 'Sanderson',
+      birthday: '1975-12-19'
+    },
+    {
+      firstName: 'Robert',
+      lastName: 'Jordan',
+      birthday: '1948-10-17'
+    },
+    {
+      firstName: 'John',
+      lastName: 'Tolkien',
+      birthday: '1892-01-03'
+    }
+  )
+  // populate book table
+  await sq`book`.ins(
+    {
+      title: 'The Way of Kings',
+      genre: 'Fantasy',
+      publishYear: 2010,
+      authorId: sanderson.id
+    },
+    {
+      title: 'The Eye of the World',
+      genre: 'Fantasy',
+      publishYear: 1990,
+      authorId: jordan.id
+    },
+    {
+      title: 'The Fellowship of the Ring',
+      genre: 'Fantasy',
+      publishYear: 1954,
+      authorId: tolkien.id
+    }
+  )
+  // disconnect from database
+  sq.end()
 }
 
 main()
