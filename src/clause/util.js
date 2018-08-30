@@ -1,8 +1,9 @@
 const { isBuilder } = require('../constants')
 
 const parameter = (ctx, val) => {
+  if (val === undefined) return 'default'
   ctx.arg.push(val)
-  return `$${++ctx.parameters}`
+  return `$${ctx.arg.length}`
 }
 
 const isTaggedTemplate = args =>

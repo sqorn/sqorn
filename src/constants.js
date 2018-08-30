@@ -1,3 +1,4 @@
-const isBuilder = Symbol('isBuilder')
-
-module.exports = { isBuilder }
+module.exports = {
+  // unique symbol attached to every query builder
+  isBuilder: Symbol()
+}

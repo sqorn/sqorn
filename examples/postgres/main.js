@@ -1,5 +1,6 @@
 const sqorn = require('../../src')
 // const sqorn = require('sqorn') <-- use this instead in your program
+// const client = require('sqorn-pg')
 
 const server = 'postgresql://postgres@localhost:5432/'
 const adminDatabase = 'postgres'
@@ -7,6 +8,7 @@ const appDatabase = 'sqorn_postgres_example'
 
 async function main() {
   // connect to admin database
+  // let sq = sqorn(client({ connectionString: server + adminDatabase }))
   let sq = sqorn({ pg: { connectionString: server + adminDatabase } })
   // delete app database if it exists
   await sq.l`drop database if exists $${appDatabase}`
@@ -15,7 +17,7 @@ async function main() {
   // disconnect from admin database
   sq.end()
   // connect to created database
-  sq = sqorn({ pg: { connectionString: server + database } })
+  sq = sqorn({ pg: { connectionString: server + appDatabase } })
   // create author table
   await sq.l`create table author (
     id              serial primary key,

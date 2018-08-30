@@ -1,26 +1,23 @@
 /** Transforms array of method call objects to context object */
-const context = (method, inherited = {}) => {
-  // extract ctx inherited by subquery from parent query
+const context = (method, parentCtx = {}) => {
+  // initialize context inheriting some subquery properties from parent query
   const {
-    parameters = 0,
+    arg = [],
     opt = {
       debug: false,
       separator: ' ',
       uppercase: false,
       client: 'pg'
     }
-  } = inherited
-  // initialize ctx
+  } = parentCtx
   const ctx = {
     type: 'select',
-    parameters,
     whr: [],
-    val: [],
-    opt,
+    ins: [],
     txt: '',
-    arg: []
+    arg,
+    opt
   }
-
   // follow method links to construct methods array (in reverse)
   const methods = []
   for (; method !== undefined; method = method.prev) {
@@ -65,12 +62,9 @@ const context = (method, inherited = {}) => {
         ctx.off = method.args
       // insert
       case 'ins':
-        ctx.type = 'insert'
-        ctx.ins = method.args
-        break
       case 'val':
         ctx.type = 'insert'
-        ctx.val.push(method.args)
+        ctx.ins.push(method.args)
         break
       // update
       case 'upd':

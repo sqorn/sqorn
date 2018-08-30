@@ -10,7 +10,6 @@ const off = require('./clause/off')
 const del = require('./clause/del')
 const ret = require('./clause/ret')
 const ins = require('./clause/ins')
-const col = require('./clause/col')
 const val = require('./clause/val')
 const upd = require('./clause/upd')
 const set = require('./clause/set')
@@ -30,6 +29,6 @@ module.exports = {
   raw: query(raw),
   select: query(wth, sel, frm, whr, grp, hav, ord, lim, off),
   delete: query(wth, del, whr, ret),
-  insert: query(wth, ins, col, val, ret),
+  insert: query(wth, ins, val, ret),
   update: query(upd, set, whr, ret)
 }

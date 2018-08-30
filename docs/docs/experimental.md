@@ -795,6 +795,26 @@ Finally, the contributions from all clauses are joined together to construct a c
 
 
 
+cached queries thoughts:
+```js
+
+
+
+const getSecret = ({ secret }) => sq`secret`({ secret }).prp('getSecret')
+
+const preparedGetSecret = ({
+  const prepared = getSecret().prp('getSecret')
+  return ({ secret }) => prepared()
+})()
+
+sq.stm`getSecret`
+
+
+
+
+```
+
+
 ## Roadmap
 
 * integrate pg
