@@ -192,7 +192,7 @@ sq.frm`book`.ret('title', 'author').qry
   arg: [] }
 ```
 
-Call `.ret` multiple times to return additional columns.
+Only the last call to `.ret` is used.
 
 ```js
 sq.frm`book`.ret('title', 'author').ret`id`.qry
@@ -363,33 +363,33 @@ sq.frm`person`.upd`age = age + 1, processed = true`.upd`name = ${'Sally'}`.qry
 
 ```js
 sq.frm`person`
-  .whr({ firstName: 'Rob' })
+  .whr({ firstName: 'Matt' })
   .upd({ firstName: 'Robert', nickname: 'Rob' })
   .qry
 
-{ txt: 'update person where first_name = $1 set first_name = $1, nickname = $3',
-  arg: ['Rob', 'Robert', 'Rob'] }
+{ txt: 'update person set first_name = $1, nickname = $2 where first_name = $3',
+  arg: ['Robert', 'Rob', 'Matt'] }
 ```
 [Express syntax](#express-syntax) works too.
 
 ```js
 sq`person`({ firstName: 'Rob' })`id`.upd({ firstName: 'Robert'}).qry
 
-{ txt: 'update person where first_name = $1 set first_name = $2 returning id',
-  arg: ['Rob', 'Robert'] }
+{ txt: 'update person set first_name = $1 where first_name = $2 returning id',
+  arg: ['Robert', 'Rob'] }
 ```
 
 Call `.upd` multiple times to update additional columns.
 
 ```js
 sq.frm`person`
-  .whr({ firstName: 'Rob' })
+  .whr({ firstName: 'Matt' })
   .upd({ firstName: 'Robert' })
   .upd({ nickname: 'Rob' })
   .qry
 
-{ txt: 'update person where first_name = $1 set first_name = $1, nickname = $3',
-  arg: ['Rob', 'Robert', 'Rob'] }
+{ txt: 'update person set first_name = $1, nickname = $2 where first_name = $3',
+  arg: ['Robert', 'Rob', 'Matt'] }
 ```
 
 ### Upsert

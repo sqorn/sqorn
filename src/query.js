@@ -30,5 +30,5 @@ module.exports = {
   select: query(wth, sel, frm, whr, grp, hav, ord, lim, off),
   delete: query(wth, del, whr, ret),
   insert: query(wth, ins, val, ret),
-  update: query(upd, set, whr, ret)
+  update: query(wth, upd, set, whr, ret)
 }

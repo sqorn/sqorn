@@ -14,6 +14,7 @@ const context = (method, parentCtx = {}) => {
     type: 'select',
     whr: [],
     ins: [],
+    upd: [],
     txt: '',
     arg,
     opt
@@ -69,7 +70,7 @@ const context = (method, parentCtx = {}) => {
       // update
       case 'upd':
         ctx.type = 'update'
-        ctx.upd = method.args
+        ctx.upd.push(method.args)
         break
       // delete
       case 'del':

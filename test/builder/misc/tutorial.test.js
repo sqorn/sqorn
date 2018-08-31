@@ -92,7 +92,7 @@ describe('tutorial', () => {
       query({
         name: '.ret.ret',
         qry: sq.frm`book`.ret('title', 'author').ret`id`,
-        txt: 'select title, author, id from book'
+        txt: 'select id from book'
       })
     })
     test('Express Syntax', () => {
@@ -165,12 +165,18 @@ describe('tutorial', () => {
         name: ".ins('', '').val(1, '').val(1, '')",
         qry: sq.frm`book`
           .ins('title', 'year')
-          .val('The Way of Kings', years[0])
+          .val('The Way of Kings', 2010)
           .val('Words of Radiance', null)
           .val('Oathbringer'),
         txt:
-          'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
-        arg: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer']
+          'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
+        arg: [
+          'The Way of Kings',
+          2010,
+          'Words of Radiance',
+          null,
+          'Oathbringer'
+        ]
       })
       query({
         name: '.ins({}).ins({}).ins({})',
@@ -179,12 +185,15 @@ describe('tutorial', () => {
           .ins({ title: 'Words of Radiance', year: null })
           .ins({ title: 'Oathbringer' }),
         txt:
-          'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
-        arg: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer']
+          'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
+        arg: [
+          'The Way of Kings',
+          2010,
+          'Words of Radiance',
+          null,
+          'Oathbringer'
+        ]
       })
-      expect(
-        sq.frm`book`.ins({ title: 'Squirrels and Acorns' }).ret`id`.qry
-      ).toEqual(sq`book`()`id`.ins({ title: 'Squirrels and Acorns' }))
       query({
         name: '',
         qry: sq.frm`book`.ins({ title: 'Squirrels and Acorns' }).ret`id`,
@@ -203,28 +212,28 @@ describe('tutorial', () => {
       query({
         name: '.upd({})',
         qry: sq.frm`person`
-          .whr({ firstName: 'Rob' })
+          .whr({ firstName: 'Matt' })
           .upd({ firstName: 'Robert', nickname: 'Rob' }),
         txt:
-          'update person where first_name = $1 set first_name = $1, nickname = $3',
-        arg: ['Rob', 'Robert', 'Rob']
+          'update person set first_name = $1, nickname = $2 where first_name = $3',
+        arg: ['Robert', 'Rob', 'Matt']
       })
       query({
         name: 'express.upd({})',
         qry: sq`person`({ firstName: 'Rob' })`id`.upd({ firstName: 'Robert' }),
         txt:
-          'update person where first_name = $1 set first_name = $2 returning id',
-        arg: ['Rob', 'Robert']
+          'update person set first_name = $1 where first_name = $2 returning id',
+        arg: ['Robert', 'Rob']
       })
       query({
         name: '.upd({}).upd({})',
         qry: sq.frm`person`
-          .whr({ firstName: 'Rob' })
+          .whr({ firstName: 'Matt' })
           .upd({ firstName: 'Robert' })
           .upd({ nickname: 'Rob' }),
         txt:
-          'update person where first_name = $1 set first_name = $1, nickname = $3',
-        arg: ['Rob', 'Robert', 'Rob']
+          'update person set first_name = $1, nickname = $2 where first_name = $3',
+        arg: ['Robert', 'Rob', 'Matt']
       })
     })
   })

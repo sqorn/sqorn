@@ -31,12 +31,18 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
   return txt
 }
 
-const build = (ctx, params) => {
-  if (isTaggedTemplate(params)) {
-    return buildTaggedTemplate(ctx, params)
-  } else {
-    throw Error('Cant build plain function calls yet')
+const build = (ctx, args) => {
+  if (args === undefined) {
+    // no from clause
+    return undefined
+  } else if (typeof args[0] === 'string') {
+    // string table names
+    return args.join(', ')
+  } else if (isTaggedTemplate(args)) {
+    // template string tables
+    return buildTaggedTemplate(ctx, args)
   }
+  throw Error('Invalid args:', args)
 }
 
 module.exports = {

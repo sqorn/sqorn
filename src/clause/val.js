@@ -13,7 +13,7 @@ const inserts = ctx => {
     // string column names
     const columns = first.join(', ')
     const values = rest
-      .map(args => '(' + columnNamesFromArgList(ctx, args) + ')')
+      .map(args => '(' + columnNamesFromArgList(ctx, args, first.length) + ')')
       .join(', ')
     return { columns, values }
   } else if (isTaggedTemplate(first)) {
@@ -24,16 +24,17 @@ const inserts = ctx => {
       .join(', ')
     return { columns, values }
   } else if (typeof firstArg === 'object') {
+    // object inserts
     const columns = columnNamesFromObjects(ctx)
     const values = valueTuplesFromObjects(ctx, columns)
     return { columns: columns.join(', '), values }
   }
 }
 
-const columnNamesFromArgList = (ctx, args) => {
-  let txt = parameter(args[0])
-  for (let i = 1; i < ctx.columns.length; ++i) {
-    txt += ', ' + parameter(args[i])
+const columnNamesFromArgList = (ctx, args, numColumns) => {
+  let txt = parameter(ctx, args[0])
+  for (let i = 1; i < numColumns; ++i) {
+    txt += ', ' + parameter(ctx, args[i])
   }
   return txt
 }
