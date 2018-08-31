@@ -29,12 +29,8 @@ const createBuilder = config => {
     async all(trx) {
       return this.client.query(this.bld(), trx)
     },
-    async then(resolve, reject) {
-      try {
-        resolve(this.all())
-      } catch (error) {
-        reject(error)
-      }
+    then(resolve) {
+      resolve(this.all())
     },
     // miscellaneous methods
     async trx(fn) {
