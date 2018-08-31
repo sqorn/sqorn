@@ -76,7 +76,7 @@ Not yet. It still needs:
 * A track record
 * Active users
 
-Join us on [Github](https://github.com/eejdoowad/sqorn)
+Join us on [Github](https://github.com/lusakasa/sqorn)
 
 ## Are there Complex Example Queries?
 

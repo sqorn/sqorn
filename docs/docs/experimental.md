@@ -115,7 +115,7 @@ await sq.trx(async trx => {
 
 
 
-# [Sqorn](https://sqorn.org) &middot; [![License](https://img.shields.io/github/license/eejdoowad/sqorn.svg)](https://github.com/eejdoowad/sqorn/blob/master/LICENSE) [![npm](https://img.shields.io/npm/v/sqorn.svg)](https://www.npmjs.com/package/sqorn) [![npm](https://img.shields.io/travis/eejdoowad/sqorn.svg)](https://travis-ci.org/eejdoowad/sqorn) ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
+# [Sqorn](https://sqorn.org) &middot; [![License](https://img.shields.io/github/license/lusakasa/sqorn.svg)](https://github.com/lusakasa/sqorn/blob/master/LICENSE) [![npm](https://img.shields.io/npm/v/sqorn.svg)](https://www.npmjs.com/package/sqorn) [![npm](https://img.shields.io/travis/lusakasa/sqorn.svg)](https://travis-ci.org/lusakasa/sqorn) ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
 
 Sqorn is a Javascript library for building SQL queries.

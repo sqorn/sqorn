@@ -25,7 +25,7 @@ const siteConfig = {
 
   // Used for publishing and more
   projectName: 'Sqorn',
-  organizationName: 'eejdoowad',
+  organizationName: 'lusakasa',
   // For top-level user or org sites, the organization is still the same.
   // e.g., for the https://JoelMarcey.github.io site, it would be set like...
   //   organizationName: 'JoelMarcey'
@@ -38,7 +38,7 @@ const siteConfig = {
     { doc: 'faq', label: 'FAQ' },
     { page: 'demo', label: 'Demo' },
     // { doc: 'benchmarks', label: 'Benchmarks' },
-    { href: 'https://github.com/eejdoowad/sqorn', label: 'Github' }
+    { href: 'https://github.com/lusakasa/sqorn', label: 'Github' }
     // { blog: true, label: 'Blog' }
   ],
 
