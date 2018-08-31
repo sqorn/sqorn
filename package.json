@@ -5,7 +5,7 @@
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
   "engines": {
-    "node": ">=8"
+    "node": ">=8.0.0"
   },
   "scripts": {
     "test": "jest test/builder/**",
