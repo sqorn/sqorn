@@ -52,12 +52,22 @@ getPeople.qry
   arg: [20, 30] }
 ```
 
-Execute the query and get back a Promise for all result rows with `.all`. If you need just the first result, call `.one`. If you need to know if a matching result exists, call `.exs`.
+Execute the query and get back a Promise for all result rows with `.all`. The query builder is itself *thenable* so `.all` is optional. The following all print an array of people in the database.
 
 ```js
-const people = await getPeople.all()       // Array<Person>
-const firstPerson =  await getPeople.one() // Person or undefined
-const personExists = await getPeople.exs() // true or false
+getPeople.all().then(people => console.log(people))
+getPeople.then(people => console.log(people))
+console.log(await getPeople.all())
+console.log(await getPeople)
+```
+
+Call `.one` to fetch only the first result, or `undefined` if there are no matching results. The following all print the first person (or `undefined`).
+
+```js
+getPeople.one().then(person => console.log(person))
+getPeople.all().then(people => console.log(people[0])
+console.log(await getPeople.one())
+console.log((await getPeople)[0])
 ```
 
 When you need a raw unparameterized argument, prefix it with `$`.
