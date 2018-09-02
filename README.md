@@ -1,15 +1,10 @@
 # [<img src="docs/website/static/img/logo_blue.svg" height="38px"/> <span style="color: #2979f">Sqorn</span>](https://sqorn.org) &middot; [![License](https://img.shields.io/github/license/lusakasa/sqorn.svg)](https://github.com/lusakasa/sqorn/blob/master/LICENSE) [![npm](https://img.shields.io/npm/v/sqorn.svg)](https://www.npmjs.com/package/sqorn) ![Supports Node 8+](https://img.shields.io/node/v/sqorn.svg) [![npm](https://img.shields.io/travis/lusakasa/sqorn.svg)](https://travis-ci.org/lusakasa/sqorn) ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
-
-
-
 Sqorn is a Javascript library for building SQL queries.
 
 **Composable:** Build complex queries from simple parts. Extend existing queries or embed subqueries.
 
 **Boilerplate free:** Sqorn provides **concise** syntax for common CRUD operations.
-
-**Sqorn is in early development. The API is subject to change and not yet fully implemented.**
 
 ## Install
 
@@ -34,7 +29,7 @@ const children = await Person`age < ${13}`
 // "select * from person where age < 13"
 
 // DELETE
-const [deleted] = await Book({ id: 7 })`title`.del
+const [deleted] = await Book.del({ id: 7 })`title`
 // "delete from book where id = 7 returning title"
 
 // INSERT
