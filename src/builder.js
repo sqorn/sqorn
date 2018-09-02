@@ -68,7 +68,7 @@ const createBuilder = config => {
     'off',
     'ins',
     'val',
-    'upd',
+    'set',
     'opt'
   ].forEach(key => {
     builder[key] = function(...args) {

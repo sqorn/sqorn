@@ -214,34 +214,34 @@ describe('tutorial', () => {
     })
     describe('Update', () => {
       query({
-        name: '.upd``',
-        qry: sq.frm`person`.upd`age = age + 1, processed = true`
-          .upd`name = ${'Sally'}`,
+        name: '.set``',
+        qry: sq.frm`person`.set`age = age + 1, processed = true`
+          .set`name = ${'Sally'}`,
         txt: 'update person set age = age + 1, processed = true, name = $1',
         arg: ['Sally']
       })
       query({
-        name: '.upd({})',
+        name: '.set({})',
         qry: sq.frm`person`
           .whr({ firstName: 'Matt' })
-          .upd({ firstName: 'Robert', nickname: 'Rob' }),
+          .set({ firstName: 'Robert', nickname: 'Rob' }),
         txt:
           'update person set first_name = $1, nickname = $2 where first_name = $3',
         arg: ['Robert', 'Rob', 'Matt']
       })
       query({
-        name: 'express.upd({})',
-        qry: sq`person`({ firstName: 'Rob' })`id`.upd({ firstName: 'Robert' }),
+        name: 'express.set({})',
+        qry: sq`person`({ firstName: 'Rob' })`id`.set({ firstName: 'Robert' }),
         txt:
           'update person set first_name = $1 where first_name = $2 returning id',
         arg: ['Robert', 'Rob']
       })
       query({
-        name: '.upd({}).upd({})',
+        name: '.set({}).set({})',
         qry: sq.frm`person`
           .whr({ firstName: 'Matt' })
-          .upd({ firstName: 'Robert' })
-          .upd({ nickname: 'Rob' }),
+          .set({ firstName: 'Robert' })
+          .set({ nickname: 'Rob' }),
         txt:
           'update person set first_name = $1, nickname = $2 where first_name = $3',
         arg: ['Robert', 'Rob', 'Matt']

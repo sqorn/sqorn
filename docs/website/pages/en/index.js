@@ -144,7 +144,7 @@ ${"await Person.ins({ firstName: 'Rob' })"}
 "insert into person (first_name) values ('Rob')"
 
 // UPDATE
-${"await Person({ id: 23 }).upd({ name: 'Rob' })"}
+${"await Person({ id: 23 }).set({ name: 'Rob' })"}
 "update person where id = 23 set name = 'Rob'"
 
 ${'```'}
@@ -196,7 +196,9 @@ const FeatureCallout = props => (
         'Typescript Declarations',
         'Supports Postgres',
         'Transactions'
-      ].map(feature => <li style={{ textAlign: 'left' }}>{feature}</li>)}
+      ].map(feature => (
+        <li style={{ textAlign: 'left' }}>{feature}</li>
+      ))}
     </ul>
   </div>
 )

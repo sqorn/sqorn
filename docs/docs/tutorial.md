@@ -377,21 +377,21 @@ sq`book`()`id`.ins({ title: 'Squirrels and Acorns' }).qry
 
 ### Update
 
-`Update` queries use `.upd` to specify values to update. `.upd` can be called multiple times.
+`Update` queries use `.set` to specify values to update. `.set` can be called multiple times.
 
 ```js
-sq.frm`person`.upd`age = age + 1, processed = true`.upd`name = ${'Sally'}`.qry
+sq.frm`person`.set`age = age + 1, processed = true`.set`name = ${'Sally'}`.qry
 
 { txt: 'update person set age = age + 1, processed = true, name = $1',
   arg: ['Sally'] }
 ```
 
-`.upd` also accepts an update object.
+`.set` also accepts an update object.
 
 ```js
 sq.frm`person`
   .whr({ firstName: 'Matt' })
-  .upd({ firstName: 'Robert', nickname: 'Rob' })
+  .set({ firstName: 'Robert', nickname: 'Rob' })
   .qry
 
 { txt: 'update person set first_name = $1, nickname = $2 where first_name = $3',
@@ -400,19 +400,19 @@ sq.frm`person`
 [Express syntax](#express-syntax) works too.
 
 ```js
-sq`person`({ firstName: 'Rob' })`id`.upd({ firstName: 'Robert'}).qry
+sq`person`({ firstName: 'Rob' })`id`.set({ firstName: 'Robert'}).qry
 
 { txt: 'update person set first_name = $1 where first_name = $2 returning id',
   arg: ['Robert', 'Rob'] }
 ```
 
-Call `.upd` multiple times to update additional columns.
+Call `.set` multiple times to update additional columns.
 
 ```js
 sq.frm`person`
   .whr({ firstName: 'Matt' })
-  .upd({ firstName: 'Robert' })
-  .upd({ nickname: 'Rob' })
+  .set({ firstName: 'Robert' })
+  .set({ nickname: 'Rob' })
   .qry
 
 { txt: 'update person set first_name = $1, nickname = $2 where first_name = $3',

@@ -37,7 +37,7 @@ await Person.ins({ firstName: 'Rob' })
 // "insert into person (first_name) values ('Rob')"
 
 // UPDATE
-await Person({ id: 23 }).upd({ name: 'Rob' })
+await Person({ id: 23 }).set({ name: 'Rob' })
 // "update person where id = 23 set name = 'Rob'"
 
 ```

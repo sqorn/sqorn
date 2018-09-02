@@ -2,13 +2,13 @@ const snakeCase = require('lodash.snakecase')
 const { isTaggedTemplate, buildTaggedTemplate, parameter } = require('./util')
 
 module.exports = ctx => {
-  if (!ctx.upd) return
-  const txt = set(ctx, ctx.upd)
+  if (!ctx.set) return
+  const txt = set(ctx, ctx.set)
   return txt && 'set ' + txt
 }
 
 const set = ctx => {
-  const updates = ctx.upd
+  const updates = ctx.set
   let txt = change(ctx, updates[0])
   for (let i = 1; i < updates.length; ++i) {
     txt += ', ' + change(ctx, updates[i])

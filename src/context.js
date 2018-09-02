@@ -15,7 +15,7 @@ const context = (method, parentCtx = {}) => {
     sql: [],
     whr: [],
     ins: [],
-    upd: [],
+    set: [],
     arg,
     opt
   }
@@ -69,9 +69,9 @@ const context = (method, parentCtx = {}) => {
         ctx.ins.push(method.args)
         break
       // update
-      case 'upd':
+      case 'set':
         ctx.type = 'update'
-        ctx.upd.push(method.args)
+        ctx.set.push(method.args)
         break
       // delete
       case 'del':

@@ -11,12 +11,12 @@ module.exports = class {
   async transaction(fn) {
     const client = await pool.connect()
     try {
-      await client.query('BEGIN')
+      await client.query('begin')
       const result = await fn(client)
-      await client.query('COMMIT')
+      await client.query('commit')
       return result
     } catch (e) {
-      await client.query('ROLLBACK')
+      await client.query('rollback')
       throw e
     } finally {
       client.release()

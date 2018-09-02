@@ -155,7 +155,7 @@ await Person.ins({ firstName: 'Rob' })
 // "insert into person (first_name) values ('Rob')"
 
 // UPDATE
-await Person({ id: 23 }).upd({ name: 'Rob' })
+await Person({ id: 23 }).set({ name: 'Rob' })
 // "update person where id = 23 set name = 'Rob'"
 
 ```
@@ -381,11 +381,11 @@ insert.run
 const age = 23
 const increment = 2
 sq`person`({ age })`count(*)`
-  .upd({ age: sq.l`age + ${increment}`, updateTime: sq.l`now()`})
+  .set({ age: sq.l`age + ${increment}`, updateTime: sq.l`now()`})
 // or
 sq.frm`person`
   .whr`age = ${age}`
-  .upd`age = age + ${increment}, update_time = now()`
+  .set`age = age + ${increment}, update_time = now()`
   .ret`count(*)
 ```
 
@@ -728,9 +728,9 @@ sq`person p join company c on p.employer_id = c.id`
   `p.id = ${23}``c.name`
 // select c.name from person p join company c on p.employer_id = c.id
 // where p.id = 23
-sq`person`({ name: 'Ed' }).upd({ name: 'Edward' })
+sq`person`({ name: 'Ed' }).set({ name: 'Edward' })
 Person({ name: 'Ed' })
-Person({ name: 'Ed' }).upd({ name: 'Edward', age: sq.l`age + 1` })
+Person({ name: 'Ed' }).set({ name: 'Edward', age: sq.l`age + 1` })
 Person.ins({ name: 'Ed' })
 Person.del({ name: 'Ed' })
 

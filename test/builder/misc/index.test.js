@@ -80,28 +80,28 @@ describe('insert query - tagged template', () => {
 
 describe('update query - tagged template', () => {
   query({
-    name: 'update - .frm``.upd``',
-    qry: sq.frm`person`.upd`age = age + 1`,
+    name: 'update - .frm``.set``',
+    qry: sq.frm`person`.set`age = age + 1`,
     txt: 'update person set age = age + 1'
   })
   query({
-    name: 'update - .frm`.whr``.upd``',
-    qry: sq.frm`person`.whr`age < 18`.upd`age = age + 1`,
+    name: 'update - .frm`.whr``.set``',
+    qry: sq.frm`person`.whr`age < 18`.set`age = age + 1`,
     txt: 'update person set age = age + 1 where age < 18'
   })
   query({
-    name: 'update - .frm``.upd``.whr``',
-    qry: sq.frm`person`.upd`age = age + 1`.whr`age < 18`,
+    name: 'update - .frm``.set``.whr``',
+    qry: sq.frm`person`.set`age = age + 1`.whr`age < 18`,
     txt: 'update person set age = age + 1 where age < 18'
   })
   query({
-    name: 'update - .frm``.upd``.ret``',
-    qry: sq.frm`person`.upd`age = age + 1`.ret`age`,
+    name: 'update - .frm``.set``.ret``',
+    qry: sq.frm`person`.set`age = age + 1`.ret`age`,
     txt: 'update person set age = age + 1 returning age'
   })
   query({
-    name: 'update - .frm``.whr``.upd``.ret``',
-    qry: sq.frm`person`.whr`age < 18`.upd`age = age + 1`.ret`age`,
+    name: 'update - .frm``.whr``.set``.ret``',
+    qry: sq.frm`person`.whr`age < 18`.set`age = age + 1`.ret`age`,
     txt: 'update person set age = age + 1 where age < 18 returning age'
   })
 })

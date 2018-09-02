@@ -242,7 +242,7 @@ select * from widget_corp_department natural join widget_corp_order
 
 ## Update Clauses
 
-### .upd
+### .set
 
 
 
