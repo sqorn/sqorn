@@ -14,7 +14,6 @@ const val = require('./clause/val')
 const upd = require('./clause/upd')
 const set = require('./clause/set')
 const sql = require('./clause/sql')
-const raw = require('./clause/raw')
 
 const query = (...clauses) => ctx => {
   const txt = clauses
@@ -26,7 +25,6 @@ const query = (...clauses) => ctx => {
 
 module.exports = {
   sql: query(sql),
-  raw: query(raw),
   select: query(wth, sel, frm, whr, grp, hav, ord, lim, off),
   delete: query(wth, del, whr, ret),
   insert: query(wth, ins, val, ret),

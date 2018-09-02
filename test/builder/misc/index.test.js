@@ -13,19 +13,6 @@ describe('sql query - tagged template', () => {
   })
 })
 
-describe('raw query - tagged template', () => {
-  query({
-    name: 'raw    - .raw``',
-    qry: sq.raw`select * from person`,
-    txt: 'select * from person'
-  })
-  query({
-    name: 'raw    - .raw``',
-    qry: sq.raw`select * from person where name = 'Bob' and age > 7`,
-    txt: `select * from person where name = 'Bob' and age > 7`
-  })
-})
-
 describe('select query - tagged template', () => {
   query({
     name: 'select - .frm``',
@@ -189,35 +176,11 @@ describe('sql query - tagged template args', () => {
   })
 })
 
-describe('raw query - tagged template args', () => {
-  query({
-    name: 'select - .raw`${int}`',
-    qry: sq.raw`select * from person where age > ${7}`,
-    txt: 'select * from person where age > 7',
-    arg: []
-  })
-  query({
-    name: 'select - .raw`${int}${string}`',
-    qry: sq.raw`select * from person where age > ${7} or name = '${'Bob'}'`,
-    txt: `select * from person where age > 7 or name = 'Bob'`,
-    arg: []
-  })
-})
-
 describe('query - tagged template sql arg', () => {
   query({
     name: 'select - .l`${sq``}`',
     qry: sq`(${sq`person``age > 7`})`.ret`name`,
     txt: 'select name from (select * from person where age > 7)',
-    arg: []
-  })
-})
-
-describe('query - tagged template raw arg', () => {
-  query({
-    name: 'select - .frm`${.raw`${string}`}`',
-    qry: sq.frm`${sq.raw`person`}`,
-    txt: 'select * from person',
     arg: []
   })
 })

@@ -3,15 +3,26 @@ const { sq, query } = require('../tape')
 describe('tutorial', () => {
   describe('Manual Queries', () => {
     query({
-      name: 'manual query parameterized argument',
+      name: 'parameterized argument',
       qry: sq.l`select * from person where age >= ${20} and age < ${30}`,
       txt: 'select * from person where age >= $1 and age < $2',
       arg: [20, 30]
     })
     query({
-      name: 'manual query raw argument',
+      name: 'raw argument',
       qry: sq.l`select * from $${'test_table'}`,
       txt: 'select * from test_table'
+    })
+    query({
+      name: 'string argument',
+      qry: sq.l('select * from person where age >= 20 and age < 30'),
+      txt: 'select * from person where age >= 20 and age < 30'
+    })
+    query({
+      name: 'multiple calls',
+      qry: sq.l`select * from person`.l`where age >= ${20}`.l`and age < ${30}`,
+      txt: 'select * from person where age >= $1 and age < $2',
+      arg: [20, 30]
     })
   })
 

@@ -12,10 +12,10 @@ const context = (method, parentCtx = {}) => {
   } = parentCtx
   const ctx = {
     type: 'select',
+    sql: [],
     whr: [],
     ins: [],
     upd: [],
-    txt: '',
     arg,
     opt
   }
@@ -32,11 +32,7 @@ const context = (method, parentCtx = {}) => {
       // escape
       case 'l':
         ctx.type = 'sql'
-        ctx.l = method.args
-        break
-      case 'raw':
-        ctx.type = 'raw'
-        ctx.raw = method.args
+        ctx.sql.push(method.args)
         break
       // shared
       case 'wth':
@@ -53,14 +49,19 @@ const context = (method, parentCtx = {}) => {
       // select
       case 'grp':
         ctx.grp = method.args
+        break
       case 'hav':
         ctx.hav = method.args
+        break
       case 'ord':
         ctx.ord = method.args
+        break
       case 'lim':
         ctx.lim = method.args
+        break
       case 'off':
         ctx.off = method.args
+        break
       // insert
       case 'ins':
       case 'val':

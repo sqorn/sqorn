@@ -48,7 +48,7 @@ Sqorn compiles this to a parameterized query safe from SQL injection. `.qry` ret
 ```js
 getPeople.qry
 
-{ txt: 'select * from person where age >= $1 and age < $2`',
+{ txt: 'select * from person where age >= $1 and age < $2',
   arg: [20, 30] }
 ```
 
@@ -73,12 +73,29 @@ console.log((await getPeople)[0])
 When you need a raw unparameterized argument, prefix it with `$`.
 
 ```js
-sql`select * from $${'test_table'}`.qry
+sq.l`select * from $${'test_table'}`.qry
 
 { txt: 'select * from test_table',
   arg: [] }
 ```
 
+`sq.l` also accepts a raw sql string argument.
+
+```js
+sq.l('select * from person where age >= 20 and age < 30').qry
+
+{ txt: 'select * from person where age >= 20 and age < 30',
+  arg: [] }
+```
+
+When called multiple times, `sq.l` results are joined together with spaces.
+
+```js
+sq.l`select * from person`.l`where age >= ${20}`.l`and age < ${30}`.qry
+
+{ txt: 'select * from person where age >= $1 and age < $2',
+  arg: [20, 30] }
+```
 
 ## Select Queries
 
