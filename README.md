@@ -2,9 +2,11 @@
 
 Sqorn is a Javascript library for building SQL queries.
 
-**Composable:** Build complex queries from simple parts. Extend existing queries or embed subqueries.
+**Composable:** Build complex queries from simple parts. Combine, extend, and embed queries.
 
 **Boilerplate free:** Sqorn provides **concise** syntax for common CRUD operations.
+
+**Fast:** Approximately 10x faster than [Knex.js](https://knexjs.org/)
 
 ## Install
 
