@@ -66,18 +66,6 @@ Finally, the contributions from all clauses are joined together to construct a c
   arg: [7, 13] }
 ```
 
-## Is Sqorn production ready?
-
-Not yet. It still needs:
-
-* A stable API
-* Comprehensive tests
-* Benchmarks
-* A track record
-* Active users
-
-Join us on [Github](https://github.com/lusakasa/sqorn)
-
 ## Are there Complex Example Queries?
 
 This section is still a work in progress
