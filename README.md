@@ -47,30 +47,24 @@ await Person({ id: 23 }).set({ name: 'Rob' })
 Build complex queries from simple parts.
 
 ```js
-// CHAIN CLAUSES
-const OldBooks = sq.frm`book`.whr`publish_year < 1900`
-const OldFantasyBooks = OldBooks.whr`genre = 'Fantasy'`
-const NumOldFantasyBooks = OldFantasyBooks.ret`count(*) num`
-const [{ num }] = await NumOldFantasyBooks
-// select count(*) num from book
-// where publish_year < 1900 and genre = 'Fantasy'
-
-// BUILD NEW QUERIES FROM EXISTING QUERIES
-const Language = language => sq.whr({ language })
-const DistinctAuthors = sq.ret`distinct author`
-const OldEnglishBookAuthors = sq.ext(
-  OldBooks,
-  Language('English'),
-  DistinctAuthors,
-)
-const authors = await OldEnglishBookAuthors
+// CHAIN QUERIES
+sq.frm`book`.ret`distinct author`
+  .whr({ genre: 'Fantasy', language: 'French' })
 // select distinct author from book
-// where publish_year < 1900 and language = 'English'
+// where language = 'French' and genre = 'Fantsy'
 
-// EMBED SUBQUERIES
-const tomorrow = sq.ret`now() + '1 day'`
-const times = sq.ret`now() today, ${tomorrow} tomorrow`
-const [{ now, tomorrow }] = await time
+// COMBINE QUERIES
+sq.ext(
+  sq.frm`book`,
+  sq.ret`distinct author`,
+  sq.whr({ genre: 'Fantasy' }),
+  sq.whr({ language: 'French' })
+)
+// select distinct author from book
+// where language = 'French' and genre = 'Fantsy'
+
+// EMBED Queries
+sq.ret`now() today, ${sq.ret`now() + '1 day'`} tomorrow`
 // select now() today, (select now() + '1 day') tomorrow
 ```
 
