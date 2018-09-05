@@ -1,7 +1,7 @@
 const Benchmark = require('benchmark')
 const knex = require('knex')({ client: 'pg' })
 const squel = require('squel').useFlavour('postgres')
-const sq = require('sqorn')()
+const sq = require('../src')()
 
 const suite = new Benchmark.Suite()
 
@@ -13,7 +13,6 @@ suite
       .select('title', 'author', 'year')
       .whereRaw('author = ?', ['Jo'])
       .toSQL()
-      .toNative()
   })
   .add('Knex 2', function() {
     knex
@@ -21,7 +20,6 @@ suite
       .select('title', 'author', 'year')
       .where({ author: 'Joe' })
       .toSQL()
-      .toNative()
   })
   .add('Squel', function() {
     squel
@@ -42,6 +40,13 @@ suite
   })
   .add('Sqorn 4', function() {
     sq`books`({ author: 'Joe' })`title, author, year`.qry
+  })
+  .add('Sqorn 5', function() {
+    sq.ext(
+      sq.frm`books`,
+      sq.whr`author = ${'Jo'}`,
+      sq.ret`title, author, year`
+    ).qry
   })
   // add listeners
   .on('cycle', function(event) {

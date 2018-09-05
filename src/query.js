@@ -16,11 +16,14 @@ const set = require('./clause/set')
 const sql = require('./clause/sql')
 
 const query = (...clauses) => ctx => {
-  const txt = clauses
-    .map(clause => clause(ctx))
-    .filter(txt => txt)
-    .join(' ')
-  return { txt, arg: ctx.arg }
+  let txt = ''
+  for (const clause of clauses) {
+    const str = clause && clause(ctx)
+    if (str) {
+      txt += str + ' '
+    }
+  }
+  return { txt: txt.slice(0, -1), arg: ctx.arg }
 }
 
 module.exports = {

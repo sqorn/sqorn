@@ -12,17 +12,19 @@ const inserts = ctx => {
   if (typeof firstArg === 'string') {
     // string column names
     const columns = first.join(', ')
-    const values = rest
-      .map(args => '(' + columnNamesFromArgList(ctx, args, first.length) + ')')
-      .join(', ')
-    return { columns, values }
+    let txt = ''
+    for (const args of rest) {
+      txt += '(' + columnNamesFromArgList(ctx, args, first.length) + '), '
+    }
+    return { columns, values: txt.slice(0, -2) }
   } else if (isTaggedTemplate(first)) {
     // template string column names
     const columns = buildTaggedTemplate(ctx, first)
-    const values = rest
-      .map(val => '(' + buildTaggedTemplate(ctx, val) + ')')
-      .join(', ')
-    return { columns, values }
+    let txt = ''
+    for (const args of rest) {
+      txt += '(' + buildTaggedTemplate(ctx, args) + '), '
+    }
+    return { columns, values: txt.slice(0, -2) }
   } else if (typeof firstArg === 'object') {
     // object inserts
     const columns = columnNamesFromObjects(ctx)
