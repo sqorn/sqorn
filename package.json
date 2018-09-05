@@ -1,6 +1,6 @@
 {
   "name": "sqorn",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "A Javascript Library for Building SQL Queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
