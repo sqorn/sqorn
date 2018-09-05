@@ -1,3 +1,5 @@
+const lodashSnakeCase = require('lodash.snakecase')
+
 const parameter = (ctx, val) => {
   if (val === undefined) return 'default'
   ctx.arg.push(val)
@@ -10,7 +12,7 @@ const isTaggedTemplate = args =>
 const buildTaggedTemplate = (ctx, [strings, ...args]) => {
   let i = 0
   let txt = ''
-  for (; i < args.length; i++) {
+  for (; i < args.length; ++i) {
     const arg = args[i]
     const prevString = strings[i]
     const lastCharIndex = prevString.length - 1
@@ -25,8 +27,7 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
       txt += prevString + parameter(ctx, arg)
     }
   }
-  txt += strings[i]
-  return txt
+  return txt + strings[i]
 }
 
 const build = (ctx, args) => {
@@ -43,9 +44,18 @@ const build = (ctx, args) => {
   throw Error('Invalid args:', args)
 }
 
+const snakeCaseCache = {}
+const snakeCase = str =>
+  snakeCaseCache[str] ||
+  (snakeCaseCache[str] = str
+    .split('.')
+    .map(s => lodashSnakeCase(s))
+    .join('.'))
+
 module.exports = {
   parameter,
   isTaggedTemplate,
   buildTaggedTemplate,
-  build
+  build,
+  snakeCase
 }

@@ -1,6 +1,28 @@
+const lodashCamelCase = require('lodash.camelcase')
+
+const camelCaseCache = {}
+const camelCase = str =>
+  camelCaseCache[str] || (camelCaseCache[str] = lodashCamelCase(str))
+
+const patchCamelCase = pg => {
+  try {
+    const { prototype } = pg.Query
+    const { handleRowDescription } = prototype
+    prototype.handleRowDescription = function(msg) {
+      for (const field of msg.fields) {
+        field.name = camelCase(field.name)
+      }
+      return handleRowDescription.call(this, msg)
+    }
+  } catch (error) {
+    throw Error('Failed to monkey patch pg camelCase results')
+  }
+}
+
 module.exports = class {
   constructor(connection) {
     const pg = require('pg')
+    patchCamelCase(pg)
     this.pool = new pg.Pool(connection)
   }
   async query({ txt, arg }, trx) {

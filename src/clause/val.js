@@ -1,5 +1,9 @@
-const snakeCase = require('lodash.snakecase')
-const { isTaggedTemplate, buildTaggedTemplate, parameter } = require('./util')
+const {
+  isTaggedTemplate,
+  buildTaggedTemplate,
+  parameter,
+  snakeCase
+} = require('./util')
 
 module.exports = ctx => {
   const { columns, values } = inserts(ctx)

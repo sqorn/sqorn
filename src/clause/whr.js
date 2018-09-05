@@ -1,5 +1,9 @@
-const snakeCase = require('lodash.snakecase')
-const { parameter, isTaggedTemplate, buildTaggedTemplate } = require('./util')
+const {
+  parameter,
+  isTaggedTemplate,
+  buildTaggedTemplate,
+  snakeCase
+} = require('./util')
 
 // 1. tagged template
 // 2. ...[c in conditions] where c in:

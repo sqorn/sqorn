@@ -22,13 +22,6 @@ async function main() {
     last_name       text,
     birthday        date
   )`
-  const { table, col } = sq.schema
-  await table`author`(
-    col`id``serial`,
-    col`firstName``text`,
-    col`lastName``text`,
-    col`birthday``date`
-  )
   // create book table
   await sq.l`create table book (
     id              serial primary key,

@@ -7,21 +7,21 @@ const suite = new Benchmark.Suite()
 
 // add tests
 suite
-  .add('Knex 1', function() {
+  .add('Knex 1 ', function() {
     knex
       .from('books')
       .select('title', 'author', 'year')
       .whereRaw('author = ?', ['Jo'])
       .toSQL()
   })
-  .add('Knex 2', function() {
+  .add('Knex 2 ', function() {
     knex
       .from('books')
       .select('title', 'author', 'year')
       .where({ author: 'Joe' })
       .toSQL()
   })
-  .add('Squel', function() {
+  .add('Squel  ', function() {
     squel
       .select()
       .from('books')

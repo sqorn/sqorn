@@ -2,7 +2,7 @@
 
 Sqorn is a Javascript library for building SQL queries.
 
-**Composable:** Build complex queries from simple parts. Combine, extend, and embed queries.
+**Composable:** Build complex queries from simple parts. Chain, extend, and embed queries.
 
 **Boilerplate free:** Sqorn provides **concise** syntax for common CRUD operations.
 
@@ -24,6 +24,8 @@ Then read the [tutorial](https://sqorn.org/docs/tutorial.html) and [try the onli
 CRUD Operations are dead simple.
 
 ```js
+const sq = require('sqorn')()
+
 const Person = sq`person`, Book = sq`book`
 
 // SELECT
@@ -48,12 +50,14 @@ Build complex queries from simple parts.
 
 ```js
 // CHAIN QUERIES
-sq.frm`book`.ret`distinct author`
-  .whr({ genre: 'Fantasy', language: 'French' })
+sq.frm`book`
+  .ret`distinct author`
+  .whr({ genre: 'Fantasy' })
+  .whr({ language: 'French' })
 // select distinct author from book
 // where language = 'French' and genre = 'Fantsy'
 
-// COMBINE QUERIES
+// EXTEND QUERIES
 sq.ext(
   sq.frm`book`,
   sq.ret`distinct author`,
