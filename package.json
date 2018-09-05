@@ -35,7 +35,6 @@
     "strings"
   ],
   "devDependencies": {
-    "benchmark": "^2.1.4",
     "jest": "^23.4.1",
     "pg": "^7.4.3",
     "webpack": "^4.16.5",

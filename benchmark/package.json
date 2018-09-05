@@ -1,0 +1,14 @@
+{
+  "name": "sqorn-benchmarks",
+  "version": "1.0.0",
+  "license": "MIT",
+  "dependencies": {
+    "knex": "latest",
+    "sql": "^0.78.0",
+    "sqorn": "latest",
+    "squel": "latest"
+  },
+  "devDependencies": {
+    "benchmark": "^2.1.4"
+  }
+}

@@ -111,22 +111,7 @@ declare module 'sqorn' {
     val(strings: string[], ...args: any[]): sq
 
     /**
-     * OPTIONS configuration - configure how the query is compiled
-     * 
-     * This method is only a placeholder currently, custom formatting and debugging
-     * are unimplemented and may be moved to sqorn initialization
-     * 
-     * @example
-     * sq.frm`person`.ret`age`.opt({ uppercase: true, separator: '\n' })
-     * // SELECT age
-     * // FROM person
-     * sq.col``.opt({ debug: true }).str
-     * // (throws Error('Invalid query'))
-     */
-    opt({ debug, separator, uppercase }: { debug?: boolean, separator?: string, uppercase?: boolean}): sq
-
-    /**
-     * OPTIONS configuration - marks the query as a delete query
+     * DELETE - marks the query as a delete query
      * 
      * @example
      * sq.del.frm`person`

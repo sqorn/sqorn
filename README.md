@@ -56,7 +56,7 @@ const [{ num }] = await NumOldFantasyBooks
 // BUILD NEW QUERIES FROM EXISTING QUERIES
 const Language = language => sq.whr({ language })
 const DistinctAuthors = sq.ret`distinct author`
-const OldEnglishBookAuthors = sq.use(
+const OldEnglishBookAuthors = sq.ext(
   OldBooks,
   Language('English'),
   DistinctAuthors,

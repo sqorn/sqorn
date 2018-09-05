@@ -132,7 +132,7 @@ ${'```js'}
 ${'const Person = sq`person`, Book = sq`book`'}
 
 // SELECT
-${'const children = await Person`age < 13`'}
+${'const children = await Person`age < ${13}`'}
 "select * from person where age < 13"
 
 // DELETE
@@ -166,7 +166,7 @@ ${'const { count } = await numOldFantasyBooks.one()'}
 // BUILD NEW QUERIES FROM EXISTING QUERIES
 const lang = language => sq.whr({ language })
 ${'const distinctAuthors = sq.ret`distinct author`'}
-const oldEnglishBookAuthors = sq.use(
+const oldEnglishBookAuthors = sq.ext(
   oldBooks, lang('English'), distinctAuthors)
 const authors = await oldEnglishBookAuthors.all()
 

@@ -105,7 +105,7 @@ const OrderBy = sq.ord`score asc`
 const Limit = limit => limit && sq.lim(limit)
 const Return = sq.ret`id, title, topic, user`
 
-const getTopPosts = ({ time, topic, user, limit = 25 }) => sq.use(
+const getTopPosts = ({ time, topic, user, limit = 25 }) => sq.ext(
   Post,
   WhereUser(user),
   WhereTopic(topic),
@@ -147,7 +147,7 @@ const language = language => sq.whr({ language })
 const productionTable = production => sq.frm(production ? 'book' : 'book_test')
 const columns = sq.ret`title, author`
 
-const sq.use(
+const sq.ext(
   productionTable(true),
   columns
   minAge(8),
@@ -161,13 +161,13 @@ const Gender = gender => sq.whr`gender = ${gender}`
 const isChild = sq.whr`age < 13`
 const Name = name => sq.whr`name = ${name}`
 
-const Child = sq.use(Person, isChild)
-const Girl = sq.use(Kid, Gender('female'))
-const Boy = sq.use(Kid, Gender('male'))
+const Child = sq.ext(Person, isChild)
+const Girl = sq.ext(Kid, Gender('female'))
+const Boy = sq.ext(Kid, Gender('male'))
 
 const Movie = sq.frm`movie`
 const Genre = genre => sq.whr`genre = ${genre}`
-const Animation = sq.use(Movie, Genre('animation'))
+const Animation = sq.ext(Movie, Genre('animation'))
 
 const kids = sq.frm`person`.whr`age < ${age}`
 const boys = kids.whr`gender = ${gender}`

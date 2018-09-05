@@ -1,5 +1,3 @@
-const { isBuilder } = require('../constants')
-
 const parameter = (ctx, val) => {
   if (val === undefined) return 'default'
   ctx.arg.push(val)
@@ -13,18 +11,18 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
   let i = 0
   let txt = ''
   for (; i < args.length; i++) {
-    const argument = args[i]
+    const arg = args[i]
     const prevString = strings[i]
     const lastCharIndex = prevString.length - 1
     if (prevString[lastCharIndex] === '$') {
-      // raw argument
+      // raw arg
       txt += prevString.substr(0, lastCharIndex) + args[i]
-    } else if (argument[isBuilder]) {
-      // sql builder argument
-      txt += prevString + argument.bld(ctx).txt
+    } else if (arg && typeof arg.bld === 'function') {
+      // sql builder arg
+      txt += prevString + arg.bld(ctx).txt
     } else {
-      // parameterized argument
-      txt += prevString + parameter(ctx, argument)
+      // parameterized arg
+      txt += prevString + parameter(ctx, arg)
     }
   }
   txt += strings[i]

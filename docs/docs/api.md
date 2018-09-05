@@ -332,8 +332,6 @@ __Returns:__
 
 ## Miscellaneous
 
-### .opt
-
 ### .trx
 
 ### .end

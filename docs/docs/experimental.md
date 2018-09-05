@@ -173,7 +173,7 @@ const { count } = await numOldFantasyBooks.one()
 // BUILD NEW QUERIES FROM EXISTING QUERIES
 const lang = language => sq.whr({ language })
 const distinctAuthors = sq.ret`distinct author`
-const oldEnglishBookAuthors = sq.use(
+const oldEnglishBookAuthors = sq.ext(
   oldBooks, lang('English'), distinctAuthors)
 const authors = await oldEnglishBookAuthors.all()
 

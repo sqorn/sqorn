@@ -1,7 +1,6 @@
 const createClient = require('./client')
 const context = require('./context')
 const query = require('./query')
-const { isBuilder } = require('./constants')
 
 const createBuilder = config => {
   const builder = {
@@ -11,7 +10,6 @@ const createBuilder = config => {
       Object.setPrototypeOf(fn, builder)
       return fn
     },
-    [isBuilder]: true,
     client: createClient(config),
     // compilation methods
     bld(inheritedCtx) {
@@ -49,7 +47,7 @@ const createBuilder = config => {
     or(a, b) {
       throw Error('Unimplemented')
     },
-    // getter chain methods
+    // special query building methods
     get del() {
       return this.create({ type: 'del', prev: this.method })
     }
@@ -69,7 +67,7 @@ const createBuilder = config => {
     'ins',
     'val',
     'set',
-    'opt'
+    'ext'
   ].forEach(key => {
     builder[key] = function(...args) {
       return this.create({ type: key, args, prev: this.method })

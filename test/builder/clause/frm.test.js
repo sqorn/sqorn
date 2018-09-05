@@ -13,6 +13,11 @@ describe('frm', () => {
       txt: 'select * from book, author'
     })
     query({
+      name: '2 calls',
+      qry: sq.frm`book`.frm`author`,
+      txt: 'select * from author'
+    })
+    query({
       name: 'join',
       qry: sq.frm`book join author on book.id = author.id`,
       txt: 'select * from book join author on book.id = author.id'

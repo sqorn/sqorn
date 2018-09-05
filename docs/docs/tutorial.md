@@ -427,7 +427,7 @@ sq.frm`person`
 
 ### With (CTEs)
 
-### sq.use
+### sq.ext
 
 ## Complex Clauses
 
