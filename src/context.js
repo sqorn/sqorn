@@ -1,4 +1,4 @@
-/** Transforms array of method call objects to context object */
+/** Transforms method call linked list to context object */
 const context = (method, inherit = { arg: [] }, existingCtx) => {
   // initialize context inheriting some properties from parent query
   const ctx = existingCtx || {
