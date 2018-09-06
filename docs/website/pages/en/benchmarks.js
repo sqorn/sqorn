@@ -6,7 +6,7 @@ const squel = require('squel').useFlavour('postgres')
 const sq = require('sqorn')()
 
 new Benchmark.Suite()
-  .add('Sqorn', function() {
+  .add('Sqorn - args', function() {
     sq.frm('books').whr({ author: 'Joe' }).ret('title', 'author', 'year').qry
   })
   .add('Knex', function() {
@@ -15,7 +15,7 @@ new Benchmark.Suite()
   .add('Squel', function() {
     squel.select().from('books').where('author = ?', 'Jo').fields(['title', 'author', 'year']).toParam()
   })
-  .add('Sqorn 2', function() {
+  .add('Sqorn - template string', function() {
     sq.frm\\\`books\\\`.whr\\\`author = ${'Joe'}\\\`.ret\\\`title, author, year\\\`.qry
   })
   .on('cycle', function(event) {
