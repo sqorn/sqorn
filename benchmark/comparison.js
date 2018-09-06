@@ -30,23 +30,27 @@ suite
       .toParam()
   })
   .add('Sqorn 1', function() {
-    sq.frm`books`.whr`author = ${'Jo'}`.ret`title, author, year`.qry
+    sq.from`books`.where`author = ${'Jo'}`.return`title, author, year`.query
   })
   .add('Sqorn 2', function() {
-    sq`books``author = ${'Jo'}``title, author, year`.qry
+    sq`books``author = ${'Jo'}``title, author, year`.query
   })
   .add('Sqorn 3', function() {
-    sq.frm('books').whr`author = ${'Jo'}`.ret('title', 'author', 'year').qry
+    sq.from('books').where`author = ${'Jo'}`.return(
+      'title',
+      'author',
+      'year'
+    ).query
   })
   .add('Sqorn 4', function() {
-    sq`books`({ author: 'Joe' })`title, author, year`.qry
+    sq`books`({ author: 'Joe' })`title, author, year`.query
   })
   .add('Sqorn 5', function() {
-    sq.ext(
-      sq.frm`books`,
-      sq.whr`author = ${'Jo'}`,
-      sq.ret`title, author, year`
-    ).qry
+    sq.extend(
+      sq.from`books`,
+      sq.where`author = ${'Jo'}`,
+      sq.return`title, author, year`
+    ).query
   })
   // add listeners
   .on('cycle', function(event) {

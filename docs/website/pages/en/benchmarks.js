@@ -7,7 +7,7 @@ const sq = require('sqorn')()
 
 new Benchmark.Suite()
   .add('Sqorn - args', function() {
-    sq.frm('books').whr({ author: 'Joe' }).ret('title', 'author', 'year').qry
+    sq.from('books').where({ author: 'Joe' }).return('title', 'author', 'year').query
   })
   .add('Knex', function() {
     knex.from('books').select('title', 'author', 'year').where({ author: 'Joe' }).toSQL()
@@ -16,7 +16,7 @@ new Benchmark.Suite()
     squel.select().from('books').where('author = ?', 'Jo').fields(['title', 'author', 'year']).toParam()
   })
   .add('Sqorn - template string', function() {
-    sq.frm\\\`books\\\`.whr\\\`author = \${'Joe'}\\\`.ret\\\`title, author, year\\\`.qry
+    sq.from\\\`books\\\`.where\\\`author = \${'Joe'}\\\`.return\\\`title, author, year\\\`.query
   })
   .on('cycle', function(event) {
     console.log(String(event.target))

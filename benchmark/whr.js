@@ -5,7 +5,7 @@ const compare = (...queries) => {
   const suite = new Benchmark.Suite()
   queries.forEach(({ name, qry }) => {
     suite.add(name, function() {
-      qry.qry
+      qry.query
     })
   })
   suite
@@ -21,18 +21,18 @@ const compare = (...queries) => {
 compare(
   {
     name: 'sq.whr`age = ${7}`',
-    qry: sq.whr`age = ${7}`
+    query: sq.whr`age = ${7}`
   },
   {
     name: 'sq.whr({ age: 7})',
-    qry: sq.whr({ age: 7 })
+    query: sq.whr({ age: 7 })
   },
   {
     name: "sq.whr`age = ${7} and name = ${'Jo'}`",
-    qry: sq.whr`age = ${7} and name = ${'Jo'}`
+    query: sq.whr`age = ${7} and name = ${'Jo'}`
   },
   {
     name: "sq.whr({ age: 7, name: 'Jo' })",
-    qry: sq.whr({ age: 7, name: 'Jo' })
+    query: sq.whr({ age: 7, name: 'Jo' })
   }
 )

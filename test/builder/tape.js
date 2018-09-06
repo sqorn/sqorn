@@ -1,9 +1,9 @@
 const sqorn = require('../../src/index.js')
 const sq = sqorn()
 
-const query = ({ name, qry, txt, arg = [] }) =>
+const query = ({ name, query, text, args = [] }) =>
   test(name, () => {
-    expect(qry.qry).toEqual({ txt, arg })
+    expect(query.query).toEqual({ text, args })
   })
 
 module.exports = { sq, query }

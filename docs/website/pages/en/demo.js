@@ -5,10 +5,10 @@ const preamble = `
   const sq = sqorn()
 `
 
-const source = `const kid = sq.frm\\\`person\\\`.whr\\\`age < ${13}\\\`
-const boy = kid.whr\\\`gender = 'male'\\\`
+const source = `const kid = sq.from\\\`person\\\`.where\\\`age < ${13}\\\`
+const boy = kid.where\\\`gender = 'male'\\\`
 
-boy.ret\\\`id, name, age\\\`.qry
+boy.return\\\`id, name, age\\\`.query
 `
 
 const createRunkitEmbed = `

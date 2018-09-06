@@ -23,7 +23,7 @@ const query = (...clauses) => ctx => {
       txt += str + ' '
     }
   }
-  return { txt: txt.slice(0, -1), arg: ctx.arg }
+  return { text: txt.slice(0, -1), args: ctx.arg }
 }
 
 module.exports = {

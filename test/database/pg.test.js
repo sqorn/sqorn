@@ -27,7 +27,7 @@ describe('pg', async () => {
   })
   test('db empty', async () => {
     expect(
-      await sq.frm`pg_catalog.pg_tables`.whr`schemaname = 'public'`
+      await sq.from`pg_catalog.pg_tables`.where`schemaname = 'public'`
     ).toEqual([])
   })
   test('create table author', async () => {
@@ -54,7 +54,7 @@ describe('pg', async () => {
   })
   test('insert authors', async () => {
     expect(
-      await sq`author`.ret`first_name, last_name`.ins(
+      await sq`author`.return`first_name, last_name`.insert(
         {
           firstName: 'Brandon',
           lastName: 'Sanderson',
@@ -88,7 +88,7 @@ describe('pg', async () => {
   })
   test('insert books', async () => {
     expect(
-      await sq`book`.ret`title, publish_year`.ins(
+      await sq`book`.return`title, publish_year`.insert(
         {
           title: 'The Way of Kings',
           genre: 'Fantasy',
@@ -125,28 +125,28 @@ describe('pg', async () => {
   })
   test('select author', async () => {
     expect(
-      await sq.frm`author`.whr({ firstName: 'Brandon' }).ret`last_name`
+      await sq.from`author`.where({ firstName: 'Brandon' }).return`last_name`
     ).toEqual([{ lastName: 'Sanderson' }])
   })
   test('update book', async () => {
     expect(
-      await sq.frm`book`
-        .ret('id', 'publish_year')
-        .whr({ title: 'The Way of Kings' })
+      await sq.from`book`
+        .return('id', 'publish_year')
+        .where({ title: 'The Way of Kings' })
         .set({ genre: 'Adventure' })
     ).toEqual([{ id: 1, publishYear: 2010 }])
   })
   test('select book', async () => {
-    expect(await sq.frm`book`.whr({ genre: 'Adventure' }).ret`id`).toEqual([
-      { id: 1 }
-    ])
+    expect(
+      await sq.from`book`.where({ genre: 'Adventure' }).return`id`
+    ).toEqual([{ id: 1 }])
   })
   test('delete book', async () => {
     expect(
-      await sq.frm`book`.del.ret`id`.whr({ title: 'The Way of Kings' })
+      await sq.from`book`.delete.return`id`.where({ title: 'The Way of Kings' })
     ).toEqual([{ id: 1 }])
   })
   test('select book', async () => {
-    expect(await sq.frm`book`.ret`id`).toEqual([{ id: 2 }, { id: 3 }])
+    expect(await sq.from`book`.return`id`).toEqual([{ id: 2 }, { id: 3 }])
   })
 })

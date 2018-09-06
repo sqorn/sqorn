@@ -3,193 +3,194 @@ const { sq, query } = require('../tape')
 describe('sql query - tagged template', () => {
   query({
     name: 'sql    - .l``',
-    qry: sq.l`select * from person`,
-    txt: 'select * from person'
+    query: sq.l`select * from person`,
+    text: 'select * from person'
   })
   query({
     name: 'sql    - .l``',
-    qry: sq.l`select * from person where name = 'Bob' and age > 7`,
-    txt: `select * from person where name = 'Bob' and age > 7`
+    query: sq.l`select * from person where name = 'Bob' and age > 7`,
+    text: `select * from person where name = 'Bob' and age > 7`
   })
 })
 
 describe('select query - tagged template', () => {
   query({
-    name: 'select - .frm``',
-    qry: sq.frm`person`,
-    txt: 'select * from person'
+    name: 'select - .from``',
+    query: sq.from`person`,
+    text: 'select * from person'
   })
   query({
-    name: 'select - .frm``.ret``',
-    qry: sq.frm`person`.ret`age`,
-    txt: 'select age from person'
+    name: 'select - .from``.return``',
+    query: sq.from`person`.return`age`,
+    text: 'select age from person'
   })
   query({
-    name: 'select - .frm``.whr``',
-    qry: sq.frm`person`.whr`age > 7`,
-    txt: 'select * from person where age > 7'
+    name: 'select - .from``.where``',
+    query: sq.from`person`.where`age > 7`,
+    text: 'select * from person where age > 7'
   })
   query({
-    name: 'select - .frm``.whr``.ret``',
-    qry: sq.frm`person`.whr`age > 7`.ret`age`,
-    txt: 'select age from person where age > 7'
+    name: 'select - .from``.where``.return``',
+    query: sq.from`person`.where`age > 7`.return`age`,
+    text: 'select age from person where age > 7'
   })
 })
 
 describe('delete query - tagged template', () => {
   query({
-    name: 'delete - .frm``',
-    qry: sq.del.frm`person`,
-    txt: 'delete from person'
+    name: 'delete - .from``',
+    query: sq.delete.from`person`,
+    text: 'delete from person'
   })
   query({
-    name: 'delete - .frm``.ret``',
-    qry: sq.del.frm`person`.ret`age`,
-    txt: 'delete from person returning age'
+    name: 'delete - .from``.return``',
+    query: sq.delete.from`person`.return`age`,
+    text: 'delete from person returning age'
   })
   query({
-    name: 'delete - .frm``.whr``',
-    qry: sq.del.frm`person`.whr`age > 7`,
-    txt: 'delete from person where age > 7'
+    name: 'delete - .from``.where``',
+    query: sq.delete.from`person`.where`age > 7`,
+    text: 'delete from person where age > 7'
   })
   query({
-    name: 'delete - .frm``.whr``.ret',
-    qry: sq.del.frm`person`.whr`age > 7`.ret`age`,
-    txt: 'delete from person where age > 7 returning age'
+    name: 'delete - .from``.where``.return',
+    query: sq.delete.from`person`.where`age > 7`.return`age`,
+    text: 'delete from person where age > 7 returning age'
   })
 })
 
 describe('insert query - tagged template', () => {
   query({
-    name: 'insert - .frm``.ins``.val``',
-    qry: sq.frm`person`.ins`first_name, last_name`.val`'John', 'Doe'`,
-    txt: `insert into person (first_name, last_name) values ('John', 'Doe')`
+    name: 'insert - .from``.insert``.value``',
+    query: sq.from`person`.insert`first_name, last_name`.value`'John', 'Doe'`,
+    text: `insert into person (first_name, last_name) values ('John', 'Doe')`
   })
   query({
-    name: 'insert - .frm``.ins``.val``.val``',
-    qry: sq.frm`person`.ins`first_name, last_name`.val`'John', 'Doe'`
-      .val`'Carmen', 'San Diego'`,
-    txt: `insert into person (first_name, last_name) values ('John', 'Doe'), ('Carmen', 'San Diego')`
+    name: 'insert - .from``.insert``.value``.value``',
+    query: sq.from`person`.insert`first_name, last_name`.value`'John', 'Doe'`
+      .value`'Carmen', 'San Diego'`,
+    text: `insert into person (first_name, last_name) values ('John', 'Doe'), ('Carmen', 'San Diego')`
   })
   query({
-    name: 'insert - .frm``.ins``.val``.ret``',
-    qry: sq.frm`person`.ins`first_name, last_name`.val`'John', 'Doe'`.ret`age`,
-    txt: `insert into person (first_name, last_name) values ('John', 'Doe') returning age`
+    name: 'insert - .from``.insert``.value``.return``',
+    query: sq.from`person`.insert`first_name, last_name`.value`'John', 'Doe'`
+      .return`age`,
+    text: `insert into person (first_name, last_name) values ('John', 'Doe') returning age`
   })
 })
 
 describe('update query - tagged template', () => {
   query({
-    name: 'update - .frm``.set``',
-    qry: sq.frm`person`.set`age = age + 1`,
-    txt: 'update person set age = age + 1'
+    name: 'update - .from``.set``',
+    query: sq.from`person`.set`age = age + 1`,
+    text: 'update person set age = age + 1'
   })
   query({
-    name: 'update - .frm`.whr``.set``',
-    qry: sq.frm`person`.whr`age < 18`.set`age = age + 1`,
-    txt: 'update person set age = age + 1 where age < 18'
+    name: 'update - .from`.where``.set``',
+    query: sq.from`person`.where`age < 18`.set`age = age + 1`,
+    text: 'update person set age = age + 1 where age < 18'
   })
   query({
-    name: 'update - .frm``.set``.whr``',
-    qry: sq.frm`person`.set`age = age + 1`.whr`age < 18`,
-    txt: 'update person set age = age + 1 where age < 18'
+    name: 'update - .from``.set``.where``',
+    query: sq.from`person`.set`age = age + 1`.where`age < 18`,
+    text: 'update person set age = age + 1 where age < 18'
   })
   query({
-    name: 'update - .frm``.set``.ret``',
-    qry: sq.frm`person`.set`age = age + 1`.ret`age`,
-    txt: 'update person set age = age + 1 returning age'
+    name: 'update - .from``.set``.return``',
+    query: sq.from`person`.set`age = age + 1`.return`age`,
+    text: 'update person set age = age + 1 returning age'
   })
   query({
-    name: 'update - .frm``.whr``.set``.ret``',
-    qry: sq.frm`person`.whr`age < 18`.set`age = age + 1`.ret`age`,
-    txt: 'update person set age = age + 1 where age < 18 returning age'
+    name: 'update - .from``.where``.set``.return``',
+    query: sq.from`person`.where`age < 18`.set`age = age + 1`.return`age`,
+    text: 'update person set age = age + 1 where age < 18 returning age'
   })
 })
 
 describe('express query - tagged template', () => {
   query({
     name: 'select - `frm`',
-    qry: sq`person`,
-    txt: 'select * from person'
+    query: sq`person`,
+    text: 'select * from person'
   })
   query({
     name: 'select - `frm``whr`',
-    qry: sq`person``age > 7`,
-    txt: 'select * from person where age > 7'
+    query: sq`person``age > 7`,
+    text: 'select * from person where age > 7'
   })
   query({
     name: 'select - `frm``whr``ret`',
-    qry: sq`person``age > 7``age``age`,
-    txt: 'select age from person where age > 7'
+    query: sq`person``age > 7``age``age`,
+    text: 'select age from person where age > 7'
   })
   query({
-    name: 'select - `frm`.whr',
-    qry: sq`person`.whr`age > 7`,
-    txt: 'select * from person where age > 7'
+    name: 'select - `frm`.where',
+    query: sq`person`.where`age > 7`,
+    text: 'select * from person where age > 7'
   })
   query({
-    name: 'select - `frm``whr`.ret',
-    qry: sq`person``age > 7`.ret`age`,
-    txt: 'select age from person where age > 7'
+    name: 'select - `frm``whr`.return',
+    query: sq`person``age > 7`.return`age`,
+    text: 'select age from person where age > 7'
   })
 })
 
 describe('select query - tagged template args', () => {
   query({
-    name: 'select - .frm``.whr`${int}`',
-    qry: sq.frm`person`.whr`age > ${7}`,
-    txt: 'select * from person where age > $1',
-    arg: [7]
+    name: 'select - .from``.where`${int}`',
+    query: sq.from`person`.where`age > ${7}`,
+    text: 'select * from person where age > $1',
+    args: [7]
   })
   query({
-    name: 'select - .frm``.whr`${int}${int}`',
-    qry: sq.frm`person`.whr`age >= ${20} and age <= ${29}`,
-    txt: 'select * from person where age >= $1 and age <= $2',
-    arg: [20, 29]
+    name: 'select - .from``.where`${int}${int}`',
+    query: sq.from`person`.where`age >= ${20} and age <= ${29}`,
+    text: 'select * from person where age >= $1 and age <= $2',
+    args: [20, 29]
   })
   query({
-    name: 'select - .frm``.whr`${string}`',
-    qry: sq.frm`person`.whr`name = ${'bob'}`,
-    txt: 'select * from person where name = $1',
-    arg: ['bob']
+    name: 'select - .from``.where`${string}`',
+    query: sq.from`person`.where`name = ${'bob'}`,
+    text: 'select * from person where name = $1',
+    args: ['bob']
   })
   query({
-    name: 'select - .frm``.whr`${object}`',
-    qry: sq.frm`person`.whr`name = ${'bob'}`,
-    txt: 'select * from person where name = $1',
-    arg: ['bob']
+    name: 'select - .from``.where`${object}`',
+    query: sq.from`person`.where`name = ${'bob'}`,
+    text: 'select * from person where name = $1',
+    args: ['bob']
   })
 })
 
 describe('sql query - tagged template args', () => {
   query({
     name: 'select - .l`${int}`',
-    qry: sq.l`select * from person where age > ${7}`,
-    txt: 'select * from person where age > $1',
-    arg: [7]
+    query: sq.l`select * from person where age > ${7}`,
+    text: 'select * from person where age > $1',
+    args: [7]
   })
   query({
     name: 'select - .l`${int}${string}`',
-    qry: sq.l`select * from person where age > ${7} or name = ${'Bob'}`,
-    txt: `select * from person where age > $1 or name = $2`,
-    arg: [7, 'Bob']
+    query: sq.l`select * from person where age > ${7} or name = ${'Bob'}`,
+    text: `select * from person where age > $1 or name = $2`,
+    args: [7, 'Bob']
   })
 })
 
 describe('query - tagged template sql arg', () => {
   query({
     name: 'select - .l`${sq``}`',
-    qry: sq`(${sq`person``age > 7`})`.ret`name`,
-    txt: 'select name from (select * from person where age > 7)',
-    arg: []
+    query: sq`(${sq`person``age > 7`})`.return`name`,
+    text: 'select name from (select * from person where age > 7)',
+    args: []
   })
 })
 
 describe('query - tagged template $raw arg', () => {
   query({
-    name: 'select - .frm`$${string}`',
-    qry: sq.frm`$${'person'}`,
-    txt: 'select * from person',
-    arg: []
+    name: 'select - .from`$${string}`',
+    query: sq.from`$${'person'}`,
+    text: 'select * from person',
+    args: []
   })
 })

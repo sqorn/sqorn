@@ -4,106 +4,108 @@ describe('tutorial', () => {
   describe('Manual Queries', () => {
     query({
       name: 'parameterized argument',
-      qry: sq.l`select * from person where age >= ${20} and age < ${30}`,
-      txt: 'select * from person where age >= $1 and age < $2',
-      arg: [20, 30]
+      query: sq.l`select * from person where age >= ${20} and age < ${30}`,
+      text: 'select * from person where age >= $1 and age < $2',
+      args: [20, 30]
     })
     query({
       name: 'raw argument',
-      qry: sq.l`select * from $${'test_table'}`,
-      txt: 'select * from test_table'
+      query: sq.l`select * from $${'test_table'}`,
+      text: 'select * from test_table'
     })
     query({
       name: 'string argument',
-      qry: sq.l('select * from person where age >= 20 and age < 30'),
-      txt: 'select * from person where age >= 20 and age < 30'
+      query: sq.l('select * from person where age >= 20 and age < 30'),
+      text: 'select * from person where age >= 20 and age < 30'
     })
     query({
       name: 'multiple calls',
-      qry: sq.l`select * from person`.l`where age >= ${20}`.l`and age < ${30}`,
-      txt: 'select * from person where age >= $1 and age < $2',
-      arg: [20, 30]
+      query: sq.l`select * from person`.l`where age >= ${20}`
+        .l`and age < ${30}`,
+      text: 'select * from person where age >= $1 and age < $2',
+      args: [20, 30]
     })
   })
 
   describe('Select Queries', () => {
     describe('From', () => {
       query({
-        name: '.frm``',
-        qry: sq.frm`book`,
-        txt: 'select * from book'
+        name: '.from``',
+        query: sq.from`book`,
+        text: 'select * from book'
       })
       query({
-        name: ".frm('', '')",
-        qry: sq.frm('book', 'author'),
-        txt: 'select * from book, author'
+        name: ".from('', '')",
+        query: sq.from('book', 'author'),
+        text: 'select * from book, author'
       })
       query({
-        name: '.frm`join`',
-        qry: sq.frm`book left join author on book.author_id = author.id`,
-        txt: 'select * from book left join author on book.author_id = author.id'
+        name: '.from`join`',
+        query: sq.from`book left join author on book.author_id = author.id`,
+        text:
+          'select * from book left join author on book.author_id = author.id'
       })
       query({
-        name: '.frm``.frm``',
-        qry: sq.frm`book`.frm`person`,
-        txt: 'select * from person'
+        name: '.from``.from``',
+        query: sq.from`book`.from`person`,
+        text: 'select * from person'
       })
     })
     describe('Where', () => {
       query({
-        name: '.whr``',
-        qry: sq.frm`book`.whr`genre = ${'Fantasy'}`,
-        txt: 'select * from book where genre = $1',
-        arg: ['Fantasy']
+        name: '.where``',
+        query: sq.from`book`.where`genre = ${'Fantasy'}`,
+        text: 'select * from book where genre = $1',
+        args: ['Fantasy']
       })
       query({
-        name: '.whr``.whr``',
-        qry: sq.frm`book`.whr`genre = ${'Fantasy'}`.whr`year = ${2000}`,
-        txt: 'select * from book where genre = $1 and year = $2',
-        arg: ['Fantasy', 2000]
+        name: '.where``.where``',
+        query: sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`,
+        text: 'select * from book where genre = $1 and year = $2',
+        args: ['Fantasy', 2000]
       })
       query({
-        name: '.whr({})',
-        qry: sq.frm`book`.whr({ genre: 'Fantasy', year: 2000 }),
-        txt: 'select * from book where genre = $1 and year = $2',
-        arg: ['Fantasy', 2000]
+        name: '.where({})',
+        query: sq.from`book`.where({ genre: 'Fantasy', year: 2000 }),
+        text: 'select * from book where genre = $1 and year = $2',
+        args: ['Fantasy', 2000]
       })
       query({
-        name: '.whr({ camelCase })',
-        qry: sq.frm`person`.whr({ firstName: 'Kaladin' }),
-        txt: 'select * from person where first_name = $1',
-        arg: ['Kaladin']
+        name: '.where({ camelCase })',
+        query: sq.from`person`.where({ firstName: 'Kaladin' }),
+        text: 'select * from person where first_name = $1',
+        args: ['Kaladin']
       })
       const condMinYear = sq.l`year >= ${20}`
       const condMaxYear = sq.l`year < ${30}`
       query({
-        name: '.whr({ Builder })',
-        qry: sq.frm`person`.whr({ condMinYear, condMaxYear }),
-        txt: 'select * from person where year >= $1 and year < $2',
-        arg: [20, 30]
+        name: '.where({ Builder })',
+        query: sq.from`person`.where({ condMinYear, condMaxYear }),
+        text: 'select * from person where year >= $1 and year < $2',
+        args: [20, 30]
       })
       query({
-        name: '.whr({}).whr({})',
-        qry: sq.frm`person`.whr({ name: 'Rob' }, { name: 'Bob' }),
-        txt: 'select * from person where name = $1 or name = $2',
-        arg: ['Rob', 'Bob']
+        name: '.where({}).where({})',
+        query: sq.from`person`.where({ name: 'Rob' }, { name: 'Bob' }),
+        text: 'select * from person where name = $1 or name = $2',
+        args: ['Rob', 'Bob']
       })
     })
     describe('Returning', () => {
       query({
-        name: '.ret``',
-        qry: sq.frm`book`.ret`title, author`,
-        txt: 'select title, author from book'
+        name: '.return``',
+        query: sq.from`book`.return`title, author`,
+        text: 'select title, author from book'
       })
       query({
-        name: ".ret('', '')",
-        qry: sq.frm`book`.ret('title', 'author'),
-        txt: 'select title, author from book'
+        name: ".return('', '')",
+        query: sq.from`book`.return('title', 'author'),
+        text: 'select title, author from book'
       })
       query({
-        name: '.ret.ret',
-        qry: sq.frm`book`.ret('title', 'author').ret`id`,
-        txt: 'select id from book'
+        name: '.return.return',
+        query: sq.from`book`.return('title', 'author').return`id`,
+        text: 'select id from book'
       })
     })
     test('Express Syntax', () => {
@@ -111,77 +113,77 @@ describe('tutorial', () => {
       // a == b and b ==c --> a == c
       const a = sq`person`
       const b = sq('person')
-      const c = sq.frm`person`
-      expect(a.qry).toEqual(b.qry)
-      expect(b.qry).toEqual(c.qry)
+      const c = sq.from`person`
+      expect(a.query).toEqual(b.query)
+      expect(b.query).toEqual(c.query)
 
       const d = sq`person``name = ${name}`
       const e = sq`person`({ name })
-      const f = sq.frm`person`.whr`name = ${name}`
-      expect(d.qry).toEqual(e.qry)
-      expect(e.qry).toEqual(f.qry)
+      const f = sq.from`person`.where`name = ${name}`
+      expect(d.query).toEqual(e.query)
+      expect(e.query).toEqual(f.query)
 
       const g = sq`person``name = ${name}``age`
-      const h = sq.frm`person`.whr`name = ${name}`.ret`age`
+      const h = sq.from`person`.where`name = ${name}`.return`age`
       const i = sq
-        .frm('person')
-        .whr({ name })
-        .ret('age')
-      expect(g.qry).toEqual(h.qry)
-      expect(h.qry).toEqual(i.qry)
+        .from('person')
+        .where({ name })
+        .return('age')
+      expect(g.query).toEqual(h.query)
+      expect(h.query).toEqual(i.query)
     })
   })
 
   describe('Manipulation Queries', () => {
     describe('Delete', () => {
-      expect(sq.frm`person`.del.qry).toEqual(sq.del.frm`person`.qry)
+      expect(sq.from`person`.delete.query).toEqual(sq.delete.from`person`.query)
       query({
-        name: '.del',
-        qry: sq.frm`person`.del,
-        txt: 'delete from person'
+        name: '.delete',
+        query: sq.from`person`.delete,
+        text: 'delete from person'
       })
       query({
-        name: '.whr.del',
-        qry: sq.frm`person`.whr`id = ${723}`.del,
-        txt: 'delete from person where id = $1',
-        arg: [723]
+        name: '.where.delete',
+        query: sq.from`person`.where`id = ${723}`.delete,
+        text: 'delete from person where id = $1',
+        args: [723]
       })
       query({
-        name: '.ret.del',
-        qry: sq.frm`person`.ret`name`.del,
-        txt: 'delete from person returning name'
+        name: '.return.delete',
+        query: sq.from`person`.return`name`.delete,
+        text: 'delete from person returning name'
       })
       query({
-        name: 'express.del',
-        qry: sq`person`({ job: 'student' })`name`.del,
-        txt: 'delete from person where job = $1 returning name',
-        arg: ['student']
+        name: 'express.delete',
+        query: sq`person`({ job: 'student' })`name`.delete,
+        text: 'delete from person where job = $1 returning name',
+        args: ['student']
       })
       query({
-        name: '.del.del',
-        qry: sq`book`.del.del.del,
-        txt: 'delete from book'
+        name: '.delete.delete',
+        query: sq`book`.delete.delete.delete,
+        text: 'delete from book'
       })
     })
     describe('Insert', () => {
       query({
-        name: '.ins``',
-        qry: sq.frm`person`.ins`first_name, last_name`
-          .val`${'Shallan'}, ${'Davar'}`.val`${'Navani'}, ${'Kholin'}`,
-        txt:
+        name: '.insert``',
+        query: sq.from`person`.insert`first_name, last_name`
+          .value`${'Shallan'}, ${'Davar'}`.value`${'Navani'}, ${'Kholin'}`,
+        text:
           'insert into person (first_name, last_name) values ($1, $2), ($3, $4)',
-        arg: ['Shallan', 'Davar', 'Navani', 'Kholin']
+        args: ['Shallan', 'Davar', 'Navani', 'Kholin']
       })
       query({
-        name: ".ins('', '').val(1, '').val(1, '')",
-        qry: sq.frm`book`
-          .ins('title', 'year')
-          .val('The Way of Kings', 2010)
-          .val('Words of Radiance', null)
-          .val('Oathbringer'),
-        txt:
+        name: ".insert('', '').value(1, '').value(1, '')",
+        query: sq.from`book`
+          .insert('title', 'year')
+          .value('The Way of Kings', 2010)
+          .value('Words of Radiance', null)
+          .value('Oathbringer'),
+        text:
           'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
-        arg: [
+        args: [
           'The Way of Kings',
           2010,
           'Words of Radiance',
@@ -190,14 +192,14 @@ describe('tutorial', () => {
         ]
       })
       query({
-        name: '.ins({}).ins({}).ins({})',
-        qry: sq.frm`book`
-          .ins({ title: 'The Way of Kings', year: 2010 })
-          .ins({ title: 'Words of Radiance', year: null })
-          .ins({ title: 'Oathbringer' }),
-        txt:
+        name: '.insert({}).insert({}).insert({})',
+        query: sq.from`book`
+          .insert({ title: 'The Way of Kings', year: 2010 })
+          .insert({ title: 'Words of Radiance', year: null })
+          .insert({ title: 'Oathbringer' }),
+        text:
           'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
-        arg: [
+        args: [
           'The Way of Kings',
           2010,
           'Words of Radiance',
@@ -207,44 +209,47 @@ describe('tutorial', () => {
       })
       query({
         name: '',
-        qry: sq.frm`book`.ins({ title: 'Squirrels and Acorns' }).ret`id`,
-        txt: 'insert into book (title) values ($1) returning id',
-        arg: ['Squirrels and Acorns']
+        query: sq.from`book`.insert({ title: 'Squirrels and Acorns' })
+          .return`id`,
+        text: 'insert into book (title) values ($1) returning id',
+        args: ['Squirrels and Acorns']
       })
     })
     describe('Update', () => {
       query({
         name: '.set``',
-        qry: sq.frm`person`.set`age = age + 1, processed = true`
+        query: sq.from`person`.set`age = age + 1, processed = true`
           .set`name = ${'Sally'}`,
-        txt: 'update person set age = age + 1, processed = true, name = $1',
-        arg: ['Sally']
+        text: 'update person set age = age + 1, processed = true, name = $1',
+        args: ['Sally']
       })
       query({
         name: '.set({})',
-        qry: sq.frm`person`
-          .whr({ firstName: 'Matt' })
+        query: sq.from`person`
+          .where({ firstName: 'Matt' })
           .set({ firstName: 'Robert', nickname: 'Rob' }),
-        txt:
+        text:
           'update person set first_name = $1, nickname = $2 where first_name = $3',
-        arg: ['Robert', 'Rob', 'Matt']
+        args: ['Robert', 'Rob', 'Matt']
       })
       query({
         name: 'express.set({})',
-        qry: sq`person`({ firstName: 'Rob' })`id`.set({ firstName: 'Robert' }),
-        txt:
+        query: sq`person`({ firstName: 'Rob' })`id`.set({
+          firstName: 'Robert'
+        }),
+        text:
           'update person set first_name = $1 where first_name = $2 returning id',
-        arg: ['Robert', 'Rob']
+        args: ['Robert', 'Rob']
       })
       query({
         name: '.set({}).set({})',
-        qry: sq.frm`person`
-          .whr({ firstName: 'Matt' })
+        query: sq.from`person`
+          .where({ firstName: 'Matt' })
           .set({ firstName: 'Robert' })
           .set({ nickname: 'Rob' }),
-        txt:
+        text:
           'update person set first_name = $1, nickname = $2 where first_name = $3',
-        arg: ['Robert', 'Rob', 'Matt']
+        args: ['Robert', 'Rob', 'Matt']
       })
     })
   })

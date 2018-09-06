@@ -30,36 +30,36 @@ const apply = (ctx, method) => {
       ctx.sql.push(method.args)
       break
     // shared
-    case 'wth':
+    case 'with':
       throw Error('Unimplemented')
-    case 'frm':
+    case 'from':
       ctx.frm = method.args
       break
-    case 'whr':
+    case 'where':
       ctx.whr.push(method.args)
       break
-    case 'ret':
+    case 'return':
       ctx.ret = method.args
       break
     // select
-    case 'grp':
+    case 'group':
       ctx.grp = method.args
       break
-    case 'hav':
+    case 'having':
       ctx.hav = method.args
       break
-    case 'ord':
+    case 'order':
       ctx.ord = method.args
       break
-    case 'lim':
+    case 'limit':
       ctx.lim = method.args
       break
-    case 'off':
+    case 'offset':
       ctx.off = method.args
       break
     // insert
-    case 'ins':
-    case 'val':
+    case 'insert':
+    case 'value':
       ctx.type = 'insert'
       ctx.ins.push(method.args)
       break
@@ -69,11 +69,11 @@ const apply = (ctx, method) => {
       ctx.set.push(method.args)
       break
     // delete
-    case 'del':
+    case 'delete':
       ctx.type = 'delete'
       break
     // extend
-    case 'ext':
+    case 'extend':
       for (const builder of method.args) {
         context(builder.method, undefined, ctx)
       }

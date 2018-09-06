@@ -21,7 +21,7 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
       txt += prevString.substr(0, lastCharIndex) + args[i]
     } else if (arg && typeof arg.bld === 'function') {
       // sql builder arg
-      txt += prevString + arg.bld(ctx).txt
+      txt += prevString + arg.bld(ctx).text
     } else {
       // parameterized arg
       txt += prevString + parameter(ctx, arg)

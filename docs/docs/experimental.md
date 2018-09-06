@@ -62,7 +62,7 @@ const person = sq
   .col`age`                    `integer`
                                .chk`age >= 0`
   .col`mother`                 `integer`
-                               .del`cascade`
+                               .delete`cascade`
                                .fk `person(id)`
   .col`father`                 `integer`
   .fk `mother`                 `person(id)`
@@ -81,7 +81,7 @@ const person = sq.tbl`person`
   .col`age`                    `integer`
                                .chk`age >= 0`
   .col`mother`                 `integer`
-                               .del`cascade`
+                               .delete`cascade`
                                .fk `person(id)`
   .col`father`                 `integer`
   .fk `mother`                 `person(id)`
@@ -147,11 +147,11 @@ const children = await Person`age < ${13}`
 // "select * from person where age < 13"
 
 // DELETE
-const [deleted] = await Book({ id: 7 })`title`.del
+const [deleted] = await Book({ id: 7 })`title`.delete
 // "delete from book where id = 7 returning title"
 
 // INSERT
-await Person.ins({ firstName: 'Rob' })
+await Person.insert({ firstName: 'Rob' })
 // "insert into person (first_name) values ('Rob')"
 
 // UPDATE
@@ -164,21 +164,21 @@ Build complex queries from simple parts.
 
 ```js
 // CHAIN CLAUSES
-const Book = sq.frm`book`
-const OldBooks = books.whr`publishYear < 1900`
-const oldFantasyBooks = oldBooks.whr`genre = 'Fantasy'`
-const numOldFantasyBooks = oldFantasyBooks.ret`count(*) count`
+const Book = sq.from`book`
+const OldBooks = books.where`publishYear < 1900`
+const oldFantasyBooks = oldBooks.where`genre = 'Fantasy'`
+const numOldFantasyBooks = oldFantasyBooks.return`count(*) count`
 const { count } = await numOldFantasyBooks.one()
 
 // BUILD NEW QUERIES FROM EXISTING QUERIES
-const lang = language => sq.whr({ language })
-const distinctAuthors = sq.ret`distinct author`
-const oldEnglishBookAuthors = sq.ext(
+const lang = language => sq.where({ language })
+const distinctAuthors = sq.return`distinct author`
+const oldEnglishBookAuthors = sq.extend(
   oldBooks, lang('English'), distinctAuthors)
 const authors = await oldEnglishBookAuthors.all()
 
 // EMBED SUBQUERIES
-const tomorrow = sq.ret`now() + '1 day'`const time = sq.ret`now() now, ${tomorrow} tomorrow`
+const tomorrow = sq.return`now() + '1 day'`const time = sq.return`now() now, ${tomorrow} tomorrow`
 const { now, tomorrow } = await time.one()
 ```
 
@@ -189,15 +189,15 @@ select * from book
 ```
 
 ```javascript
-sq.frm`book`
-  .ret`*`
+sq.from`book`
+  .return`*`
 // or
 sq`book`
 ```
 
-`.frm` specifies the table to query and `.ret` specifies the selected columns. If `.ret` isn't called, select queries implicitly request all columns (`*`).
+`.from` specifies the table to query and `.return` specifies the selected columns. If `.return` isn't called, select queries implicitly request all columns (`*`).
 
-Using `sq` as a template literal tag is shorthand for calling `.frm`.
+Using `sq` as a template literal tag is shorthand for calling `.from`.
 
 ### Where
 
@@ -206,14 +206,14 @@ select age, job from person where first_name = 'Kaladin
 ```
 
 ```javascript
-sq.frm`person`
-  .whr`first_name = ${'Kaladin'}`
-  .ret`age, job`
+sq.from`person`
+  .where`first_name = ${'Kaladin'}`
+  .return`age, job`
 // or
 sq`person``first_name = ${'Kaladin'}``age, job`
 ```
 
-`.whr` specifies the `where` clause, which filters result rows. 
+`.where` specifies the `where` clause, which filters result rows. 
 
 All methods of `sq` escape template literal arguments, except when noted otherwise.
 
@@ -221,13 +221,13 @@ All methods of `sq` escape template literal arguments, except when noted otherwi
 ### Where Object
 
 ```javascript
-sq.frm`book`
-  .whr({ publishYear: 1984 })
+sq.from`book`
+  .where({ publishYear: 1984 })
 // or
 sq`book`({ publishYear: 1984 })
 ```
 
-`.whr` also accepts object arguments. By default `sq` converts method arguments of type `Object` from `CamelCase` to `snake_case`.
+`.where` also accepts object arguments. By default `sq` converts method arguments of type `Object` from `CamelCase` to `snake_case`.
 
 
 ### Where Compound
@@ -241,19 +241,19 @@ or (pages >= 200 and genre = 'fantasy')
 ```javascript
 const title = 'Oathbringer', minPages = 200, genre = 'fantasy'
 
-sq.frm`book`
-  .whr`not (title = ${title})`
-  .whr`or (pages >= ${minPages} and genre = ${genre})`
+sq.from`book`
+  .where`not (title = ${title})`
+  .where`or (pages >= ${minPages} and genre = ${genre})`
 // or
 sq`book`(
     sq.not({ title }),
     { minPages: sq.l`pages >= ${minPages}`, genre }
   )
 // or
-sq.frm`book`
-  .whr(sq.not({ title }))
-  .whr`or`
-  .whr({ minPages: sq.l`pages >= ${minPages}`, genre })
+sq.from`book`
+  .where(sq.not({ title }))
+  .where`or`
+  .where({ minPages: sq.l`pages >= ${minPages}`, genre })
 // or
 sq`book`(
   sq.or(
@@ -267,11 +267,11 @@ sq`book`(
 
 **NOTE: SQL query strings generated from the calls above, though logically equivalent, may have varying parantheses and spacing.**
 
-Conditions generated from multiple calls to `.whr` are joined with the `new line` character (`\n`).
+Conditions generated from multiple calls to `.where` are joined with the `new line` character (`\n`).
 
-`.whr` converts each object argument to the logical conjunction (`AND`) of the conditions represented by its properties.
+`.where` converts each object argument to the logical conjunction (`AND`) of the conditions represented by its properties.
 
-`.whr` uses logical disjunction (`OR`) to join the conditions represented by each object argument.
+`.where` uses logical disjunction (`OR`) to join the conditions represented by each object argument.
 
 `.not` negates one argument, `.and` conjuncts two arguments, and `.or` disjuncts two arguments.
 
@@ -334,12 +334,12 @@ select * from book where year >= 1800 and year <= 1984
 
 ```javascript
 sq`person`
-  .ins({ firstName, lastName, age })
+  .insert({ firstName, lastName, age })
   .one`id`
 // insert into person (first_name, last_name, age)
 // values ('John', 'Doe', 40) returning id
 sq`person`
-  .ins`first_name, last_name`
+  .insert`first_name, last_name`
   `upper(${firstName}), upper(${lastName})`
   .run
 // insert into person (first_name, lastName)
@@ -352,25 +352,25 @@ sq`person`
 ```javascript
 const people = [{ age: 13 }, { age: null, lastName: 'jo' }, { age: 23, lastName: 'smith' }]
 sq`person`
-  .ins(...people)
+  .insert(...people)
   .all`id`
 // insert into person (age, last_name)
 // values (13, DEFAULT), (NULL, 'jo'), (23, 'smith') returning id
 sq`person`
-  .ins`last_name`
+  .insert`last_name`
   (people, person => sq.l`upper(${person.lastName})`)
   .run
 // insert into person (lastName)
 // values (upper(), upper('Doe'))
 sq`person`
-  .ins`first_name`
+  .insert`first_name`
   `upper(${people[0].firstName})`
   `upper(${people[1].firstName})`
   `upper(${people[2].firstName})`
   .run
 // insert into person (first_name, lastName)
 // values(upper('John'), upper('Doe'))
-let insert = sq`person`.ins`first_name`
+let insert = sq`person`.insert`first_name`
 people.forEach(person => { insert = insert`upper(${person.firstName})` })
 insert.run
 ```
@@ -383,10 +383,10 @@ const increment = 2
 sq`person`({ age })`count(*)`
   .set({ age: sq.l`age + ${increment}`, updateTime: sq.l`now()`})
 // or
-sq.frm`person`
-  .whr`age = ${age}`
+sq.from`person`
+  .where`age = ${age}`
   .set`age = age + ${increment}, update_time = now()`
-  .ret`count(*)
+  .return`count(*)
 ```
 
 ```sql
@@ -411,7 +411,7 @@ where
 
 ```javascript
 q`author`.where`author_id in ${
-  q`book`.where`year < 1984`.ret`author_id`
+  q`book`.where`year < 1984`.return`author_id`
 }`.run
 ```
 
@@ -465,7 +465,7 @@ select age, count(*) from person group by age
 ```
 
 ```javascript
-sq`person`()`age, count(*)`.grp`age`
+sq`person`()`age, count(*)`.group`age`
 ```
 
 ### having
@@ -475,7 +475,7 @@ select age, count(*) count from person group by age having age < 18
 ```
 
 ```javascript
-sq`person`()`age, count(*) count`.grp`age``age < 18`
+sq`person`()`age, count(*) count`.group`age``age < 18`
 ```
 
 ### order by
@@ -485,7 +485,7 @@ select * from person order by last_name, first_name
 ```
 
 ```javascript
-sq`person`.ord`last_name, first_name`
+sq`person`.order`last_name, first_name`
 ```
 
 ### limit
@@ -495,7 +495,7 @@ select * from person order by last_name limit 10 offset 7
 ```
 
 ```javascript
-sq`person`.ord`last_name, first_name`.lim(10).off(7)
+sq`person`.order`last_name, first_name`.limit(10).offset(7)
 ```
 
 ### offset
@@ -662,16 +662,16 @@ sq`person`({ firstName })
 // select * from person where first_name = 'John'
 sq`person``age > ${age}``first_name`
 // select first_name from person where age > 40
-sq`person``id`.ins({ firstName, lastName, age })
+sq`person``id`.insert({ firstName, lastName, age })
 // insert into person (first_name, last_name, age)
 // values ('John', 'Doe', 40) returning id
 sq`person``id`
-  .ins`first_name, last_name``upper(${firstName}), upper(${lastName})`
+  .insert`first_name, last_name``upper(${firstName}), upper(${lastName})`
 // insert into person (first_name, lastName)
 // values(upper('John'), upper('Doe')) returning id
-sq`person`({ age })`id`.del
+sq`person`({ age })`id`.delete
 // delete from person where age = 40 returning id
-sq`person``age < ${age}`.del
+sq`person``age < ${age}`.delete
 // delete from person where age < 40
 sq`person p join company c on p.employer_id = c.id`
   `p.id = ${23}``c.name`
@@ -684,7 +684,7 @@ sq.l`name = ${firstName}`
 // name = 'John' -- builds escaped SQL string
 sq.ary`order by name ${order}`
 // order by name DESC -- builds unescaped SQL string
-const colors = sq.ret`'red', 'yellow','blue'`
+const colors = sq.return`'red', 'yellow','blue'`
 sq`${colors} c`
 // select * from (select 'red', 'yellow', 'blue') c
 ```
@@ -692,37 +692,37 @@ sq`${colors} c`
 
 ```javascript
 const firstName = 'John', lastName = 'Doe', age = 40, order = 'DESC'
-sq.frm`person`
-  .ret`*`
+sq.from`person`
+  .return`*`
 // select * from person
-sq.frm`person`
-  .whr({ firstName })
+sq.from`person`
+  .where({ firstName })
 // select * from person
 // where first_name = 'John'
-sq.frm`person`
-  .whr`age > ${age}`
-  .ret`first_name`
+sq.from`person`
+  .where`age > ${age}`
+  .return`first_name`
 // select first_name
 // from person
 // where age > 40
-sq.frm`person`
-  .ins({ firstName, lastName, age }
-  .ret`id`
+sq.from`person`
+  .insert({ firstName, lastName, age }
+  .return`id`
 // insert into person (first_name, last_name, age)
 // values ('John', 'Doe', 40)
 // returning id
-sq.frm`person`
+sq.from`person`
   .col`first_name, last_name`
-  .ins`upper(${firstName}), upper(${lastName})`
-  .ret`id`
+  .insert`upper(${firstName}), upper(${lastName})`
+  .return`id`
 // insert into person (first_name, lastName)
 // values(upper('John'), upper('Doe')) returning id
-sq.del`person`
-  .whr({ age })
-  .ret`id`
+sq.delete`person`
+  .where({ age })
+  .return`id`
 
 // delete from person where age = 40 returning id
-sq`person``age < ${age}`.del
+sq`person``age < ${age}`.delete
 // delete from person where age < 40
 sq`person p join company c on p.employer_id = c.id`
   `p.id = ${23}``c.name`
@@ -731,8 +731,8 @@ sq`person p join company c on p.employer_id = c.id`
 sq`person`({ name: 'Ed' }).set({ name: 'Edward' })
 Person({ name: 'Ed' })
 Person({ name: 'Ed' }).set({ name: 'Edward', age: sq.l`age + 1` })
-Person.ins({ name: 'Ed' })
-Person.del({ name: 'Ed' })
+Person.insert({ name: 'Ed' })
+Person.delete({ name: 'Ed' })
 
 sq.wit`children`(sq`person``age < ${18}`)`children`()`first_name`
 // with children as (select * from "person" where age < 18)
@@ -750,7 +750,7 @@ sq.ary`order by name ${order}`
 When a method on the query builder `sq` is called, it pushes an object containing the method name and arguments to an array named `methods`.
 
 ```javascript
-sq.frm`person`.whr`age > ${20} and age < ${30}`.ret`name`
+sq.from`person`.where`age > ${20} and age < ${30}`.return`name`
 // methods ===
 [ { type: 'frm', args: [ [ 'person' ] ] },
   { type: 'whr', args: [ [ 'age > ', ' and age < ', '' ], 20, 30 ] },

@@ -136,11 +136,11 @@ ${'const children = await Person`age < ${13}`'}
 "select * from person where age < 13"
 
 // DELETE
-${'const [deleted] = await Book({ id: 7 })`title`.del'}
+${'const [deleted] = await Book({ id: 7 })`title`.delete'}
 "delete from book where id = 7 returning title"
 
 // INSERT
-${"await Person.ins({ firstName: 'Rob' })"}
+${"await Person.insert({ firstName: 'Rob' })"}
 "insert into person (first_name) values ('Rob')"
 
 // UPDATE
@@ -160,25 +160,25 @@ ${'```'}
         content: `Build complex queries from simple parts
 ${'```js'}
 // CHAIN QUERIES
-sq.frm\`book\`
-  .ret\`distinct author\`
-  .whr({ genre: 'Fantasy' })
-  .whr({ language: 'French' })
+sq.from\`book\`
+  .return\`distinct author\`
+  .where({ genre: 'Fantasy' })
+  .where({ language: 'French' })
 "select distinct author from book \\
  where language = 'French' and genre = 'Fantsy'"
 
 // EXTEND QUERIES
-sq.ext(
-  sq.frm\`book\`,
-  sq.ret\`distinct author\`,
-  sq.whr({ genre: 'Fantasy' }),
-  sq.whr({ language: 'French' })
+sq.extend(
+  sq.from\`book\`,
+  sq.return\`distinct author\`,
+  sq.where({ genre: 'Fantasy' }),
+  sq.where({ language: 'French' })
 )
 "select distinct author from book \\
  where language = 'French' and genre = 'Fantsy'"
 
 // EMBED Queries
-sq.ret\`now() today, (\${sq.ret\`now() + '1 day'\`}) tomorrow\`
+sq.return\`now() today, (\${sq.return\`now() + '1 day'\`}) tomorrow\`
 "select now() today, (select now() + '1 day') tomorrow"
 ${'```'}
 `

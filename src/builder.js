@@ -16,7 +16,7 @@ const createBuilder = config => {
       const ctx = context(this.method, inheritedCtx)
       return query[ctx.type](ctx)
     },
-    get qry() {
+    get query() {
       return this.bld()
     },
     // execution methods
@@ -48,26 +48,25 @@ const createBuilder = config => {
       throw Error('Unimplemented')
     },
     // special query building methods
-    get del() {
-      return this.create({ type: 'del', prev: this.method })
+    get delete() {
+      return this.create({ type: 'delete', prev: this.method })
     }
   }
   ;[
     'l',
-    'raw',
-    'wth',
-    'frm',
-    'whr',
-    'ret',
-    'grp',
-    'hav',
-    'ord',
-    'lim',
-    'off',
-    'ins',
-    'val',
+    'with',
+    'from',
+    'where',
+    'return',
+    'group',
+    'having',
+    'order',
+    'limit',
+    'offset',
+    'insert',
+    'value',
     'set',
-    'ext'
+    'extend'
   ].forEach(key => {
     builder[key] = function(...args) {
       return this.create({ type: key, args, prev: this.method })

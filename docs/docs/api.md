@@ -35,15 +35,15 @@ Most methods of `sq` are chainable query-building methods. The first chainable m
 
 Other methods of `sq` compile the existing query builder's internal state to construct a parameterized query object, which is issued to the database. These methods return a Promise for query results.
 
-Given ```sq.frm`person`.whr`name = 'Bo'`.ret`name`.all() ```:
+Given ```sq.from`person`.where`name = 'Bo'`.return`name`.all() ```:
 
 * `sq` is the root query building object
-* ```.frm`person` ``` creates a new query builder `qb`
-* ```.whr`name = 'Bo'` ``` mutates `qb`
-* ```.ret`name` ``` mutates `qb`
+* ```.from`person` ``` creates a new query builder `qb`
+* ```.where`name = 'Bo'` ``` mutates `qb`
+* ```.return`name` ``` mutates `qb`
 * ```.all() ``` constructs a query from `qb`'s internal state
 
-`sq` is also a function. The first call of `sq` is equivalent to calling [.frm](#frm), the second  call is equivalent to calling [`whr`](#whr), and the third call is equivalent to calling [`.ret`](#ret). Further calls are ignored.
+`sq` is also a function. The first call of `sq` is equivalent to calling [.from](#frm), the second  call is equivalent to calling [`whr`](#whr), and the third call is equivalent to calling [`.return`](#ret). Further calls are ignored.
 
 The query above can be written as ```sq`person``name = 'Bo'``name`.all() ```. 
 
@@ -129,26 +129,26 @@ select * from person where age >= 20 and age = age < 30
 
 ## Common Clauses
 
-### .frm
+### .from
 
 FROM clause - specifies the query table
 
 Accepts a table name or a derived table (formed from subqueries or joins).
 
-#### .frm Explicit 
+#### .from Explicit 
 
-Call `.frm` explicitly:
+Call `.from` explicitly:
 
 ```typescript
-sq.frm`book`
+sq.from`book`
 ```
 ```sql
 select * from book
 ```
 
-#### .frm Implicit 
+#### .from Implicit 
 
-Calling `sq` as a function is equivalent to calling `.frm`:
+Calling `sq` as a function is equivalent to calling `.from`:
 
 ```typescript
 sq`book`
@@ -157,33 +157,33 @@ sq`book`
 select * from book
 ```
 
-#### .frm Table Name
+#### .from Table Name
 
 Pass a table name string:
 
 <span style="color: red">**TO AVOID SQL INJECTION, DO NOT PASS A USER-DEFINED TABLE NAME**</span>
 
 ```typescript
-sq.frm('book')
+sq.from('book')
 ```
 ```sql
 select * from book
 ```
 
-#### .frm Join
+#### .from Join
 
-Call .frm with a joined table:
+Call .from with a joined table:
 
 ```typescript
-sq.frm`book join comment on book.id = comment.book_id`
+sq.from`book join comment on book.id = comment.book_id`
 ```
 ```sql
 select * from book join comment on book.id = comment.book_id
 ```
 
-#### .frm Subquery
+#### .from Subquery
 
-Insert a subquery into .frm:
+Insert a subquery into .from:
 
 ```typescript
 sq`${
@@ -196,48 +196,48 @@ select name from (
 ) as adult where adult.job = 'student'
 ```
 
-##### .frm Raw
+##### .from Raw
 
 To build a raw template string argument
 
 ```typescript
-sq.frm`$${'widget_corp_department'} natural join $${'widget_corp_order'}`
+sq.from`$${'widget_corp_department'} natural join $${'widget_corp_order'}`
 ```
 ```sql
 select * from widget_corp_department natural join widget_corp_order
 ```
 
 
-### .whr
+### .where
 
-### .ret
+### .return
 
-### .wth
+### .with
 
 
 ## Select Clauses 
 
-### .grp
+### .group
 
-### .hav
+### .having
 
-### .ord
+### .order
 
-### .lim
+### .limit
 
-### .off
+### .offset
 
 
 ## Delete Clauses
 
-### .del
+### .delete
 
 
 ## Insert Clauses
 
-### .ins
+### .insert
 
-### .val
+### .value
 
 
 ## Update Clauses
@@ -297,7 +297,7 @@ __Returns:__
 
   a promise that resolves to true if at least one row was returned by the query, false otherwise
 
-### .qry
+### .query
 
 __Description:__
 

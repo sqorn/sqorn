@@ -32,7 +32,7 @@ async function main() {
                     foreign key (author_id) references author (id)
   )`
   // populate author table
-  const [sanderson, jordan, tolkien] = await sq`author`.ins(
+  const [sanderson, jordan, tolkien] = await sq`author`.insert(
     {
       firstName: 'Brandon',
       lastName: 'Sanderson',
@@ -50,7 +50,7 @@ async function main() {
     }
   )
   // populate book table
-  await sq`book`.ins(
+  await sq`book`.insert(
     {
       title: 'The Way of Kings',
       genre: 'Fantasy',

@@ -44,6 +44,6 @@ const buildCondition = (ctx, obj, key) => {
   return (
     snakeCase(key) +
     ' = ' +
-    (typeof val === 'function' ? val.bld(ctx).txt : parameter(ctx, val))
+    (typeof val === 'function' ? val.bld(ctx).text : parameter(ctx, val))
   )
 }
