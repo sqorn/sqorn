@@ -16,7 +16,7 @@ new Benchmark.Suite()
     squel.select().from('books').where('author = ?', 'Jo').fields(['title', 'author', 'year']).toParam()
   })
   .add('Sqorn - template string', function() {
-    sq.frm\\\`books\\\`.whr\\\`author = ${'Joe'}\\\`.ret\\\`title, author, year\\\`.qry
+    sq.frm\\\`books\\\`.whr\\\`author = \${'Joe'}\\\`.ret\\\`title, author, year\\\`.qry
   })
   .on('cycle', function(event) {
     console.log(String(event.target))
