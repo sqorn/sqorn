@@ -147,6 +147,9 @@ ${"await Person.ins({ firstName: 'Rob' })"}
 ${"await Person({ id: 23 }).set({ name: 'Rob' })"}
 "update person where id = 23 set name = 'Rob'"
 
+// RAW
+sq.l\`select * from book where id = \${8}\`
+"select * from book where id = 8"
 ${'```'}
 `
       },
@@ -156,24 +159,27 @@ ${'```'}
         imageAlign: 'top',
         content: `Build complex queries from simple parts
 ${'```js'}
-// CHAIN CLAUSES
-${'const books = sq.frm`book`'}
-${'const oldBooks = books.whr`publishYear < 1900`'}
-${"const oldFantasyBooks = oldBooks.whr`genre = 'Fantasy'`"}
-${'const numOldFantasyBooks = oldFantasyBooks.ret`count(*) count`'}
-${'const { count } = await numOldFantasyBooks.one()'}
+// CHAIN QUERIES
+sq.frm\`book\`
+  .ret\`distinct author\`
+  .whr({ genre: 'Fantasy' })
+  .whr({ language: 'French' })
+"select distinct author from book \\
+ where language = 'French' and genre = 'Fantsy'"
 
-// BUILD NEW QUERIES FROM EXISTING QUERIES
-const lang = language => sq.whr({ language })
-${'const distinctAuthors = sq.ret`distinct author`'}
-const oldEnglishBookAuthors = sq.ext(
-  oldBooks, lang('English'), distinctAuthors)
-const authors = await oldEnglishBookAuthors.all()
+// EXTEND QUERIES
+sq.ext(
+  sq.frm\`book\`,
+  sq.ret\`distinct author\`,
+  sq.whr({ genre: 'Fantasy' }),
+  sq.whr({ language: 'French' })
+)
+"select distinct author from book \\
+ where language = 'French' and genre = 'Fantsy'"
 
-// EMBED SUBQUERIES
-${"const tomorrow = sq.ret`now() + '1 day'`"}
-${'const time = sq.ret`now() now, ${tomorrow} tomorrow`'}
-const { now, tomorrow } = await time.one()
+// EMBED Queries
+sq.ret\`now() today, (\${sq.ret\`now() + '1 day'\`}) tomorrow\`
+"select now() today, (select now() + '1 day') tomorrow"
 ${'```'}
 `
       }
@@ -190,8 +196,9 @@ const FeatureCallout = props => (
     <ul style={{ margin: 'auto', fontSize: '1.15em' }}>
       {[
         'Simple, Consistent, Ergonomic API',
-        'Uses Promises and Tagged Templates',
-        'Composable Query Builder',
+        'Composable, Immutable, Extendable Query Builder',
+        'Boilerplate Free',
+        'Fast - 10x faster than Knex.js',
         'Secure Parameterized Queries',
         'Typescript Declarations',
         'Supports Postgres',
