@@ -37,6 +37,7 @@ const siteConfig = {
     // { doc: 'examples', label: 'Examples' },
     { doc: 'faq', label: 'FAQ' },
     { page: 'demo', label: 'Demo' },
+    { page: 'benchmarks', label: 'Benchmarks' },
     // { doc: 'benchmarks', label: 'Benchmarks' },
     { href: 'https://github.com/lusakasa/sqorn', label: 'Github' }
     // { blog: true, label: 'Blog' }
