@@ -2,13 +2,13 @@
 
 Sqorn is a Javascript library for building SQL queries.
 
-**Ergonomic:** Sqorn's intuitive Javascript interface might make you forget you're building SQL.
+**Ergonomic:** Sqorn's intuitive API might make you forget you're building SQL.
 
 **Composable:** Build complex queries from simple parts. Chain, extend, and embed queries.
 
-**Boilerplate free:** Sqorn provides **concise** syntax for common CRUD operations.
+**Boilerplate free:** Sqorn provides concise syntax for common CRUD operations.
 
-**Fast:** [10x faster](https://github.com/lusakasa/sqorn/blob/master/benchmark/comparison.js) than [Knex.js](https://knexjs.org/) and 200x faster than [Squel](https://github.com/hiddentao/squel)
+[**Fast:**](https://sqorn.org/benchmarks.html) 10x faster than [Knex.js](https://knexjs.org/) and 200x faster than [Squel](https://github.com/hiddentao/squel)
 
 ## Install
 
