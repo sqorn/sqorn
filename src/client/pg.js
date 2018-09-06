@@ -25,8 +25,8 @@ module.exports = class {
     patchCamelCase(pg)
     this.pool = new pg.Pool(connection)
   }
-  async query({ txt, arg }, trx) {
-    const obj = { text: txt, values: arg }
+  async query({ text, args }, trx) {
+    const obj = { text, values: args }
     const result = await (trx ? trx.query(obj) : this.pool.query(obj))
     return result.rows
   }
