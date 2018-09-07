@@ -13,8 +13,8 @@ const name = 'Bruce Wayne'
 const city = 'Gotham City'
 const query = sq.from`person`.where`name = ${name} and city = ${city}`.query()
 const expected = {
-  txt: 'select * from person where name = $1 and city = $2',
-  arg: ['Bruce Wayne', 'Gotham City']
+  text: 'select * from person where name = $1 and city = $2',
+  args: ['Bruce Wayne', 'Gotham City']
 }
 expect(query).toEqual(expected)
 ```
@@ -48,9 +48,9 @@ Second, a `Query` of type `ctx.type` is constructed. Each `Query` is constructed
 ```javascript
 select = Query(
   With,   // undefined
-  Select, // { txt: 'select age', arg: [] }
-  From,   // { txt: 'from person', arg: []}
-  Where,  // { txt: 'where age > $1 and age < $2, arg: [7, 13] }
+  Select, // { text: 'select age', args: [] }
+  From,   // { text: 'from person', args: []}
+  Where,  // { text: 'where age > $1 and age < $2, args: [7, 13] }
   Group,  // undefined
   Having, // undefined
   Order,  // undefined
@@ -62,8 +62,8 @@ select = Query(
 Finally, the contributions from all clauses are joined together to construct a complete SQL query with parameterized arguments. This query is passed to the underlying database library for execution.
 
 ```javascript
-{ txt: 'select age from person where age > $1 and age < $2' 
-  arg: [7, 13] }
+{ text: 'select age from person where age > $1 and age < $2' 
+  args: [7, 13] }
 ```
 
 ## Are there Complex Example Queries?

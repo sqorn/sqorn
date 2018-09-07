@@ -48,8 +48,8 @@ Sqorn compiles this to a parameterized query safe from SQL injection. `.query` r
 ```js
 getPeople.query
 
-{ txt: 'select * from person where age >= $1 and age < $2',
-  arg: [20, 30] }
+{ text: 'select * from person where age >= $1 and age < $2',
+  args: [20, 30] }
 ```
 
 Execute the query and get back a Promise for all result rows with `.all`. The query builder is itself *thenable* so `.all` is optional. The following all print an array of people in the database.
@@ -75,8 +75,8 @@ When you need a raw unparameterized argument, prefix it with `$`.
 ```js
 sq.l`select * from $${'test_table'}`.query
 
-{ txt: 'select * from test_table',
-  arg: [] }
+{ text: 'select * from test_table',
+  args: [] }
 ```
 
 `sq.l` also accepts a raw sql string argument.
@@ -84,8 +84,8 @@ sq.l`select * from $${'test_table'}`.query
 ```js
 sq.l('select * from person where age >= 20 and age < 30').query
 
-{ txt: 'select * from person where age >= 20 and age < 30',
-  arg: [] }
+{ text: 'select * from person where age >= 20 and age < 30',
+  args: [] }
 ```
 
 When called multiple times, `sq.l` results are joined together with spaces.
@@ -93,8 +93,8 @@ When called multiple times, `sq.l` results are joined together with spaces.
 ```js
 sq.l`select * from person`.l`where age >= ${20}`.l`and age < ${30}`.query
 
-{ txt: 'select * from person where age >= $1 and age < $2',
-  arg: [20, 30] }
+{ text: 'select * from person where age >= $1 and age < $2',
+  args: [20, 30] }
 ```
 
 ## Select Queries
@@ -106,8 +106,8 @@ The simplest `select` query gets all rows from a table. Specify a `from` clause 
 ```js
 sq.from`book`.query
 
-{ txt: 'select * from book',
-  arg: [] }
+{ text: 'select * from book',
+  args: [] }
 ```
 
 `.from` also accepts raw string arguments. To prevent SQL injection, do not pass user-provided table names.
@@ -115,8 +115,8 @@ sq.from`book`.query
 ```js
 sq.from('book', 'author').query
 
-{ txt: 'select * from book, author',
-  arg: [] }
+{ text: 'select * from book, author',
+  args: [] }
 ```
 
 The argument may be a joined table.
@@ -124,8 +124,8 @@ The argument may be a joined table.
 ```js
 sq.from`book left join author on book.author_id = author.id`.query
 
-{ txt: 'select * from book left join author on book.author_id = author.id',
-  arg: [] }
+{ text: 'select * from book left join author on book.author_id = author.id',
+  args: [] }
 ```
 
 Only the last call to `.from` is used.
@@ -133,8 +133,8 @@ Only the last call to `.from` is used.
 ```js
 sq.from`book`.from`person`.query
 
-{ txt: 'select * from person',
-  arg: [] }
+{ text: 'select * from person',
+  args: [] }
 ```
 
 
@@ -146,8 +146,8 @@ Filter result rows by adding a `where` clause with `.where`.
 ```js
 sq.from`book`.where`genre = ${'Fantasy'}`.query
 
-{ txt: 'select * from book where genre = $1',
-  arg: ['Fantasy'] }
+{ text: 'select * from book where genre = $1',
+  args: ['Fantasy'] }
 ```
 
 Multiple `.where` calls are joined with `and`.
@@ -155,8 +155,8 @@ Multiple `.where` calls are joined with `and`.
 ```js
 sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`.query
 
-{ txt: 'select * from book where genre = $1 and year = $2',
-  arg: ['Fantasy', 2000] }
+{ text: 'select * from book where genre = $1 and year = $2',
+  args: ['Fantasy', 2000] }
 ```
 
 It is sometimes easier to specify conditions with an object.
@@ -164,8 +164,8 @@ It is sometimes easier to specify conditions with an object.
 ```js
 sq.from`book`.where({ genre: 'Fantasy', year: 2000 }).query
 
-{ txt: 'select * from book where genre = $1 and year = $2',
-  arg: ['Fantasy', 2000] }
+{ text: 'select * from book where genre = $1 and year = $2',
+  args: ['Fantasy', 2000] }
 ```
 
 By default keys are converted from `CamelCase` to `snake_case`.
@@ -173,8 +173,8 @@ By default keys are converted from `CamelCase` to `snake_case`.
 ```js
 sq.from`person`.where({ firstName: 'Kaladin' }).query
 
-{ txt: 'select * from person where first_name = $1',
-  arg: ['Kaladin'] }
+{ text: 'select * from person where first_name = $1',
+  args: ['Kaladin'] }
 ```
 
 If you need a non-equality condition, add a property whose value is created with `sq.l`. the property's key will be ignored.
@@ -184,8 +184,8 @@ const condMinYear = sq.l`year >= ${20}`
 const condMaxYear = sq.l`year < ${30}`
 sq.from`person`.where({ condMinYear, condMaxYear }).query
 
-{ txt: 'select * from person where year >= $1 and year < $2',
-  arg: [20, 30] }
+{ text: 'select * from person where year >= $1 and year < $2',
+  args: [20, 30] }
 ```
 
 Multiple objects passed to `.where` are joined with `or`.
@@ -193,8 +193,8 @@ Multiple objects passed to `.where` are joined with `or`.
 ```js
 sq.from`person`.where({ name: 'Rob' }, { name: 'Bob' }).query
 
-{ txt: 'select * from person where name = $1 or name = $2',
-  arg: ['Rob', 'Bob'] }
+{ text: 'select * from person where name = $1 or name = $2',
+  args: ['Rob', 'Bob'] }
 ```
 
 [Advanced Queries - Where](#where-1) explains how to build complex `where` conditions.
@@ -206,8 +206,8 @@ Specify selected columns with `.return`.
 ```js
 sq.from`book`.return`title, author`.query
 
-{ txt: 'select title, author from book',
-  arg: [] }
+{ text: 'select title, author from book',
+  args: [] }
 ```
 
 `.return` also accepts raw string arguments. To prevent SQL injection, do not pass user-provided column names.
@@ -215,8 +215,8 @@ sq.from`book`.return`title, author`.query
 ```js
 sq.from`book`.return('title', 'author').query
 
-{ txt: 'select title, author from book',
-  arg: [] }
+{ text: 'select title, author from book',
+  args: [] }
 ```
 
 Only the last call to `.return` is used.
@@ -224,8 +224,8 @@ Only the last call to `.return` is used.
 ```js
 sq.from`book`.return('title', 'author').return`id`.query
 
-{ txt: 'select title, author, id from book',
-  arg: [] }
+{ text: 'select title, author, id from book',
+  args: [] }
 ```
 
 ### Express Syntax
@@ -250,13 +250,25 @@ sq.from`person`.where`name = ${name}`.return`age`
 sq.from('person').where({ name }).return('age')
 ```
 
+### Group By
+
+TODO, only template string form works
+
 ### Having
 
-### Group By
+TODO, only template string form works
+
+### Order By
+
+TODO, only template string form works
 
 ### Limit
 
+TODO, only template string form works
+
 ### Offset
+
+TODO, only template string form works
 
 ## Manipulation Queries
 
@@ -268,8 +280,8 @@ sq.from('person').where({ name }).return('age')
 sq.from`person`.delete.query
 sq.delete.from`person`.query // equivalent
 
-{ txt: 'delete from person',
-  arg: [] }
+{ text: 'delete from person',
+  args: [] }
 ```
 
 Filter the rows to delete with `.where`
@@ -277,8 +289,8 @@ Filter the rows to delete with `.where`
 ```js
 sq.from`person`.where`id = ${723}`.delete.query
 
-{ txt: 'delete from person where id = $1',
-  arg: [723] }
+{ text: 'delete from person where id = $1',
+  args: [723] }
 ```
 
 Return the deleted rows with `.return`
@@ -286,8 +298,8 @@ Return the deleted rows with `.return`
 ```js
 sq.from`person`.return`name`.delete.query
 
-{ txt: 'delete from person returning name',
-  arg: [] }
+{ text: 'delete from person returning name',
+  args: [] }
 ```
 
 [Express syntax](#express-syntax) works too.
@@ -295,8 +307,8 @@ sq.from`person`.return`name`.delete.query
 ```js
 sq`person`({ job: 'student' })`name`.delete.query
 
-{ txt: 'delete from person where job = $1 returning name',
-  arg: ['student'] }
+{ text: 'delete from person where job = $1 returning name',
+  args: ['student'] }
 ```
 
 `.delete` is idempotent.
@@ -304,8 +316,8 @@ sq`person`({ job: 'student' })`name`.delete.query
 ```js
 sq`book`.delete.delete.delete.query
 
-{ txt: 'delete from book',
-  arg: [] }
+{ text: 'delete from book',
+  args: [] }
 ```
 
 ### Insert
@@ -319,8 +331,8 @@ sq.from`person`
   .value`${'Navani'}, ${'Kholin'}`
   .query
 
-{ txt: 'insert into person (first_name, last_name) values ($1, $2), ($3, $4)',
-  arg: ['Shallan', 'Davar', 'Navani', 'Kholin'] }
+{ text: 'insert into person (first_name, last_name) values ($1, $2), ($3, $4)',
+  args: ['Shallan', 'Davar', 'Navani', 'Kholin'] }
 ```
 
 You can pass `.insert` column names as strings. You must then pass`.value` corresponding row values. `null` values are inserted as `NULL` while `undefined` values are inserted as `DEFAULT`.
@@ -333,8 +345,8 @@ sq.from`book`
   .value('Oathbringer')
   .query
 
-{ txt: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
-  arg: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
+{ text: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
+  args: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
 ```
 
 When called as a template string or passed string column names, `.insert` may only be called once.
@@ -348,8 +360,8 @@ sq.from`book`
   .insert({ title: 'Oathbringer' })
   .query
 
-{ txt: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
-  arg: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
+{ text: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
+  args: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
 ```
 
 Alternatively, multiple objects may be passed to `.insert`
@@ -361,8 +373,8 @@ sq.from`book`
        { title: 'Oathbringer' })
   .query
 
-{ txt: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
-  arg: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
+{ text: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
+  args: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
 ```
 
 `.return` specifies the returning clause. [Express syntax](#express-syntax) may be used to specify `.from` and `.return`.
@@ -371,8 +383,8 @@ sq.from`book`
 sq.from`book`.insert({ title: 'Squirrels and Acorns' }).return`id`.query
 sq`book`()`id`.insert({ title: 'Squirrels and Acorns' }).query
 
-{ txt: 'insert into book (title) values ($1) returning id',
-  arg: ['Squirrels and Acorns'] }
+{ text: 'insert into book (title) values ($1) returning id',
+  args: ['Squirrels and Acorns'] }
 ```
 
 ### Update
@@ -382,8 +394,8 @@ sq`book`()`id`.insert({ title: 'Squirrels and Acorns' }).query
 ```js
 sq.from`person`.set`age = age + 1, processed = true`.set`name = ${'Sally'}`.query
 
-{ txt: 'update person set age = age + 1, processed = true, name = $1',
-  arg: ['Sally'] }
+{ text: 'update person set age = age + 1, processed = true, name = $1',
+  args: ['Sally'] }
 ```
 
 `.set` also accepts an update object.
@@ -394,16 +406,16 @@ sq.from`person`
   .set({ firstName: 'Robert', nickname: 'Rob' })
   .query
 
-{ txt: 'update person set first_name = $1, nickname = $2 where first_name = $3',
-  arg: ['Robert', 'Rob', 'Matt'] }
+{ text: 'update person set first_name = $1, nickname = $2 where first_name = $3',
+  args: ['Robert', 'Rob', 'Matt'] }
 ```
 [Express syntax](#express-syntax) works too.
 
 ```js
 sq`person`({ firstName: 'Rob' })`id`.set({ firstName: 'Robert'}).query
 
-{ txt: 'update person set first_name = $1 where first_name = $2 returning id',
-  arg: ['Robert', 'Rob'] }
+{ text: 'update person set first_name = $1 where first_name = $2 returning id',
+  args: ['Robert', 'Rob'] }
 ```
 
 Call `.set` multiple times to update additional columns.
@@ -415,54 +427,74 @@ sq.from`person`
   .set({ nickname: 'Rob' })
   .query
 
-{ txt: 'update person set first_name = $1, nickname = $2 where first_name = $3',
-  arg: ['Robert', 'Rob', 'Matt'] }
+{ text: 'update person set first_name = $1, nickname = $2 where first_name = $3',
+  args: ['Robert', 'Rob', 'Matt'] }
 ```
 
 ### Upsert
+
+TODO
 
 ## Composing Queries
 
 ### Subqueries
 
+TODO
+
+### Extend Queries
+
+TODO
+
 ### With (CTEs)
 
-
-
-### sq.extend
+TODO
 
 ## Complex Clauses
 
 ### Where
 
+TODO
+
 ### Join
 
-`.jni`, `.jnf`, `.jnl`, `.jnr`, `.jnn`, `.jnc`
-`.ijn`, `.fjn`, `.ljn`, `.rjn`, `.njn`, `.cjn`
+TODO
+
+<!-- `.jni`, `.jnf`, `.jnl`, `.jnr`, `.jnn`, `.jnc` -->
+<!-- `.ijn`, `.fjn`, `.ljn`, `.rjn`, `.njn`, `.cjn` -->
 
 #### (Inner) Join
 
-`.jni` takes a table to join and returns a function that expects a `where` condition to join on.
+<!-- `.jni` takes a table to join and returns a function that expects a `where` condition to join on.
 
 ```js
 sq.from`book`
   .inj`author`.on`book.author_id = author.id`
   .where`book.title = ${'OathBringer'}`
   .return`author.first_name, author.last_name`
-```
+``` -->
 
+TODO
 
 
 #### Full (Outer) Join
 
+TODO
+
 #### Left (Outer) Join
+
+TODO
 
 #### Right (Outer) Join
 
+TODO
+
 #### Natural Join
+
+TODO
 
 #### Cross Join
 
+TODO
 
 ## Transactions
 

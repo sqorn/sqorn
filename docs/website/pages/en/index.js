@@ -115,7 +115,7 @@ const Block = props => (
 const queries = [
   {
     sq: "sq`person`({ firstName: 'Rob' })`id`",
-    txt: "select id from person where first_name = 'Rob'"
+    text: "select id from person where first_name = 'Rob'"
   }
 ]
 
