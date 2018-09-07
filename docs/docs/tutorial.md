@@ -464,9 +464,9 @@ TODO
 
 #### (Inner) Join
 
-<!-- `.jni` takes a table to join and returns a function that expects a `where` condition to join on.
+<!-- `.jni` takes a table to join and returns a function that expects a `where` condition to join on. -->
 
-```js
+<!-- ```js
 sq.from`book`
   .inj`author`.on`book.author_id = author.id`
   .where`book.title = ${'OathBringer'}`
@@ -474,7 +474,6 @@ sq.from`book`
 ``` -->
 
 TODO
-
 
 #### Full (Outer) Join
 
