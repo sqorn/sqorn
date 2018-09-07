@@ -233,13 +233,33 @@ declare module 'sqorn' {
     readonly delete: sq
 
     /**
-     * Compiles the query buillder state, returning the equivalent SQL query string
+     * Compiles the query builder state to return the equivalent parameterized query
+     * 
+     * @param {string} query.text - parameterized SQL query
+     * @param {any[]} query.args - query arguments
      * 
      * @example
-     * sq.return`1, 2, 3`.str === 'select 1, 2, 3'
-     * sq.from`person`.str === 'select * from person'
+     * sq`book`({ id: 7 })`title`.query
+     * { text: 'select title from book where id = $1', args: [7] }
      */
-    readonly str: string
+    readonly query: { text: string, args: any[] }
+
+    /**
+     * VALUE - specify values to insert as function arguments
+     * 
+     * The query must also include a call to`sq.insert` specifing columns
+     * 
+     * @example
+     * sq.from('book').insert('title', 'published').value('1984', 1949)
+     * // insert into book (title, published) values ('1984', 1949)
+     * sq.from('person').insert('name', 'age').value('Jo', 9).value(null)
+     * // insert into person (name, age) values ('Jo', 9), (null, default)
+     * sq`person`()`id`.insert('age').value('23')
+     * // insert into person (age) values (23), (40) returning id
+     */
+    value(...args: any[]): sq
+
+    // TODO: Typescript Promise/Thenable interface
   }
 
   interface Config {
