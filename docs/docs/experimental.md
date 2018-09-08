@@ -94,7 +94,7 @@ const person = sq.tbl`person`
 ### transactions
 
 ```javascript
-await sq.trx(async trx => {
+await sq.transaction(async trx => {
   const created = await createSecret({ expires: '24 hours', type: 'code' }).one(trx)
   const queried = await getSecret({ secret: created.secret }).one(trx)
   const deleted = await deleteSecret({ secret: queried.secret }).one(trx)
@@ -503,7 +503,7 @@ sq`person`.order`last_name, first_name`.limit(10).offset(7)
 ### transactions
 
 ```javascript
-await sq.trx(async trx => {
+await sq.transaction(async trx => {
   const created = await createSecret({ expires: '24 hours', type: 'code' }).one(trx)
   const queried = await getSecret({ secret: created.secret }).one(trx)
   const deleted = await deleteSecret({ secret: queried.secret }).one(trx)

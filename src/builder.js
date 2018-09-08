@@ -11,6 +11,10 @@ const createBuilder = config => {
       return fn
     },
     client: createClient(config),
+    // close connection
+    async end() {
+      return this.client.end()
+    },
     // compilation methods
     bld(inheritedCtx) {
       const ctx = context(this.method, inheritedCtx)
@@ -31,11 +35,8 @@ const createBuilder = config => {
       resolve(this.all())
     },
     // miscellaneous methods
-    async trx(fn) {
+    async transaction(fn) {
       return this.client.transaction(fn)
-    },
-    async end() {
-      return this.client.end()
     },
     // logical operators
     not(arg) {

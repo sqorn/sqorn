@@ -31,7 +31,7 @@ Call `sqorn` and pass it an object with a property whose key is `pg` and whose v
 
 `sq` is Sqorn's query building object. All API methods are properties of `sq` unless otherwise specified. Most methods serve as [template literal tags](https://developers.google.com/web/updates/2015/01/ES6-Template-Strings).
 
-Most methods of `sq` are chainable query-building methods. The first chainable method call on `sq` creates and returns a new query builder instance. Proceeding chainable method calls mutate and return the existing query builder instance.
+Most methods of `sq` are chainable query-building methods.
 
 Other methods of `sq` compile the existing query builder's internal state to construct a parameterized query object, which is issued to the database. These methods return a Promise for query results.
 
@@ -93,14 +93,6 @@ select * from widget_corp_product where shape = $1
 -- arg = ['square']
 ```
 
-#### .l Raw Argument with `.raw`
-
-### .raw
-
-Construct a SQL query string without escaping arguments. The query string may be a single complete query or a fragment to be embedded in other queries.
-
-<span style="color: red">**To prevent SQL injection, never call `.raw` with user-supplied data</span>
-
 #### .l Complete Query
 
 Construct a complete SQL query:
@@ -131,207 +123,134 @@ select * from person where age >= 20 and age = age < 30
 
 ### .from
 
-FROM clause - specifies the query table
-
-Accepts a table name or a derived table (formed from subqueries or joins).
+TODO
 
 #### .from Explicit 
 
-Call `.from` explicitly:
-
-```typescript
-sq.from`book`
-```
-```sql
-select * from book
-```
+TODO
 
 #### .from Implicit 
 
-Calling `sq` as a function is equivalent to calling `.from`:
-
-```typescript
-sq`book`
-```
-```sql
-select * from book
-```
+TODO
 
 #### .from Table Name
 
-Pass a table name string:
-
-<span style="color: red">**TO AVOID SQL INJECTION, DO NOT PASS A USER-DEFINED TABLE NAME**</span>
-
-```typescript
-sq.from('book')
-```
-```sql
-select * from book
-```
+TODO
 
 #### .from Join
 
-Call .from with a joined table:
-
-```typescript
-sq.from`book join comment on book.id = comment.book_id`
-```
-```sql
-select * from book join comment on book.id = comment.book_id
-```
+TODO
 
 #### .from Subquery
 
-Insert a subquery into .from:
+TODO
 
-```typescript
-sq`${
-  sq`person``age > 17`
-} as adult``adult.job = 'student'``name`
-```
-```sql
-select name from (
-  select * from person where age > 17
-) as adult where adult.job = 'student'
-```
+##### .from
 
-##### .from Raw
-
-To build a raw template string argument
-
-```typescript
-sq.from`$${'widget_corp_department'} natural join $${'widget_corp_order'}`
-```
-```sql
-select * from widget_corp_department natural join widget_corp_order
-```
-
+TODO
 
 ### .where
 
+TODO
+
 ### .return
+
+TODO
 
 ### .with
 
+TODO
 
 ## Select Clauses 
 
 ### .group
 
+TODO
+
 ### .having
+
+TODO
 
 ### .order
 
+TODO
+
 ### .limit
+
+TODO
 
 ### .offset
 
+TODO
 
 ## Delete Clauses
 
 ### .delete
 
+TODO
 
 ## Insert Clauses
 
 ### .insert
 
+TODO
+
 ### .value
 
+TODO
 
 ## Update Clauses
 
 ### .set
 
-
+TODO
 
 ## Query Execution
 
 ### .all
 
-: async (trx?: Transaction) => any[]
-
-__Description:__
-
-  Executes the query
-
-__Returns:__
-
-  a promise for an array of results (which may have length 0)
+TODO
 
 ### .one
 
-: async (trx?: Transaction) => any
-
-__Description:__
-
-  executes the query
-
-__Returns:__
-
-  a promise for the first row returned by the query or `undefined` if no rows were returned
+TODO
 
 ### .run
 
-: async (trx?: Transaction) => void
-
-__Description:__
-
-  executes the query
-
-__Returns:__
-
-  a promise that resolves when the query is done
-
+TODO
 
 ### .exs
 
-: async (trx?: Transaction) => boolean
-
-__Description:__
-
-  executes the query
-
-__Returns:__
-
-  a promise that resolves to true if at least one row was returned by the query, false otherwise
+TODO
 
 ### .query
 
-__Description:__
-
-  Runs the asynchronous callback function in the context of a transaction. A `Transaction` object `trx` is made available to the callback and should be passed to all queries that are part of the transaction.
-
-__Returns:__
-
-  the value return by the callback
-
-
-### .str
-
-: () => string
-
-__Description:__
-
-  builds a SQL query string representing the current context
-
-__Returns:__
-
-  a SQL query string representation of the current context
+TODO
 
 ## Operators
 
 ### .and
 
+TODO
+
 ### .or
+
+TODO
 
 ### .not
 
+TODO
+
 ### .op
+
+TODO
 
 ## Miscellaneous
 
-### .trx
+### .transaction
+
+TODO
 
 ### .end
+
+TODO

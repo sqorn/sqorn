@@ -1,9 +1,120 @@
 declare module 'sqorn' {
 
+  interface Transaction {
+
+    /**
+     * Commits the transaction
+     * 
+     * 
+     */
+    commit(): Promise<void>
+
+    /**
+     * Rolls back the transaction
+     */
+    rollback(): Promise<void>
+  }
+
   /**
-   * The sqorn SQL query builder
+   * sqorn query builder
    */
   interface sq {
+
+    /**
+     * Closes database connection
+     */
+    end(): Promise<void>
+
+    /**
+     * Compiles the query builder state to return the equivalent parameterized query
+     * 
+     * @returns {{ text: string, args: any[] }} parameterized query text and arguments
+     * 
+     * @example
+     * sq`book`({ id: 7 })`title`.query
+     * { text: 'select title from book where id = $1', args: [7] }
+     * 
+     * sq`book`.delete({ id: 7 })`title`.query
+     * { text: 'delete from book where id = $1 returning title', args: [7] }
+     */
+    readonly query: { text: string, args: any[] }
+
+    /**
+     * Executes query and returns a Promise for all result rows
+     * 
+     * To execute the query in the context of a transaction, pass
+     * the transaction object `trx` as an argument.
+     * 
+     * @example
+     * const children = await sq`person`.all()
+     * // .all() is optional
+     * const children = await sq`person`
+     * // unless the query is part of a transaction
+     * const trx = await sq.transaction()
+     * await sq`person`.insert({ name: 'Jo' }).all(trx)
+     */
+    all(trx?: Transaction): Promise<{ [column: string]: any }[]>
+
+    /**
+     * Executes query and returns a Promise for first result row
+     * 
+     * If there are no result rows, the Promise resolves to `undefined`.
+     * Like `.all`, execute the query within a transaction by
+     * passing the transaction object `trx`.
+     * 
+     * @example
+     * const bob = await sq`person`.where`name = 'Bob'`.return`id`.one()
+     * if (bob) console.log(bob.id)
+     * // transaction example
+     * const id = await sq.transaction(async trx => {
+     * 	const { id } = await Account.insert({ username: 'jo' }).one(trx)
+     * 	await Auth.insert({ accountId: id, password: 'secret' }).all(trx)
+     *  return id
+     * })
+     */
+    one(trx?: Transaction): Promise<{ [column: string]: any } | void>
+
+    /**
+     * Creates a transaction
+     * 
+     * Pass an asynchronous callback containing queries that should be executed
+     * in the context of the transaction. If an error is throw in `callback`,
+     * the transaction is rolled back. Otherwise, the transaction is committed,
+     * and the value returned by the callback is returned.
+     * 
+     * The callback's first argument `trx` must be passed to every query within
+     * the transaction, or queries will not be part of the transaction.
+     * 
+     * @example
+     * const id = await sq.transaction(async trx => {
+     * 	const { id } = await Account.insert({ username: 'jo' }).one(trx)
+     * 	await Auth.insert({ accountId: id, password: 'secret' }).all(trx)
+     *  return id
+     * })
+     */
+    transaction<T>(callback: (trx: Transaction) => Promise<T>): Promise<T>
+
+    /**
+     * Creates a transaction
+     * 
+     * When called without arguments, `.transaction` returns a transaction
+     * object `trx`. You MUST call `trx.commit()` or `trx.rollback()`.
+     * 
+     * This overload is less convenient but more flexible than the callback
+     * transaction method.
+     * 
+     * @example
+     * let trx
+     * try {
+     *   trx = await sq.transaction()
+     *   const { id } = await Account.insert({ username: 'jo' }).one(trx)
+     *   await Auth.insert({ accountId: id, password: 'secret' }).all(trx)
+     *   await trx.commit()
+     * } catch (error) {
+     *   await trx.rollback()
+     * }
+     */
+    transaction(): Promise<Transaction>
 
     /**
      * EXPRESS query builder - shorthand query syntax
@@ -24,6 +135,56 @@ declare module 'sqorn' {
      * // select title from book
      */
     (...args: any[]): sq
+
+    /**
+     * Raw SQL - build raw SQL query
+     * 
+     * Accepts SQL as template string. Multiple calls to `sq.l` are joined with
+     * spaces. `sq.l` cannot be mixed with other query building methods.
+     * 
+     * Arguments are parameterized.
+     * To provide a raw unparameterized argument, prefix it with `'$'`
+     * Subqueries can be embedded as arguments.
+     * 
+     * @example
+     * sq.l`select * from book`
+     * // select * from book
+     * sq.l`select * from person`.l`where age = ${8}`.l`or name = ${'Jo'}`
+     * // select * from person where age = 8 or name = 'Jo'
+     * sq.l`select * $${'person'}`
+     * // select * from person
+     * sq`person`.where({ min: sq.l`age < 7` })
+     * // select * from person where age < 7
+     * sq.return`now() today, (${sq.return`now() + '1 day'`}) tomorrow`
+     * // select now() today, (select now() + '1 day') tomorrow
+     * 
+     */
+    l(strings: TemplateStringsArray, ...args: any[]): sq
+
+    /**
+     * Raw SQL - build raw SQL query
+     * 
+     * Accepts SQL as a string. Avoid using this method to prevent SQL injection
+     * because it does no parameterization. Instead, favor using `.l` as a
+     * tagged template literal.
+     * 
+     * Multiple calls to `sq.l` are joined with spaces. `sq.l` cannot be mixed
+     * with other query building methods.
+     * 
+     * @example
+     * sq.l('select * from book')
+     * // select * from book
+     * sq.l('select * from person').l`where age = ${8}`
+     * // select * from person where age = 8
+     */
+    l(sql: string): sq
+
+    /**
+     * WITH clause
+     * 
+     * TODO
+     */
+    with(strings: TemplateStringsArray, ...args: any[]): sq
 
     /**
      * FROM clause - specify query table
@@ -94,7 +255,7 @@ declare module 'sqorn' {
      * sq.from`person`.where({ age: 7 }).where({ name: 'Joe' })
      * // select * from person where age = 7 and name = 'Joe'
      */
-    where(...conditions: { [key: string]: any }[]): sq
+    where(...conditions: { [column: string]: any }[]): sq
 
     /**
      * SELECT or RETURNING clause - specify columns query returns
@@ -137,6 +298,41 @@ declare module 'sqorn' {
      * // select id, age from person where age > 7
      */
     return(...columns: string[]): sq
+
+    /**
+     * GROUP BY clause
+     * 
+     * TODO
+     */
+    group(strings: TemplateStringsArray, ...args: any[]): sq
+
+    /**
+     * HAVING clause
+     * 
+     * TODO
+     */
+    having(strings: TemplateStringsArray, ...args: any[]): sq
+
+    /**
+     * ORDER BY clause
+     * 
+     * TODO
+     */
+    order(strings: TemplateStringsArray, ...args: any[]): sq
+
+    /**
+     * LIMIT clause
+     * 
+     * TODO
+     */
+    limit(strings: TemplateStringsArray, ...args: any[]): sq
+
+    /**
+     * OFFSET clause
+     * 
+     * TODO
+     */
+    offset(strings: TemplateStringsArray, ...args: any[]): sq
 
     /**
      * INSERT column - specify columns to insert using tagged template literal
@@ -220,6 +416,20 @@ declare module 'sqorn' {
     value(...args: any[]): sq
 
     /**
+     * SET clause
+     * 
+     * TODO
+     */
+    set(strings: TemplateStringsArray, ...args: any[]): sq
+
+    /**
+     * Extend existing queries
+     * 
+     * TODO
+     */
+    extend(...builders: sq[]): sq
+
+    /**
      * DELETE - marks the query as a delete query
      * 
      * @example
@@ -231,33 +441,6 @@ declare module 'sqorn' {
      * // delete from person where age < 7 returning id
      */
     readonly delete: sq
-
-    /**
-     * Compiles the query builder state to return the equivalent parameterized query
-     * 
-     * @param {string} query.text - parameterized SQL query
-     * @param {any[]} query.args - query arguments
-     * 
-     * @example
-     * sq`book`({ id: 7 })`title`.query
-     * { text: 'select title from book where id = $1', args: [7] }
-     */
-    readonly query: { text: string, args: any[] }
-
-    /**
-     * VALUE - specify values to insert as function arguments
-     * 
-     * The query must also include a call to`sq.insert` specifing columns
-     * 
-     * @example
-     * sq.from('book').insert('title', 'published').value('1984', 1949)
-     * // insert into book (title, published) values ('1984', 1949)
-     * sq.from('person').insert('name', 'age').value('Jo', 9).value(null)
-     * // insert into person (name, age) values ('Jo', 9), (null, default)
-     * sq`person`()`id`.insert('age').value('23')
-     * // insert into person (age) values (23), (40) returning id
-     */
-    value(...args: any[]): sq
 
     // TODO: Typescript Promise/Thenable interface
   }
