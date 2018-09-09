@@ -26,9 +26,11 @@ const whereConditions = ctx => {
 }
 
 const whereCondition = (ctx, call) =>
-  isTaggedTemplate(call)
-    ? buildTaggedTemplate(ctx, call)
-    : argsConditions(ctx, call)
+  `(${
+    isTaggedTemplate(call)
+      ? buildTaggedTemplate(ctx, call)
+      : argsConditions(ctx, call)
+  })`
 
 // conditions for each argument of a function call
 const argsConditions = (ctx, args) => {

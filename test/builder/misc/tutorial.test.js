@@ -48,32 +48,32 @@ describe('tutorial', () => {
       query({
         name: '.from``.from``',
         query: sq.from`book`.from`person`,
-        text: 'select * from person'
+        text: 'select * from book, person'
       })
     })
     describe('Where', () => {
       query({
         name: '.where``',
         query: sq.from`book`.where`genre = ${'Fantasy'}`,
-        text: 'select * from book where genre = $1',
+        text: 'select * from book where (genre = $1)',
         args: ['Fantasy']
       })
       query({
         name: '.where``.where``',
         query: sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`,
-        text: 'select * from book where genre = $1 and year = $2',
+        text: 'select * from book where (genre = $1) and (year = $2)',
         args: ['Fantasy', 2000]
       })
       query({
         name: '.where({})',
         query: sq.from`book`.where({ genre: 'Fantasy', year: 2000 }),
-        text: 'select * from book where genre = $1 and year = $2',
+        text: 'select * from book where (genre = $1 and year = $2)',
         args: ['Fantasy', 2000]
       })
       query({
         name: '.where({ camelCase })',
         query: sq.from`person`.where({ firstName: 'Kaladin' }),
-        text: 'select * from person where first_name = $1',
+        text: 'select * from person where (first_name = $1)',
         args: ['Kaladin']
       })
       const condMinYear = sq.l`year >= ${20}`
@@ -81,13 +81,13 @@ describe('tutorial', () => {
       query({
         name: '.where({ Builder })',
         query: sq.from`person`.where({ condMinYear, condMaxYear }),
-        text: 'select * from person where year >= $1 and year < $2',
+        text: 'select * from person where (year >= $1 and year < $2)',
         args: [20, 30]
       })
       query({
         name: '.where({}).where({})',
         query: sq.from`person`.where({ name: 'Rob' }, { name: 'Bob' }),
-        text: 'select * from person where name = $1 or name = $2',
+        text: 'select * from person where (name = $1 or name = $2)',
         args: ['Rob', 'Bob']
       })
     })
@@ -105,7 +105,7 @@ describe('tutorial', () => {
       query({
         name: '.return.return',
         query: sq.from`book`.return('title', 'author').return`id`,
-        text: 'select id from book'
+        text: 'select title, author, id from book'
       })
     })
     test('Express Syntax', () => {
@@ -145,7 +145,7 @@ describe('tutorial', () => {
       query({
         name: '.where.delete',
         query: sq.from`person`.where`id = ${723}`.delete,
-        text: 'delete from person where id = $1',
+        text: 'delete from person where (id = $1)',
         args: [723]
       })
       query({
@@ -156,7 +156,7 @@ describe('tutorial', () => {
       query({
         name: 'express.delete',
         query: sq`person`({ job: 'student' })`name`.delete,
-        text: 'delete from person where job = $1 returning name',
+        text: 'delete from person where (job = $1) returning name',
         args: ['student']
       })
       query({
@@ -229,7 +229,7 @@ describe('tutorial', () => {
           .where({ firstName: 'Matt' })
           .set({ firstName: 'Robert', nickname: 'Rob' }),
         text:
-          'update person set first_name = $1, nickname = $2 where first_name = $3',
+          'update person set first_name = $1, nickname = $2 where (first_name = $3)',
         args: ['Robert', 'Rob', 'Matt']
       })
       query({
@@ -238,7 +238,7 @@ describe('tutorial', () => {
           firstName: 'Robert'
         }),
         text:
-          'update person set first_name = $1 where first_name = $2 returning id',
+          'update person set first_name = $1 where (first_name = $2) returning id',
         args: ['Robert', 'Rob']
       })
       query({
@@ -248,7 +248,7 @@ describe('tutorial', () => {
           .set({ firstName: 'Robert' })
           .set({ nickname: 'Rob' }),
         text:
-          'update person set first_name = $1, nickname = $2 where first_name = $3',
+          'update person set first_name = $1, nickname = $2 where (first_name = $3)',
         args: ['Robert', 'Rob', 'Matt']
       })
     })

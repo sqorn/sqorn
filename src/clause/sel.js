@@ -1,3 +1,3 @@
-const { build } = require('./util')
+const { join } = require('./util')
 
-module.exports = ctx => 'select ' + (ctx.ret ? build(ctx, ctx.ret) : '*')
+module.exports = ctx => `select ${join(ctx, ctx.ret) || '*'}`

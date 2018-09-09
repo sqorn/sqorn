@@ -1,10 +1,7 @@
 const lodashSnakeCase = require('lodash.snakecase')
 
-const parameter = (ctx, val) => {
-  if (val === undefined) return 'default'
-  ctx.arg.push(val)
-  return `$${ctx.arg.length}`
-}
+const parameter = (ctx, val) =>
+  val === undefined ? 'default' : `$${ctx.arg.push(val)}`
 
 const isTaggedTemplate = args =>
   Array.isArray(args[0]) && typeof args[0][0] === 'string'
@@ -44,6 +41,15 @@ const build = (ctx, args) => {
   throw Error('Invalid args:', args)
 }
 
+const join = (ctx, calls) => {
+  let txt = ''
+  for (let i = 0; i < calls.length; ++i) {
+    if (i !== 0) txt += ', '
+    txt += build(ctx, calls[i])
+  }
+  return txt
+}
+
 const snakeCaseCache = {}
 const snakeCase = str =>
   snakeCaseCache[str] ||
@@ -57,5 +63,6 @@ module.exports = {
   isTaggedTemplate,
   buildTaggedTemplate,
   build,
+  join,
   snakeCase
 }

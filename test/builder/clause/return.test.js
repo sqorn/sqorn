@@ -43,4 +43,21 @@ describe('ret', () => {
       args: [7, 'Jo']
     })
   })
+  describe('multiple calls', () => {
+    query({
+      name: '2 calls',
+      query: sq.return`age`.return`name`,
+      text: 'select age, name'
+    })
+    query({
+      name: '3 calls',
+      query: sq.return`age`.return`name`.return`id`,
+      text: 'select age, name, id'
+    })
+    query({
+      name: 'mixed calls',
+      query: sq.return('age', 'name').return`id`,
+      text: 'select age, name, id'
+    })
+  })
 })

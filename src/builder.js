@@ -51,6 +51,9 @@ const createBuilder = config => {
     // special query building methods
     get delete() {
       return this.create({ type: 'delete', prev: this.method })
+    },
+    get recursive() {
+      return this.create({ type: 'recursive', prev: this.method })
     }
   }
   ;[

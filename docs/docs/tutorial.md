@@ -28,46 +28,42 @@ const sq = require('sqorn')({
 })
 ```
 
-`sq` is the query-building interface. It has methods for building and executing SQL queries. 
-
-Query-building methods are chainable. They return an new, updated, immutable query-building instance. All methods can be called as either regular functions or as template literal tags.
-
-Execution methods return a Promise for results. 
+`sq` is the immutable query-building interface. It has methods for building and executing SQL queries. Query-building methods are chainable and return a new query-building instance.
 
 ## Manual Queries
 
 Construct a query manually with `sq.l`. 
 
 ```js
-const minAge = 20, maxAge = 30
-const getPeople = sq.l`select * from person where age >= ${minAge} and age < ${maxAge}`
+const min = 20, max = 30
+const People = sq.l`select * from person where age >= ${min} and age < ${max}`
 ```
 
 Sqorn compiles this to a parameterized query safe from SQL injection. `.query` returns the compiled query object.
 
 ```js
-getPeople.query
+People.query
 
 { text: 'select * from person where age >= $1 and age < $2',
   args: [20, 30] }
 ```
 
-Execute the query and get back a Promise for all result rows with `.all`. The query builder is itself *thenable* so `.all` is optional. The following all print an array of people in the database.
+Execute the query and get back a Promise for all result rows with `.all`. The query builder is itself *thenable* so `.all` is optional. The following lines are equivalent:
 
 ```js
-getPeople.all().then(people => console.log(people))
-getPeople.then(people => console.log(people))
-console.log(await getPeople.all())
-console.log(await getPeople)
+console.log(await People.all())
+console.log(await People)
+People.all().then(people => console.log(people))
+People.then(people => console.log(people))
 ```
 
 Call `.one` to fetch only the first result, or `undefined` if there are no matching results. The following all print the first person (or `undefined`).
 
 ```js
-getPeople.one().then(person => console.log(person))
-getPeople.all().then(people => console.log(people[0])
-console.log(await getPeople.one())
-console.log((await getPeople)[0])
+People.one().then(person => console.log(person))
+People.all().then(people => console.log(people[0])
+console.log(await People.one())
+console.log((await People)[0])
 ```
 
 When you need a raw unparameterized argument, prefix it with `$`.
@@ -110,7 +106,7 @@ sq.from`book`.query
   args: [] }
 ```
 
-`.from` also accepts raw string arguments. To prevent SQL injection, do not pass user-provided table names.
+`.from` also accepts raw string table names. To prevent SQL injection, do not pass user-provided table names.
 
 ```js
 sq.from('book', 'author').query
@@ -128,16 +124,14 @@ sq.from`book left join author on book.author_id = author.id`.query
   args: [] }
 ```
 
-Only the last call to `.from` is used.
+Multiple `.from` calls are joined with `', '`.
 
 ```js
 sq.from`book`.from`person`.query
 
-{ text: 'select * from person',
+{ text: 'select * from book, person',
   args: [] }
 ```
-
-
 
 ### Where
 
@@ -180,9 +174,9 @@ sq.from`person`.where({ firstName: 'Kaladin' }).query
 If you need a non-equality condition, add a property whose value is created with `sq.l`. the property's key will be ignored.
 
 ```js
-const condMinYear = sq.l`year >= ${20}`
-const condMaxYear = sq.l`year < ${30}`
-sq.from`person`.where({ condMinYear, condMaxYear }).query
+const minYear = sq.l`year >= ${20}`
+const maxYear = sq.l`year < ${30}`
+sq.from`person`.where({ minYear, maxYear }).query
 
 { text: 'select * from person where year >= $1 and year < $2',
   args: [20, 30] }
@@ -219,7 +213,7 @@ sq.from`book`.return('title', 'author').query
   args: [] }
 ```
 
-Only the last call to `.return` is used.
+Multiple `.return` calls are joined with `', '`.
 
 ```js
 sq.from`book`.return('title', 'author').return`id`.query
@@ -232,22 +226,20 @@ sq.from`book`.return('title', 'author').return`id`.query
 
 The first, second, and third calls of `sq` are equivalent to calling `.from`, `.where`, and `.return` respectively.
 
-The following are sets of equivalent queries:
+The following are three sets of equivalent queries:
 
 ```js
-const name = 'Dalinar'
-
 sq`person`
 sq('person')
 sq.from`person`
 
-sq`person``name = ${name}`
-sq`person`({ name })
-sq.from`person`.where`name = ${name}`
+sq`person``name = ${'Jo'}`
+sq`person`({ name: 'Jo' })
+sq.from`person`.where`name = ${'Jo'}`
 
-sq`person``name = ${name}``age`
-sq.from`person`.where`name = ${name}`.return`age`
-sq.from('person').where({ name }).return('age')
+sq`person``name = ${'Jo'}``age`
+sq.from`person`.where`name = ${'Jo'}`.return`age`
+sq.from('person').where({ name: 'Jo' }).return('age')
 ```
 
 ### Group By
@@ -439,11 +431,20 @@ TODO
 
 ### Subqueries
 
-TODO
+Queries can be embedded into other queries as subqueries.
+
+```js
+const Atlanta = sq`city`({ name: 'Atlanta' })
+
+```
+
+
 
 ### Extend Queries
 
 TODO
+
+
 
 ### With (CTEs)
 

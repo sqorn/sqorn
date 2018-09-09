@@ -27,12 +27,12 @@ describe('select query - tagged template', () => {
   query({
     name: 'select - .from``.where``',
     query: sq.from`person`.where`age > 7`,
-    text: 'select * from person where age > 7'
+    text: 'select * from person where (age > 7)'
   })
   query({
     name: 'select - .from``.where``.return``',
     query: sq.from`person`.where`age > 7`.return`age`,
-    text: 'select age from person where age > 7'
+    text: 'select age from person where (age > 7)'
   })
 })
 
@@ -50,12 +50,12 @@ describe('delete query - tagged template', () => {
   query({
     name: 'delete - .from``.where``',
     query: sq.delete.from`person`.where`age > 7`,
-    text: 'delete from person where age > 7'
+    text: 'delete from person where (age > 7)'
   })
   query({
     name: 'delete - .from``.where``.return',
     query: sq.delete.from`person`.where`age > 7`.return`age`,
-    text: 'delete from person where age > 7 returning age'
+    text: 'delete from person where (age > 7) returning age'
   })
 })
 
@@ -88,12 +88,12 @@ describe('update query - tagged template', () => {
   query({
     name: 'update - .from`.where``.set``',
     query: sq.from`person`.where`age < 18`.set`age = age + 1`,
-    text: 'update person set age = age + 1 where age < 18'
+    text: 'update person set age = age + 1 where (age < 18)'
   })
   query({
     name: 'update - .from``.set``.where``',
     query: sq.from`person`.set`age = age + 1`.where`age < 18`,
-    text: 'update person set age = age + 1 where age < 18'
+    text: 'update person set age = age + 1 where (age < 18)'
   })
   query({
     name: 'update - .from``.set``.return``',
@@ -103,7 +103,7 @@ describe('update query - tagged template', () => {
   query({
     name: 'update - .from``.where``.set``.return``',
     query: sq.from`person`.where`age < 18`.set`age = age + 1`.return`age`,
-    text: 'update person set age = age + 1 where age < 18 returning age'
+    text: 'update person set age = age + 1 where (age < 18) returning age'
   })
 })
 
@@ -116,22 +116,22 @@ describe('express query - tagged template', () => {
   query({
     name: 'select - `frm``whr`',
     query: sq`person``age > 7`,
-    text: 'select * from person where age > 7'
+    text: 'select * from person where (age > 7)'
   })
   query({
     name: 'select - `frm``whr``ret`',
     query: sq`person``age > 7``age``age`,
-    text: 'select age from person where age > 7'
+    text: 'select age from person where (age > 7)'
   })
   query({
     name: 'select - `frm`.where',
     query: sq`person`.where`age > 7`,
-    text: 'select * from person where age > 7'
+    text: 'select * from person where (age > 7)'
   })
   query({
     name: 'select - `frm``whr`.return',
     query: sq`person``age > 7`.return`age`,
-    text: 'select age from person where age > 7'
+    text: 'select age from person where (age > 7)'
   })
 })
 
@@ -139,25 +139,25 @@ describe('select query - tagged template args', () => {
   query({
     name: 'select - .from``.where`${int}`',
     query: sq.from`person`.where`age > ${7}`,
-    text: 'select * from person where age > $1',
+    text: 'select * from person where (age > $1)',
     args: [7]
   })
   query({
     name: 'select - .from``.where`${int}${int}`',
     query: sq.from`person`.where`age >= ${20} and age <= ${29}`,
-    text: 'select * from person where age >= $1 and age <= $2',
+    text: 'select * from person where (age >= $1 and age <= $2)',
     args: [20, 29]
   })
   query({
     name: 'select - .from``.where`${string}`',
     query: sq.from`person`.where`name = ${'bob'}`,
-    text: 'select * from person where name = $1',
+    text: 'select * from person where (name = $1)',
     args: ['bob']
   })
   query({
     name: 'select - .from``.where`${object}`',
     query: sq.from`person`.where`name = ${'bob'}`,
-    text: 'select * from person where name = $1',
+    text: 'select * from person where (name = $1)',
     args: ['bob']
   })
 })
@@ -181,7 +181,7 @@ describe('query - tagged template sql arg', () => {
   query({
     name: 'select - .l`${sq``}`',
     query: sq`(${sq`person``age > 7`})`.return`name`,
-    text: 'select name from (select * from person where age > 7)',
+    text: 'select name from (select * from person where (age > 7))',
     args: []
   })
 })

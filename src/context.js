@@ -3,9 +3,11 @@ const context = (method, inherit = { arg: [] }, existingCtx) => {
   // initialize context inheriting some properties from parent query
   const ctx = existingCtx || {
     type: 'select',
-    exp: 'frm',
+    exp: 'from',
     sql: [],
+    frm: [],
     whr: [],
+    ret: [],
     ins: [],
     set: [],
     arg: inherit.arg
@@ -31,15 +33,19 @@ const apply = (ctx, method) => {
       break
     // shared
     case 'with':
-      throw Error('Unimplemented')
+      ctx.with = method.args
+      break
+    case 'recursive':
+      ctx.recursive = true
+      break
     case 'from':
-      ctx.frm = method.args
+      ctx.frm.push(method.args)
       break
     case 'where':
       ctx.whr.push(method.args)
       break
     case 'return':
-      ctx.ret = method.args
+      ctx.ret.push(method.args)
       break
     // select
     case 'group':
@@ -81,16 +87,16 @@ const apply = (ctx, method) => {
     // express syntax
     case 'exp':
       switch (ctx.exp) {
-        case 'frm':
-          ctx.frm = method.args
-          ctx.exp = 'whr'
+        case 'from':
+          ctx.frm.push(method.args)
+          ctx.exp = 'where'
           break
-        case 'whr':
+        case 'where':
           ctx.whr.push(method.args)
-          ctx.exp = 'ret'
+          ctx.exp = 'return'
           break
-        case 'ret':
-          ctx.ret = method.args
+        case 'return':
+          ctx.ret.push(method.args)
           ctx.exp = 'done'
           break
       }

@@ -1,7 +1,7 @@
-const { build } = require('./util')
+const { join } = require('./util')
 
 module.exports = ctx => {
   if (!ctx.ret) return
-  const txt = build(ctx, ctx.ret)
+  const txt = join(ctx, ctx.ret)
   return txt && `returning ${txt}`
 }
