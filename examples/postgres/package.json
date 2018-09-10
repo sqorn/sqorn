@@ -4,6 +4,6 @@
   "license": "MIT",
   "dependencies": {
     "pg": "latest",
-    "sqorn": "latest"
+    "sqorn": "0.0.18"
   }
 }

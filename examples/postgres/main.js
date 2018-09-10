@@ -12,7 +12,7 @@ async function main() {
   // create app database
   await sq.l`create database $${appDatabase}`
   // disconnect from admin database
-  sq.end()
+  await sq.end()
   // connect to created database
   sq = sqorn({ pg: { connectionString: server + appDatabase } })
   // create author table
@@ -32,7 +32,7 @@ async function main() {
                     foreign key (author_id) references author (id)
   )`
   // populate author table
-  const [sanderson, jordan, tolkien] = await sq`author`.insert(
+  const [sanderson, jordan, tolkien] = await sq`author`.return`id`.insert(
     {
       firstName: 'Brandon',
       lastName: 'Sanderson',
@@ -71,7 +71,7 @@ async function main() {
     }
   )
   // disconnect from database
-  sq.end()
+  await sq.end()
 }
 
 main()
