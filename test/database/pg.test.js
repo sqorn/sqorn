@@ -1,29 +1,25 @@
-const sqorn = require('../../src')
+const sqorn = require('../../packages/sqorn/src')
+const client = require('../../packages/sqorn-pg/src')
+
 const db_name = 'sqorn_pg_test'
-
 const adminConnection = {
-  pg: {
-    connectionString: 'postgresql://postgres@localhost:5432/postgres'
-  }
+  connectionString: 'postgresql://postgres@localhost:5432/postgres'
 }
-
 const connection = {
-  pg: {
-    // username: postgres, no password, database name: sqorn_test
-    connectionString: `postgresql://postgres@localhost:5432/${db_name}`
-  }
+  // username: postgres, no password, database name: sqorn_test
+  connectionString: `postgresql://postgres@localhost:5432/${db_name}`
 }
 
 describe('pg', async () => {
   beforeAll(async () => {
-    const sq = sqorn(adminConnection)
+    const sq = sqorn({ client, connection: adminConnection })
     await sq.l`drop database if exists $${db_name}`
     await sq.l`create database $${db_name}`
-    sq.end()
+    await sq.end()
   })
-  const sq = sqorn(connection)
+  const sq = sqorn({ client, connection })
   afterAll(async () => {
-    sq.end()
+    await sq.end()
   })
   test('db empty', async () => {
     expect(

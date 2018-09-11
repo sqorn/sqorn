@@ -21,6 +21,46 @@ declare module 'sqorn' {
   interface sq {
 
     /**
+     * EXPRESS query builder - shorthand query syntax
+     * 
+     * First call is `.from`. Second call is `.where`. Third call is `.return`.
+     * Subsequent calls ignore.
+     * 
+     * @example
+     * sq`book`
+     * // select * from book
+     * sq`book``pages > 7`
+     * // select * from book where pages > 7
+     * sq`book``pages > 7``title`
+     * // select title from book where pages > 7
+     * sq`book`({ pages: 70  })
+     * // select * from book where pages = 70
+     * sq`book`()`title`
+     * // select title from book
+     */
+    (strings: TemplateStringsArray, ...args: any[]): sq
+
+    /**
+     * EXPRESS query builder - shorthand query syntax
+     * 
+     * First call is `.from`. Second call is `.where`. Third call is `.return`.
+     * Subsequent calls ignore.
+     * 
+     * @example
+     * sq('book')
+     * // select * from book
+     * sq('book')({ pages: 7 })
+     * // select * from book where pages = 7
+     * sq('book')({ pages: 7 })('title')
+     * // select title from book where pages = 7
+     * sq`book`({ pages: 70  })
+     * // select * from book where pages = 70
+     * sq`book`()`title`
+     * // select title from book
+     */
+    (...args: any[]): sq
+
+    /**
      * Closes database connection
      */
     end(): Promise<void>
@@ -115,26 +155,6 @@ declare module 'sqorn' {
      * }
      */
     transaction(): Promise<Transaction>
-
-    /**
-     * EXPRESS query builder - shorthand query syntax
-     * 
-     * First call is `.from`. Second call is `.where`. Third call is `.return`.
-     * Subsequent calls ignore.
-     * 
-     * @example
-     * sq`book`
-     * // select * from book
-     * sq`book``pages > 7`
-     * // select * from book where pages > 7
-     * sq`book``pages > 7``title`
-     * // select title from book where pages > 7
-     * sq`book`({ pages: 70  })
-     * // select * from book where pages = 70
-     * sq`book`()`title`
-     * // select title from book
-     */
-    (...args: any[]): sq
 
     /**
      * Raw SQL - build raw SQL query
@@ -445,16 +465,16 @@ declare module 'sqorn' {
     // TODO: Typescript Promise/Thenable interface
   }
 
-  interface Config {
-    pg?: any
-  }
-
   /**
    * Creates and returns a query builder with the given configuration
    * 
-   * @param {any} [config.pg] - node-postgres connection configuration
+   * @param [config.client] - sqorn client library (sqorn-pg)
+   * @param [config.connection] - connection configuration
    */
-  function sqorn(config?: Config): sq
+  function sqorn({
+    client: any,
+    connection: any
+  }): sq
 
   export = sqorn
 }

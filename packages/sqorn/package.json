@@ -1,0 +1,35 @@
+{
+  "name": "sqorn",
+  "version": "0.0.18",
+  "description": "A Javascript Library for Building SQL Queries",
+  "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "main": "./src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lusakasa/sqorn.git"
+  },
+  "homepage": "https://sqorn.org",
+  "bugs": {
+    "url": "https://github.com/lusakasa/sqorn/issues"
+  },
+  "keywords": [
+    "javascript",
+    "sql",
+    "postgres",
+    "postgresql",
+    "query",
+    "builder",
+    "template",
+    "strings",
+    "tagged",
+    "template",
+    "literals"
+  ],
+  "dependencies": {
+    "lodash.snakecase": "^4.1.1"
+  }
+}

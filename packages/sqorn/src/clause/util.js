@@ -21,7 +21,7 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
       txt += prevString + arg.bld(ctx).text
     } else {
       // parameterized arg
-      txt += prevString + parameter(ctx, arg)
+      txt += prevString + ctx.parameter(ctx, arg)
     }
   }
   return txt + strings[i]
@@ -59,7 +59,6 @@ const snakeCase = str =>
     .join('.'))
 
 module.exports = {
-  parameter,
   isTaggedTemplate,
   buildTaggedTemplate,
   build,

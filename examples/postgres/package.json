@@ -1,9 +1,9 @@
 {
-  "name": "postgres-example",
-  "version": "1.0.0",
+  "name": "sqorn-postgres-example",
+  "private": true,
   "license": "MIT",
   "dependencies": {
     "pg": "latest",
-    "sqorn": "0.0.18"
+    "sqorn": "latest"
   }
 }

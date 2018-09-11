@@ -4,6 +4,8 @@ node_js:
 cache:
   directories:
   - node_modules
+services:
+  - postgresql
 deploy:
   provider: npm
   email: eejdoowad@gmail.com

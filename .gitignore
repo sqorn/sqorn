@@ -6,3 +6,4 @@ npm-debug.log
 debug.log
 .DS_Store
 .vscode
+lerna-debug.log

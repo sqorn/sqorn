@@ -1,9 +1,4 @@
-const {
-  isTaggedTemplate,
-  buildTaggedTemplate,
-  parameter,
-  snakeCase
-} = require('./util')
+const { isTaggedTemplate, buildTaggedTemplate, snakeCase } = require('./util')
 
 module.exports = ctx => {
   const { columns, values } = inserts(ctx)
@@ -38,9 +33,9 @@ const inserts = ctx => {
 }
 
 const columnNamesFromArgList = (ctx, args, numColumns) => {
-  let txt = parameter(ctx, args[0])
+  let txt = ctx.parameter(ctx, args[0])
   for (let i = 1; i < numColumns; ++i) {
-    txt += ', ' + parameter(ctx, args[i])
+    txt += ', ' + ctx.parameter(ctx, args[i])
   }
   return txt
 }
@@ -72,9 +67,9 @@ const valueTuplesFromObjects = (ctx, columns) => {
     for (let j = 0; j < args.length; ++j) {
       if (j > 0) txt += ', '
       const arg = args[j]
-      txt += '(' + parameter(ctx, arg[columns[0]])
+      txt += '(' + ctx.parameter(ctx, arg[columns[0]])
       for (let k = 1; k < columns.length; ++k) {
-        txt += ', ' + parameter(ctx, arg[columns[k]])
+        txt += ', ' + ctx.parameter(ctx, arg[columns[k]])
       }
       txt += ')'
     }

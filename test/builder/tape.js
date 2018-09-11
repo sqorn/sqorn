@@ -1,5 +1,6 @@
-const sqorn = require('../../src/index.js')
-const sq = sqorn()
+const sqorn = require('../../packages/sqorn/src')
+const client = require('../../packages/sqorn-pg/src')
+const sq = sqorn({ client })
 
 const query = ({ name, query, text, args = [] }) =>
   test(name, () => {

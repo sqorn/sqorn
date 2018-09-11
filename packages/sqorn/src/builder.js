@@ -1,8 +1,14 @@
-const createClient = require('./client')
 const context = require('./context')
 const query = require('./query')
 
-const createBuilder = config => {
+const createBuilder = ({
+  client: {
+    database,
+    builder: { parameter }
+  },
+  connection
+} = {}) => {
+  const client = connection && database(connection)
   const builder = {
     create(method) {
       const fn = (...args) => fn.create({ type: 'exp', args, prev: fn.method })
@@ -10,10 +16,9 @@ const createBuilder = config => {
       Object.setPrototypeOf(fn, builder)
       return fn
     },
-    client: createClient(config),
     // close connection
     async end() {
-      return this.client.end()
+      return client.end()
     },
     // compilation methods
     bld(inheritedCtx) {
@@ -21,34 +26,23 @@ const createBuilder = config => {
       return query[ctx.type](ctx)
     },
     get query() {
-      return this.bld()
+      return this.bld({ parameter })
     },
     // execution methods
     async one(trx) {
-      const rows = await this.client.query(this.bld(), trx)
+      const rows = await client.query(this.query, trx)
       return rows[0]
     },
     async all(trx) {
-      return this.client.query(this.bld(), trx)
+      return client.query(this.query, trx)
     },
     then(resolve) {
       resolve(this.all())
     },
-    // miscellaneous methods
-    async transaction(fn) {
-      return this.client.transaction(fn)
+    transaction(fn) {
+      return fn ? client.transactionCallback(fn) : client.transactionObject()
     },
-    // logical operators
-    not(arg) {
-      throw Error('Unimplemented')
-    },
-    and(a, b) {
-      throw Error('Unimplemented')
-    },
-    or(a, b) {
-      throw Error('Unimplemented')
-    },
-    // special query building methods
+    // getter query building methods
     get delete() {
       return this.create({ type: 'delete', prev: this.method })
     },
@@ -56,6 +50,7 @@ const createBuilder = config => {
       return this.create({ type: 'recursive', prev: this.method })
     }
   }
+  // function query building methods
   ;[
     'l',
     'with',

@@ -1,5 +1,5 @@
 /** Transforms method call linked list to context object */
-const context = (method, inherit = { arg: [] }, existingCtx) => {
+const context = (method, inherit, existingCtx) => {
   // initialize context inheriting some properties from parent query
   const ctx = existingCtx || {
     type: 'select',
@@ -10,7 +10,8 @@ const context = (method, inherit = { arg: [] }, existingCtx) => {
     ret: [],
     ins: [],
     set: [],
-    arg: inherit.arg
+    arg: inherit.arg || [],
+    parameter: inherit.parameter
   }
   // follow method links to construct methods array (in reverse)
   const methods = []

@@ -1,9 +1,4 @@
-const {
-  parameter,
-  isTaggedTemplate,
-  buildTaggedTemplate,
-  snakeCase
-} = require('./util')
+const { isTaggedTemplate, buildTaggedTemplate, snakeCase } = require('./util')
 
 // 1. tagged template
 // 2. ...[c in conditions] where c in:
@@ -65,5 +60,5 @@ const buildCondition = (ctx, obj, key) => {
   const val = obj[key]
   return typeof val === 'function'
     ? val.bld(ctx).text
-    : snakeCase(key) + ' = ' + parameter(ctx, val)
+    : snakeCase(key) + ' = ' + ctx.parameter(ctx, val)
 }
