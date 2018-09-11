@@ -6,6 +6,8 @@
     "node": ">=8.0.0"
   },
   "scripts": {
+    "postinstall": "lerna bootstrap",
+    "lerna": "lerna",
     "test": "jest test/**",
     "test:db": "jest test/database/**"
   },
