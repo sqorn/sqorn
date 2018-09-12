@@ -1,7 +1,7 @@
 const { join } = require('../util')
 
 module.exports = ctx => {
-  if (!ctx.ret) return
-  const txt = join(ctx, ctx.ret)
+  if (!ctx.returning) return
+  const txt = join(ctx, ctx.returning)
   return txt && `returning ${txt}`
 }
