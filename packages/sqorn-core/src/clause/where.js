@@ -5,13 +5,13 @@ const { isTaggedTemplate, buildTaggedTemplate, snakeCase } = require('../util')
 //    a. call to sq.whr, sq.and, sq.or, or sq.not
 //    b. object argument
 module.exports = ctx => {
-  if (ctx.whr.length === 0) return
+  if (ctx.where.length === 0) return
   const txt = whereConditions(ctx)
   return txt && 'where ' + txt
 }
 
 const whereConditions = ctx => {
-  const calls = ctx.whr
+  const calls = ctx.where
   if (calls.length === 0) return ''
   let txt = whereCondition(ctx, calls[0])
   for (let i = 1; i < calls.length; ++i) {

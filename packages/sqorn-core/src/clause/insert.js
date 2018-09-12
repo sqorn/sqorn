@@ -1,6 +1,6 @@
 const { join } = require('../util')
 
 module.exports = ctx => {
-  const txt = join(ctx, ctx.frm)
+  const txt = join(ctx, ctx.from)
   return txt && `insert into ${txt}`
 }

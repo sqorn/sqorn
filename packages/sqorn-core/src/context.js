@@ -5,10 +5,10 @@ const context = (method, inherit, existingCtx) => {
     type: 'select',
     exp: 'from',
     sql: [],
-    frm: [],
-    whr: [],
-    ret: [],
-    ins: [],
+    from: [],
+    where: [],
+    returning: [],
+    insert: [],
     set: [],
     arg: inherit.arg || [],
     parameter: inherit.parameter
@@ -40,35 +40,35 @@ const apply = (ctx, method) => {
       ctx.recursive = true
       break
     case 'from':
-      ctx.frm.push(method.args)
+      ctx.from.push(method.args)
       break
     case 'where':
-      ctx.whr.push(method.args)
+      ctx.where.push(method.args)
       break
     case 'return':
-      ctx.ret.push(method.args)
+      ctx.returning.push(method.args)
       break
     // select
     case 'group':
-      ctx.grp = method.args
+      ctx.groupby = method.args
       break
     case 'having':
-      ctx.hav = method.args
+      ctx.having = method.args
       break
     case 'order':
-      ctx.ord = method.args
+      ctx.orderby = method.args
       break
     case 'limit':
-      ctx.lim = method.args
+      ctx.limit = method.args
       break
     case 'offset':
-      ctx.off = method.args
+      ctx.offset = method.args
       break
     // insert
     case 'insert':
-    case 'value':
+    case 'values':
       ctx.type = 'insert'
-      ctx.ins.push(method.args)
+      ctx.insert.push(method.args)
       break
     // update
     case 'set':
@@ -89,15 +89,15 @@ const apply = (ctx, method) => {
     case 'exp':
       switch (ctx.exp) {
         case 'from':
-          ctx.frm.push(method.args)
+          ctx.from.push(method.args)
           ctx.exp = 'where'
           break
         case 'where':
-          ctx.whr.push(method.args)
+          ctx.where.push(method.args)
           ctx.exp = 'return'
           break
         case 'return':
-          ctx.ret.push(method.args)
+          ctx.returning.push(method.args)
           ctx.exp = 'done'
           break
       }

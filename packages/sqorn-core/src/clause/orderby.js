@@ -1,7 +1,7 @@
 const { build } = require('../util')
 
 module.exports = ctx => {
-  if (!ctx.ord) return
-  const txt = build(ctx, ctx.ord)
+  if (!ctx.orderby) return
+  const txt = build(ctx, ctx.orderby)
   return txt && `order by ${txt}`
 }

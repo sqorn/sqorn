@@ -57,7 +57,7 @@ module.exports = ({ database, builder: { parameter } }) => (config = {}) => {
     'limit',
     'offset',
     'insert',
-    'value',
+    'values',
     'set',
     'extend'
   ].forEach(key => {

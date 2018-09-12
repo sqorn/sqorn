@@ -1,7 +1,7 @@
 const { build } = require('../util')
 
 module.exports = ctx => {
-  if (!ctx.grp) return
-  const txt = build(ctx, ctx.grp)
+  if (!ctx.group) return
+  const txt = build(ctx, ctx.group)
   return txt && `group by ${txt}`
 }
