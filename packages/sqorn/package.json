@@ -19,17 +19,17 @@
   "keywords": [
     "javascript",
     "sql",
-    "postgres",
-    "postgresql",
     "query",
     "builder",
     "template",
     "strings",
     "tagged",
     "template",
-    "literals"
+    "literals",
+    "postgres",
+    "postgresql"
   ],
   "dependencies": {
-    "lodash.snakecase": "^4.1.1"
+    "sqorn-pg": "^0.0.0"
   }
 }
