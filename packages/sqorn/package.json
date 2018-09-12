@@ -1,6 +1,6 @@
 {
   "name": "sqorn",
-  "version": "0.0.19",
+  "version": "0.0.20",
   "description": "A Javascript Library for Building SQL Queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -30,6 +30,6 @@
     "postgresql"
   ],
   "dependencies": {
-    "sqorn-pg": "^0.0.0"
+    "sqorn-pg": "^0.0.20"
   }
 }
