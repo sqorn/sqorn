@@ -6,13 +6,24 @@
     "node": ">=8.0.0"
   },
   "scripts": {
-    "postinstall": "lerna bootstrap",
     "lerna": "lerna",
+    "postinstall": "lerna bootstrap",
+    "publish": "lerna publish",
     "test": "jest test/**",
     "test:db": "jest test/database/**"
   },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,json,css,md,yml,yaml,ts}": ["prettier --write", "git add"]
+  },
   "devDependencies": {
+    "husky": "^0.14.3",
     "jest": "^23.4.1",
-    "lerna": "^3.3.0"
+    "lerna": "^3.3.0",
+    "lint-staged": "^7.2.2"
   }
 }

@@ -8,14 +8,8 @@
     "node": ">=8.0.0"
   },
   "main": "./src/index.js",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/lusakasa/sqorn.git"
-  },
+  "repository": "https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-sqlite",
   "homepage": "https://sqorn.org",
-  "bugs": {
-    "url": "https://github.com/lusakasa/sqorn/issues"
-  },
   "keywords": [
     "sqorn",
     "javascript",
