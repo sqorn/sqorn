@@ -1,5 +1,4 @@
-const sqorn = require('../../packages/sqorn/src')
-const client = require('../../packages/sqorn-pg/src')
+const sqorn = require('../../packages/sqorn-pg')
 
 const db_name = 'sqorn_pg_test'
 const adminConnection = {
@@ -12,12 +11,12 @@ const connection = {
 
 describe('pg', async () => {
   beforeAll(async () => {
-    const sq = sqorn({ client, connection: adminConnection })
+    const sq = sqorn({ connection: adminConnection })
     await sq.l`drop database if exists $${db_name}`
     await sq.l`create database $${db_name}`
     await sq.end()
   })
-  const sq = sqorn({ client, connection })
+  const sq = sqorn({ connection })
   afterAll(async () => {
     await sq.end()
   })

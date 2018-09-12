@@ -1,7 +1,7 @@
 {
   "name": "sqorn-pg",
   "version": "0.0.0",
-  "description": "Postgres Client for Sqorn",
+  "description": "A Javascript library for building Postgres SQL queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
   "engines": {
@@ -17,6 +17,7 @@
     "url": "https://github.com/lusakasa/sqorn/issues"
   },
   "keywords": [
+    "sqorn",
     "javascript",
     "sql",
     "query",
@@ -25,7 +26,7 @@
     "postgresql"
   ],
   "dependencies": {
-    "lodash.camelcase": "^4.3.0",
-    "pg": "^7.4.3"
+    "pg": "^7.4.3",
+    "sqorn-core": "^0.0.0"
   }
 }

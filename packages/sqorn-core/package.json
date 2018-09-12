@@ -1,7 +1,7 @@
 {
-  "name": "sqorn",
-  "version": "0.0.19",
-  "description": "A Javascript Library for Building SQL Queries",
+  "name": "sqorn-core",
+  "version": "0.0.0",
+  "description": "Sqorn Core library",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
   "engines": {
@@ -30,6 +30,7 @@
     "literals"
   ],
   "dependencies": {
+    "lodash.camelcase": "^4.3.0",
     "lodash.snakecase": "^4.1.1"
   }
 }
