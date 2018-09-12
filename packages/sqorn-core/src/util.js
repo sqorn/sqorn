@@ -37,25 +37,38 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
   return txt + strings[i]
 }
 
+const join = (ctx, calls) => {
+  let txt = ''
+  for (let i = 0; i < calls.length; ++i) {
+    if (i !== 0) txt += ', '
+    txt += build(ctx, calls[i])
+  }
+  return txt
+}
+
 const build = (ctx, args) => {
   if (args === undefined) {
     // no from clause
-    return undefined
+    return ''
   } else if (typeof args[0] === 'string') {
     // string table names
     return args.join(', ')
   } else if (isTaggedTemplate(args)) {
     // template string tables
     return buildTaggedTemplate(ctx, args)
+  } else {
+    return objectTables(ctx, args[0])
+    // object tables
   }
-  throw Error('Invalid args:', args)
 }
 
-const join = (ctx, calls) => {
+const objectTables = (ctx, obj) => {
   let txt = ''
-  for (let i = 0; i < calls.length; ++i) {
+  const keys = Object.keys(obj)
+  for (let i = 0; i < keys.length; ++i) {
     if (i !== 0) txt += ', '
-    txt += build(ctx, calls[i])
+    const key = keys[i]
+    txt += `${obj[key]} as ${key}`
   }
   return txt
 }
