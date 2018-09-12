@@ -1,6 +1,6 @@
 {
   "name": "sqorn-pg",
-  "version": "0.0.21",
+  "version": "0.0.22",
   "description": "A Javascript library for building Postgres SQL queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -21,6 +21,6 @@
   ],
   "dependencies": {
     "pg": "^7.4.3",
-    "sqorn-core": "^0.0.21"
+    "sqorn-core": "^0.0.22"
   }
 }
