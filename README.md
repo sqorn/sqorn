@@ -45,7 +45,7 @@ await Person.insert({ firstName: 'Rob' })
 
 // UPDATE
 await Person({ id: 23 }).set({ name: 'Rob' })
-// "update set name = 'Rob' person where id = 23"
+// "update person set name = 'Rob' where id = 23"
 
 ```
 
