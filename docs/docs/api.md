@@ -14,17 +14,16 @@ Sqorn doesn't interface directly with databases. Instead, queries and results ar
 
 ### node-postgres
 
-Sqorn supports [**node-postgres**](https://node-postgres.com/). Install *node-postgres* with `npm install --save pg`.
+Sqorn supports [**node-postgres**](https://node-postgres.com/). 
 
 Call `sqorn` and pass it an object with a property whose key is `pg` and whose value is the [connection configuration specified by node-postgres](https://node-postgres.com/features/connecting). The value may be `undefined` if the connection details are specified with environment variables.
 
 ```javascript
-  const sqorn = require('sqorn')
+  const sqorn = require('sqorn-pg')
   const sq = sqorn({
-    pg: { connectionString: 'postgresql://postgres@localhost:5432/postgres' }
+    connectionString: 'postgresql://postgres@localhost:5432/postgres' }
     // or {   user: 'postgres', host: 'localhost', database: 'postgres', port: 3211 }
   })
-  // sq is a query builder
 ```
 
 ## sq

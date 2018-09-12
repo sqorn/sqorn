@@ -11,20 +11,17 @@ sidebar_label: Tutorial
 Use npm to install Sqorn and your preferred database library.
 
 ```sh
-npm install --save sqorn
-npm install --save pg # postgres is the only database currently supported
+npm install --save sqorn-pg # postgres is the only database currently supported
 ```
 
 
 ### Initialize
 
-Create a query building instance connected to your database. Here, we connect to a local Postgres server:
+Create a query building instance connected to your database. Here, we connect to a local Postgres server using a [connection string](https://node-postgres.com/features/connecting#connection-uri):
 
 ```javascript
-const sq = require('sqorn')({
-  pg: {
-    connectionString: 'postgresql://postgres@localhost:5432/postgres'
-  }
+const sq = require('sqorn-pg')({
+  connectionString: 'postgresql://postgres@localhost:5432/postgres'
 })
 ```
 
