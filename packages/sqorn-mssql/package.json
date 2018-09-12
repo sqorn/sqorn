@@ -1,0 +1,27 @@
+{
+  "name": "sqorn-mssql",
+  "version": "0.0.20",
+  "description": "A Javascript library for building MSSQL queries",
+  "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "main": "./src/index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lusakasa/sqorn.git"
+  },
+  "homepage": "https://sqorn.org",
+  "bugs": {
+    "url": "https://github.com/lusakasa/sqorn/issues"
+  },
+  "keywords": [
+    "sqorn",
+    "javascript",
+    "sql",
+    "query",
+    "builder",
+    "mssql"
+  ]
+}
