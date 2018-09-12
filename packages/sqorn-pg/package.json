@@ -21,6 +21,7 @@
   ],
   "dependencies": {
     "pg": "^7.4.3",
-    "sqorn-core": "^0.0.22"
+    "sqorn-core": "^0.0.22",
+    "sqorn-sql": "^0.0.22"
   }
 }

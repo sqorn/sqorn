@@ -1,5 +1,7 @@
 # Sqorn Core
 
+WORK IN PROGRESS
+
 Sqorn Core is a Javascript library for building query builders.
 
 Query builders built with Sqorn Core are immutable, composable, chainable, fast, and secure.

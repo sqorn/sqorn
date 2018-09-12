@@ -86,7 +86,7 @@ const apply = (ctx, method) => {
       }
       break
     // express syntax
-    case 'exp':
+    case 'express':
       switch (ctx.exp) {
         case 'from':
           ctx.frm.push(method.args)

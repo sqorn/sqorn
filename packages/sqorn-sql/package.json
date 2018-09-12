@@ -1,14 +1,14 @@
 {
-  "name": "sqorn-core",
+  "name": "sqorn-sql",
   "version": "0.0.22",
-  "description": "A Javascript library for building query builders",
+  "description": "Utilities for making SQL query builders with Sqorn",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
   "engines": {
     "node": ">=8.0.0"
   },
   "main": "./src/index.js",
-  "repository": "https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-core",
+  "repository": "https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-sql",
   "homepage": "https://sqorn.org",
   "keywords": [
     "javascript",
@@ -21,5 +21,8 @@
     "template",
     "literals"
   ],
-  "dependencies": {}
+  "dependencies": {
+    "lodash.camelcase": "^4.3.0",
+    "lodash.snakecase": "^4.1.1"
+  }
 }
