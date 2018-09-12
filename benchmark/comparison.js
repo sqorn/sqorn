@@ -1,9 +1,7 @@
 const Benchmark = require('benchmark')
 const knex = require('knex')({ client: 'pg' })
 const squel = require('squel').useFlavour('postgres')
-const sqorn = require('../packages/sqorn/src')
-const client = require('../packages/sqorn-pg/src')
-const sq = sqorn({ client })
+const sq = require('../packages/sqorn-pg')()
 
 new Benchmark.Suite()
   .add('Sqorn - args', function() {

@@ -1,11 +1,8 @@
 const React = require('react')
 
-const preamble = `
-  const sqorn = require('sqorn')
-  const sq = sqorn()
-`
+const source = `const sq = require('sqorn-pg')()
 
-const source = `const kid = sq.from\\\`person\\\`.where\\\`age < ${13}\\\`
+const kid = sq.from\\\`person\\\`.where\\\`age < ${13}\\\`
 const boy = kid.where\\\`gender = 'male'\\\`
 
 boy.return\\\`id, name, age\\\`.query
@@ -15,7 +12,6 @@ const createRunkitEmbed = `
 var notebook = RunKit.createNotebook({
   element: document.getElementById("runkit"),
   source: \`${source}\`,
-  preamble: \`${preamble}\`,
   minHeight: '300px',
   onLoad: notebook => notebook.evaluate()
 })

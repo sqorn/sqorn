@@ -3,7 +3,7 @@ const React = require('react')
 const source = `const Benchmark = require('benchmark')
 const knex = require('knex')({ client: 'pg' })
 const squel = require('squel').useFlavour('postgres')
-const sq = require('sqorn')()
+const sq = require('sqorn-pg')()
 
 new Benchmark.Suite()
   .add('Sqorn - args', function() {
