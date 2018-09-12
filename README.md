@@ -2,21 +2,22 @@
 
 Sqorn is a Javascript library for building SQL queries.
 
-**Ergonomic:** Sqorn's intuitive API might make you forget you're building SQL.
-
 **Composable:** Build complex queries from simple parts. Chain, extend, and embed queries.
 
-**Boilerplate free:** Sqorn provides concise syntax for common CRUD operations.
+**Intuitive**: Sqorn's use of modern Javascript language features like tagged template literals and promises makes building and issuing SQL queries a breeze.
+
+**Concise:** Sqorn provides concise syntax for common CRUD operations.
 
 [**Fast:**](https://sqorn.org/benchmarks.html) 10x faster than [Knex.js](https://knexjs.org/) and 200x faster than [Squel](https://github.com/hiddentao/squel)
+
+**Secure:** Sqorn generates parameterized queries safe from SQL injection.
 
 ## Install
 
 Sqorn requires Node version 8 or above.
 
 ```sh
-npm install --save sqorn
-npm install --save pg # only Postgres is currently supported
+npm install --save sqorn-pg # only Postgres is currently supported
 ```
 
 Then read the [tutorial](https://sqorn.org/docs/tutorial.html) and [try the online demo](https://sqorn.org/demo.html).
@@ -26,7 +27,7 @@ Then read the [tutorial](https://sqorn.org/docs/tutorial.html) and [try the onli
 CRUD Operations are dead simple.
 
 ```js
-const sq = require('sqorn')()
+const sq = require('sqorn-pg')()
 
 const Person = sq`person`, Book = sq`book`
 
@@ -44,7 +45,7 @@ await Person.insert({ firstName: 'Rob' })
 
 // UPDATE
 await Person({ id: 23 }).set({ name: 'Rob' })
-// "update person where id = 23 set name = 'Rob'"
+// "update set name = 'Rob' person where id = 23"
 
 ```
 
@@ -70,7 +71,7 @@ sq.extend(
 // where language = 'French' and genre = 'Fantsy'
 
 // EMBED Queries
-sq.return`now() today, ${sq.return`now() + '1 day'`} tomorrow`
+sq.return`now() today, (${sq.return`now() + '1 day'`}) tomorrow`
 // select now() today, (select now() + '1 day') tomorrow
 ```
 
