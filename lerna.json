@@ -3,6 +3,7 @@
   "packages": [
     "packages/*"
   ],
+  "ci": false,
   "command": {
     "bootstrap": {
       "hoist": true,
