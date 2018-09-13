@@ -3,7 +3,12 @@
   "packages": [
     "packages/*"
   ],
-  "npmClientArgs": [
-    "--no-lockfile"
-  ]
+  "command": {
+    "bootstrap": {
+      "hoist": true,
+      "npmClientArgs": [
+        "--no-package-lock"
+      ]
+    }
+  }
 }

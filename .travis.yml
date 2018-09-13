@@ -9,4 +9,4 @@ cache:
 
 install:
   - npm install
-  - npm run bootstrap -- --ci
+  - ./node_modules/.bin/lerna bootstrap --hoist --ci

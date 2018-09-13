@@ -7,7 +7,7 @@
   },
   "scripts": {
     "lerna": "lerna",
-    "bootstrap": "lerna bootstrap --hoist",
+    "bootstrap": "lerna bootstrap",
     "clean": "lerna clean --yes",
     "publish": "lerna publish",
     "test": "jest test/**",
