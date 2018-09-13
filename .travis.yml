@@ -3,6 +3,9 @@ language: node_js
 node_js:
   - '8'
 
+services:
+  - postgresql
+
 cache:
   directories:
   - node_modules
