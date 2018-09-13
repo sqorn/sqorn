@@ -1,6 +1,15 @@
 {
+  "version": "0.0.23",
   "packages": [
     "packages/*"
   ],
-  "version": "0.0.23"
+  "ci": false,
+  "command": {
+    "bootstrap": {
+      "hoist": true,
+      "npmClientArgs": [
+        "--no-package-lock"
+      ]
+    }
+  }
 }

@@ -77,6 +77,25 @@ sq.return`now() today, (${sq.return`now() + '1 day'`}) tomorrow`
 
 Learn more in the [tutorial](https://sqorn.org/docs/tutorial.html).
 
+## Contributing
+
+Sqorn is a monorepo managed with Lerna. It contains the following packages:
+
+* [**Sqorn Core:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-core) A Javascript library for building query builders
+* [**Sqorn SQL:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-sql) Utilities for making SQL query builders
+* [**Sqorn Postgres:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-pg) A Javascript library for building Postgres queries
+* [**Sqorn SQLite:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-sqlite) A Javascript library for building SQLite queries
+* [**Sqorn MySQL:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-msyql) A Javascript library for building MySQL queries
+
+Clone the repo then run the following commands to install all dependencies:
+
+```sh
+npm install
+npm run bootstrap # installs dependencies in all packages
+```
+
+`npm test` runs all tests. `npm run clean` removes all dependencies.
+
 ## License
 
 MIT Licensed, Copyright (c) 2018 Sufyan Dawoodjee
