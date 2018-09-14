@@ -1,18 +1,18 @@
 const {
   wth,
-  sel,
-  frm,
-  whr,
-  grp,
-  hav,
-  ord,
-  lim,
-  off,
+  select,
+  from,
+  where,
+  group,
+  having,
+  order,
+  limit,
+  offset,
   del,
-  ret,
-  ins,
-  val,
-  upd,
+  returning,
+  insert,
+  value,
+  update,
   set,
   sql
 } = require('./clauses')
@@ -30,8 +30,8 @@ const query = (...clauses) => ctx => {
 
 module.exports = {
   sql: query(sql),
-  select: query(wth, sel, frm, whr, grp, hav, ord, lim, off),
-  delete: query(wth, del, whr, ret),
-  insert: query(wth, ins, val, ret),
-  update: query(wth, upd, set, whr, ret)
+  select: query(wth, select, from, where, group, having, order, limit, offset),
+  delete: query(wth, del, where, returning),
+  insert: query(wth, insert, value, returning),
+  update: query(wth, update, set, where, returning)
 }

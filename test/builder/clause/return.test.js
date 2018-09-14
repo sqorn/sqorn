@@ -1,6 +1,6 @@
 const { sq, query } = require('../tape')
 
-describe('ret', () => {
+describe('returning', () => {
   describe('template string', () => {
     query({
       name: '1 column',

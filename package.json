@@ -10,7 +10,7 @@
     "bootstrap": "lerna bootstrap",
     "clean": "lerna clean --yes",
     "publish": "lerna publish",
-    "test": "jest test/**",
+    "test": "jest test/*",
     "test:db": "jest test/database/**"
   },
   "husky": {
