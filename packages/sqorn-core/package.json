@@ -1,6 +1,6 @@
 {
   "name": "sqorn-core",
-  "version": "0.0.24",
+  "version": "0.0.25",
   "description": "A Javascript library for building query builders",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
