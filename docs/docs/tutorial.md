@@ -447,29 +447,18 @@ TODO
 
 TODO
 
-## Complex Clauses
+<!-- ## Complex Clauses -->
 
-### Where
+<!-- ### Where -->
 
-TODO
+<!-- TODO -->
 
-### Join
+<!-- ### Join -->
 
-TODO
+<!-- TODO -->
 
-<!-- `.jni`, `.jnf`, `.jnl`, `.jnr`, `.jnn`, `.jnc` -->
-<!-- `.ijn`, `.fjn`, `.ljn`, `.rjn`, `.njn`, `.cjn` -->
 
 #### (Inner) Join
-
-<!-- `.jni` takes a table to join and returns a function that expects a `where` condition to join on. -->
-
-<!-- ```js
-sq.from`book`
-  .inj`author`.on`book.author_id = author.id`
-  .where`book.title = ${'OathBringer'}`
-  .return`author.first_name, author.last_name`
-``` -->
 
 TODO
 
@@ -499,29 +488,30 @@ TODO
 
 ### Transaction Callback
 
-The easiest way to execute queries within a transaction is to pass `.transaction` an asynchronous callback. If any query within the callback fails, all will be rolled back.
+The easiest way to execute queries within a transaction is to pass `.transaction` an asynchronous callback. The first callback argument is a transaction object `trx`. Pass `trx` to all queries or they will not be part of the transaction.
 
-Make sure to pass all queries the transaction object `trx` or they won't be executed in the context of the transaction.
+`.transaction` returns the value returned by its callback. If a query fails or an error is thrown, all queries will be rolled back and `.transaction` will throw an error.
+
 
 ```js
-await sq.transaction(async trx => {
-  const { id } = await Account.insert({ email: 'jo@jo.com' }).one(trx)
-  await Authorization.insert({ accountId: id, password: 'secret' }).run(trx)
+const id = await sq.transaction(async trx => {
+  const { id } = await sq`account`.insert({ email: 'jo@jo.com' }).return`id`.one(trx)
+  await sq`authorization`.insert({ accountId: id, password: 'secret' }).all(trx)
+  return id
 })
 ```
 
 ### Transaction Value
 
-If you need more flexibility, call `.transaction` without any arguments and it will return a transaction object `trx`.
+If you need more flexibility, call `.transaction` without any arguments and it will return a Promise for a transaction object `trx`, or `undefined` if a transaction could not be started.
 
-Pass `trx` to a query to add it to a transaction. When you're done, call `trx.commit()`. If there is an error, call `trx.rollback()`.
+Pass `trx` to a query to add it to a transaction. To commit the transaction, run ` await trx.commit()`. To rollback the transaction, run `await trx.rollback()`. Either `trx.commit` or `trx.rollback` MUST be called to release the transaction client.
 
 ```js
-let trx
+let trx = await sq.transaction()
 try {
-  trx = await sq.transaction()
   const { id } = await Account.insert({ email: 'jo@jo.com' }).one(trx)
-  await Authorization.insert({ accountId: id, password: 'secret' }).run(trx)
+  await Authorization.insert({ accountId: id, password: 'secret' }).all(trx)
   await trx.commit()
 } catch (error) {
   await trx.rollback()

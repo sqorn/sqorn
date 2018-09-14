@@ -169,4 +169,22 @@ describe('pg', async () => {
     const [bo] = await sq`author`({ firstName: 'Bo' })
     expect(bo).toBe(undefined)
   })
+  test('transaction value success', async () => {
+    const trx = await sq.transaction()
+    const ma = await sq`author`.insert({ firstName: 'Ma' }).return`*`.one(trx)
+    const pa = await sq`author`.insert({ firstName: 'Pa' }).return`*`.one(trx)
+    await trx.commit()
+    expect(ma.firstName).toBe('Ma')
+    expect(pa.firstName).toBe('Pa')
+    const authors = await sq`author`
+    expect(authors.length).toBe(7)
+  })
+  test('transaction value rollback', async () => {
+    const trx = await sq.transaction()
+    let da = await sq`author`.insert({ firstName: 'Da' }).return`*`.one(trx)
+    expect(da.firstName).toBe('Da')
+    await trx.rollback()
+    da = await sq`author`({ firstName: 'Da' }).one()
+    expect(da).toBe(undefined)
+  })
 })
