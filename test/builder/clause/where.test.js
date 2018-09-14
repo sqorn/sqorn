@@ -1,6 +1,6 @@
 const { sq, query } = require('../tape')
 
-describe('whr', () => {
+describe('where', () => {
   describe('template string', () => {
     query({
       name: '1 condition',

@@ -1,6 +1,6 @@
 const { sq, query } = require('../tape')
 
-describe('frm', () => {
+describe('from', () => {
   describe('template string', () => {
     query({
       name: '1 table',
