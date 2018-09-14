@@ -44,6 +44,7 @@ const database = ({ connection }) => {
       const client = await pool.connect()
       await client.query('begin')
       return {
+        query: client.query.bind(client),
         commit: async () => {
           try {
             await client.query('commit')

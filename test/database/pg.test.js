@@ -144,4 +144,47 @@ describe('pg', async () => {
   test('select book', async () => {
     expect(await sq.from`book`.return`id`).toEqual([{ id: 2 }, { id: 3 }])
   })
+  test('transaction callback success', async () => {
+    const { jo, mo } = await sq.transaction(async trx => {
+      const jo = await sq`author`.insert({ firstName: 'Jo' }).return`*`.one(trx)
+      const [mo] = await sq`author`.insert({ firstName: 'Mo' }).return`*`.all(
+        trx
+      )
+      return { jo, mo }
+    })
+    expect(jo.firstName).toBe('Jo')
+    expect(mo.firstName).toBe('Mo')
+    const authors = await sq`author`
+    expect(authors.length).toBe(5)
+  })
+  test('transaction callback rollback', async () => {
+    expect(
+      (async () => {
+        await sq.transaction(async trx => {
+          await sq`author`.insert({ firstName: 'Bo' }).return`*`.one(trx)
+          throw Error('oops')
+        })
+      })()
+    ).rejects.toThrow('oops')
+    const [bo] = await sq`author`({ firstName: 'Bo' })
+    expect(bo).toBe(undefined)
+  })
+  test('transaction value success', async () => {
+    const trx = await sq.transaction()
+    const ma = await sq`author`.insert({ firstName: 'Ma' }).return`*`.one(trx)
+    const pa = await sq`author`.insert({ firstName: 'Pa' }).return`*`.one(trx)
+    await trx.commit()
+    expect(ma.firstName).toBe('Ma')
+    expect(pa.firstName).toBe('Pa')
+    const authors = await sq`author`
+    expect(authors.length).toBe(7)
+  })
+  test('transaction value rollback', async () => {
+    const trx = await sq.transaction()
+    let da = await sq`author`.insert({ firstName: 'Da' }).return`*`.one(trx)
+    expect(da.firstName).toBe('Da')
+    await trx.rollback()
+    da = await sq`author`({ firstName: 'Da' }).one()
+    expect(da).toBe(undefined)
+  })
 })
