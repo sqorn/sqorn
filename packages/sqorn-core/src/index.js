@@ -1,11 +1,39 @@
 module.exports = ({ database, dialect }) => (config = {}) => {
-  const { methods, context, queries, parameter } = dialect
+  const { methods, newContext, queries } = dialect
+
+  const updateContext = {}
+  // create context object ctx by processing methods linked list
+  const context = (method, ctx) => {
+    // follow method links to construct methods array (in reverse)
+    const methods = []
+    for (; method !== undefined; method = method.prev) {
+      methods.push(method)
+    }
+    // build methods object by processing methods in call order
+    for (let i = methods.length - 1; i >= 0; --i) {
+      const method = methods[i]
+      updateContext[method.name](ctx, method.args)
+    }
+    return ctx
+  }
+  // setup context update functions
+  for (const method of methods) {
+    updateContext[method.name] = method.updateContext
+  }
+  updateContext.extend = (ctx, args) => {
+    for (const builder of args) {
+      context(builder.method, ctx)
+    }
+  }
+
+  // connect to database
   const client = config.connection && database(config)
+
   const builder = {
     // create new query builder
     create(method) {
       const fn = (...args) =>
-        fn.create({ type: 'express', args, prev: fn.method })
+        fn.create({ name: 'express', args, prev: fn.method })
       fn.method = method
       Object.setPrototypeOf(fn, builder)
       return fn
@@ -15,12 +43,12 @@ module.exports = ({ database, dialect }) => (config = {}) => {
       return client.end()
     },
     // compilation methods
-    bld(inheritedCtx) {
-      const ctx = context(this.method, inheritedCtx)
+    bld(inheritedContext) {
+      const ctx = context(this.method, newContext(inheritedContext))
       return queries[ctx.type](ctx)
     },
     get query() {
-      return this.bld({ parameter })
+      return this.bld()
     },
     // execution methods
     async one(trx) {
@@ -39,23 +67,25 @@ module.exports = ({ database, dialect }) => (config = {}) => {
     },
     // extends
     extend(...args) {
-      return this.create({ type: 'extend', args, prev: this.method })
+      return this.create({ name: 'extend', args, prev: this.method })
     }
   }
+
   // add query building methods
-  for (const method in methods) {
-    if (methods[method]) {
-      // add function call methods
-      builder[method] = function(...args) {
-        return this.create({ type: method, args, prev: this.method })
-      }
-    } else {
+  for (const method of methods) {
+    const { getter, name } = method
+    if (getter) {
       // add getter methods
-      Object.defineProperty(builder, method, {
+      Object.defineProperty(builder, name, {
         get: function() {
-          return this.create({ type: method, prev: this.method })
+          return this.create({ name, prev: this.method })
         }
       })
+    } else {
+      // add function call methods
+      builder[name] = function(...args) {
+        return this.create({ name, args, prev: this.method })
+      }
     }
   }
 
