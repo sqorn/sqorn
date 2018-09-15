@@ -1,13 +1,12 @@
-const methods = require('./methods')
-const context = require('./context')
+const { newContextCreator, methods } = require('./methods')
 const queries = require('./queries')
-const util = require('./util')
 const clauses = require('./clauses')
+const util = require('./util')
 
 module.exports = {
+  newContextCreator,
   methods,
-  context,
   queries,
-  util,
-  clauses
+  clauses,
+  util
 }
