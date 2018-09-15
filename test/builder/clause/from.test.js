@@ -190,7 +190,7 @@ describe('from', () => {
     query({
       name: 'complex',
       query: sq.from({
-        n: sq.return`${1} as a, ${2} as b`,
+        n: sq.return({ a: 1, b: 2 }),
         m: sq.return`${3} as c`
       }).return`(n.a + n.b + m.c) as sum`,
       text:

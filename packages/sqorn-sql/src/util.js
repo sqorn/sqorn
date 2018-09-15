@@ -81,7 +81,7 @@ const table = (ctx, alias, source) => {
   } else if (typeof source.bld === 'function') {
     return `(${source.bld(ctx).text}) as ${alias}`
   }
-  throw Error('Invalid table source:', source)
+  return `${ctx.parameter(ctx, source)} as ${alias}`
 }
 
 const tableFromArray = (ctx, alias, source) => {
