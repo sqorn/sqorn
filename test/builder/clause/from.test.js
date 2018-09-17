@@ -112,6 +112,11 @@ describe('from', () => {
       query: sq.from({ b: 'book', a: 'author' }).from({ c: 'comment' }),
       text: 'select * from book as b, author as a, comment as c'
     })
+    query({
+      name: 'snake_case key',
+      query: sq.from({ firstName: 'person' }),
+      text: 'select * from person as first_name'
+    })
   })
   describe('object array property', () => {
     query({

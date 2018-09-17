@@ -2,7 +2,9 @@
 const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => ({
   type: 'select',
   express: 'from',
+  separator: ' ',
   sql: [],
+  join: ' ',
   frm: [],
   whr: [],
   ret: [],
@@ -32,7 +34,20 @@ const methods = [
     name: 'l',
     updateContext: (ctx, args) => {
       ctx.type = 'sql'
-      ctx.sql.push(args)
+      ctx.sql.push({ args, raw: false })
+    }
+  },
+  {
+    name: 'raw',
+    updateContext: (ctx, args) => {
+      ctx.type = 'sql'
+      ctx.sql.push({ args, raw: true })
+    }
+  },
+  {
+    name: 'join',
+    updateContext: (ctx, args) => {
+      ctx.separator = args[0]
     }
   },
   {

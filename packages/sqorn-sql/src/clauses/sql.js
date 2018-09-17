@@ -1,20 +1,31 @@
 const { isTaggedTemplate, buildTaggedTemplate } = require('../util')
 
 module.exports = ctx => {
-  const args = ctx.sql
-  if (args.length === 0) return ''
-  let txt = sql(ctx, args[0])
-  for (let i = 1; i < args.length; ++i) {
-    txt += ' ' + sql(ctx, args[i])
+  const calls = ctx.sql
+  let txt = ''
+  for (let i = 0; i < calls.length; ++i) {
+    if (i !== 0) txt += ctx.separator
+    txt += sql(ctx, calls[i])
   }
   return txt
 }
 
-const sql = (ctx, args) => {
-  if (typeof args[0] === 'string') {
-    return args[0]
-  } else if (isTaggedTemplate(args)) {
-    return buildTaggedTemplate(ctx, args)
+const sql = (ctx, { args, raw }) => {
+  const isTemplateString = isTaggedTemplate(args)
+  return raw
+    ? isTemplateString
+      ? unescapedTemplateString(args)
+      : args[0]
+    : isTaggedTemplate(args)
+      ? buildTaggedTemplate(ctx, args)
+      : ctx.parameter(ctx, args[0])
+}
+
+const unescapedTemplateString = ([strings, ...args]) => {
+  let txt = ''
+  for (let i = 0; i < strings.length; ++i) {
+    if (i !== 0) txt += args[i - 1]
+    txt += strings[i]
   }
-  throw Error(`Invalid sq.l arguments:`, args)
+  return txt
 }

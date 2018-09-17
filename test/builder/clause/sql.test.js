@@ -23,18 +23,6 @@ describe('sql', () => {
       text: 'update person set age = age + 1'
     })
   })
-  describe('raw string', () => {
-    query({
-      name: 'simple',
-      query: sq.l('select * from book'),
-      text: 'select * from book'
-    })
-    query({
-      name: 'arg',
-      query: sq.l(`select * from book where id = ${3}`),
-      text: 'select * from book where id = 3'
-    })
-  })
   describe('template string args', () => {
     query({
       name: '1 raw arg',
@@ -65,6 +53,25 @@ describe('sql', () => {
       args: [1980]
     })
   })
+  describe('function argument', () => {
+    query({
+      name: 'string arg',
+      query: sq.l('cat'),
+      text: '$1',
+      args: ['cat']
+    })
+    query({
+      name: 'number args',
+      query: sq
+        .l('cat')
+        .l(12)
+        .l(true)
+        .l([])
+        .l({}),
+      text: '$1 $2 $3 $4 $5',
+      args: ['cat', 12, true, [], {}]
+    })
+  })
   describe('multiple calls', () => {
     query({
       name: '2 calls',
@@ -78,6 +85,32 @@ describe('sql', () => {
         .l`or year = ${2000}`,
       text: 'select * from book where genre = $1 or year = $2',
       args: ['fantasy', 2000]
+    })
+  })
+  describe('raw string', () => {
+    query({
+      name: 'simple',
+      query: sq.raw('hi'),
+      text: 'hi'
+    })
+    query({
+      name: '2 calls',
+      query: sq.raw('hi').raw('bye'),
+      text: 'hi bye'
+    })
+    query({
+      name: 'complex',
+      query: sq.l`select * from`.raw('book').l`where`.raw('genre')
+        .l`= ${'fantasy'}`,
+      text: 'select * from book where genre = $1',
+      args: ['fantasy']
+    })
+  })
+  describe('join separator', () => {
+    query({
+      name: 'simple',
+      query: sq.l`hi`.l`bye`.join(', '),
+      text: 'hi, bye'
     })
   })
 })
