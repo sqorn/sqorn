@@ -43,8 +43,9 @@ describe('tutorial', () => {
       args: [1, '2310', 2, '2730', 3, '3511', 12, 23]
     })
 
-    const values = sq.extend(...bcas.map(b => sq.l`(${b.quantity}, ${b.code})`))
-      .join`, `
+    const values = sq
+      .extend(...bcas.map(b => sq.l`(${b.quantity}, ${b.code})`))
+      .join(', ')
     query({
       name: 'solution - manual query',
       query: sq.l`update trad.bcas as t`.l`set quantity = v.quantity::integer`
