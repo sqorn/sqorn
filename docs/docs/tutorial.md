@@ -473,6 +473,19 @@ sq`book`.delete.delete.delete.query
   args: [] }
 ```
 
+When using Sqorn Postgres, the first `.from` call forms the `DELETE` clause. Subsequent `.from` calls form the `USING` clause.
+
+```js
+sq.delete
+  .from`book`
+  .from`author`
+  .where`book.author_id = author.id and author.contract = 'terminated'`
+  .query
+
+{ text: "delete from book using author where (book.author_id = author.id and author.contract = 'terminated')",
+  args: [] }
+```
+
 ### Insert
 
 `Insert` queries use `.insert` and `.value` to specify the columns and values to insert.
@@ -534,6 +547,7 @@ sq.from`book`
 
 ```js
 sq.from`book`.insert({ title: 'Squirrels and Acorns' }).return`id`.query
+// or
 sq`book`()`id`.insert({ title: 'Squirrels and Acorns' }).query
 
 { text: 'insert into book (title) values ($1) returning id',
@@ -582,6 +596,19 @@ sq.from`person`
 
 { text: 'update person set first_name = $1, nickname = $2 where first_name = $3',
   args: ['Robert', 'Rob', 'Matt'] }
+```
+
+When using Sqorn Postgres, the first `.from` call forms the `UPDATE` clause. Subsequent `.from` calls form the `FROM` clause.
+
+```js
+sq.from`book`
+  .from`author`
+  .set({ available: false })
+  .where`book.author_id = author.id and author.contract = 'terminated'`
+  .query
+
+{ text: "update book set available = $1 from author where (book.author_id = author.id and author.contract = 'terminated')",
+  args: [false] }
 ```
 
 ### Upsert

@@ -203,4 +203,34 @@ describe('from', () => {
       args: [1, 2, 3]
     })
   })
+  describe('Postgres DELETE FROM ... USING ...', () => {
+    query({
+      name: 'from, using',
+      query: sq.delete.from`book`.from`author`,
+      text: 'delete from book using author'
+    })
+    query({
+      name: 'from, using, where',
+      query: sq.delete.from`book`.from`author`
+        .where`book.author_id = author.id and author.contract = 'terminated'`,
+      text: `delete from book using author where (book.author_id = author.id and author.contract = 'terminated')`
+    })
+  })
+  describe('Postgres UPDATE ... FROM ...', () => {
+    query({
+      name: 'update, set, from',
+      query: sq.from`book`.from`author`.set({ available: false }),
+      text: 'update book set available = $1 from author',
+      args: [false]
+    })
+    query({
+      name: 'update, set, from, where',
+      query: sq.from`book`.from`author`.set({ available: false }).where({
+        join: sq.l`book.author_id = author.id`,
+        'author.contract': 'terminated'
+      }),
+      text: `update book set available = $1 from author where (book.author_id = author.id and author.contract = $2)`,
+      args: [false, 'terminated']
+    })
+  })
 })

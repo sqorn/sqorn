@@ -239,6 +239,13 @@ describe('tutorial', () => {
         query: sq`book`.delete.delete.delete,
         text: 'delete from book'
       })
+      query({
+        name: 'delete using',
+        query: sq.delete.from`book`.from`author`
+          .where`book.author_id = author.id and author.contract = 'terminated'`,
+        text:
+          "delete from book using author where (book.author_id = author.id and author.contract = 'terminated')"
+      })
     })
     describe('Insert', () => {
       query({
@@ -325,6 +332,14 @@ describe('tutorial', () => {
         text:
           'update person set first_name = $1, nickname = $2 where (first_name = $3)',
         args: ['Robert', 'Rob', 'Matt']
+      })
+      query({
+        name: 'insert, from',
+        query: sq.from`book`.from`author`.set({ available: false })
+          .where`book.author_id = author.id and author.contract = 'terminated'`,
+        text:
+          "update book set available = $1 from author where (book.author_id = author.id and author.contract = 'terminated')",
+        args: [false]
       })
     })
   })
