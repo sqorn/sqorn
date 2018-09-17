@@ -4,6 +4,18 @@ title: Tutorial
 sidebar_label: Tutorial
 ---
 
+## About
+
+Sqorn is a Javascript library *designed* for building SQL queries. Its declarative API lets you construct SQL queries from immutable, composable parts.
+
+Sqorn's query building methods are modeled after SQL clauses but harness Javascript language features to provide an elegant interface to your database. 
+
+Unlike other query builders, Sqorn does not compromise flexibility for abstraction. It exposes the unique features of each supported SQL dialect and lets you integrate raw SQL securely using tagged template literals.
+
+Sqorn makes common CRUD operations so simple that people have accused it of being an ORM, parameterizes all queries so you can be confident your appliction is not vulnerable to SQL injection, and compiles queries [10x faster](https://sqorn.org/benchmarks.html) than [Knex](https://knexjs.org/) and [200x faster](https://sqorn.org/benchmarks.html) than [Squel](https://github.com/hiddentao/squel). 
+
+Use Sqorn.
+
 ## Setup
 
 ### Install
