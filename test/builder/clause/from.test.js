@@ -112,5 +112,95 @@ describe('from', () => {
       query: sq.from({ b: 'book', a: 'author' }).from({ c: 'comment' }),
       text: 'select * from book as b, author as a, comment as c'
     })
+    query({
+      name: 'snake_case key',
+      query: sq.from({ firstName: 'person' }),
+      text: 'select * from person as first_name'
+    })
+  })
+  describe('object array property', () => {
+    query({
+      name: '1 object, 1 property',
+      query: sq.from({
+        n: [{ a: 1 }]
+      }),
+      text: 'select * from (values ($1)) as n(a)',
+      args: [1]
+    })
+    query({
+      name: '1 object, 3 property',
+      query: sq.from({
+        animal: [{ id: 1, name: 'cat', noise: 'meow' }]
+      }),
+      text: 'select * from (values ($1, $2, $3)) as animal(id, name, noise)',
+      args: [1, 'cat', 'meow']
+    })
+    query({
+      name: '2 objects, 3 property',
+      query: sq.from({
+        animal: [
+          { id: 1, name: 'cat', noise: 'meow' },
+          { id: 2, name: 'dog', noise: 'bark' }
+        ]
+      }),
+      text:
+        'select * from (values ($1, $2, $3), ($4, $5, $6)) as animal(id, name, noise)',
+      args: [1, 'cat', 'meow', 2, 'dog', 'bark']
+    })
+    query({
+      name: '3 objects, 3 properties',
+      query: sq.from({
+        n: [{ a: 1, b: 2, c: 3 }, { a: 4, b: 5, c: 6 }, { a: 7, b: 8, c: 9 }]
+      }),
+      text:
+        'select * from (values ($1, $2, $3), ($4, $5, $6), ($7, $8, $9)) as n(a, b, c)',
+      args: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    })
+    query({
+      name: 'missing properties',
+      query: sq.from({
+        animal: [
+          { id: 1, name: 'cat' },
+          { id: 2, name: undefined, noise: 'bark' }
+        ]
+      }),
+      text:
+        'select * from (values ($1, $2, default), ($3, default, $4)) as animal(id, name, noise)',
+      args: [1, 'cat', 2, 'bark']
+    })
+    query({
+      name: 'camelCase property',
+      query: sq.from({
+        person: [{ firstName: 'Jo' }]
+      }),
+      text: 'select * from (values ($1)) as person(first_name)',
+      args: ['Jo']
+    })
+    query({
+      name: 'mixedCase (erroneous use)',
+      query: sq.from({
+        person: [{ firstName: 'Jo', first_name: 'Jo' }]
+      }),
+      text: 'select * from (values ($1, $2)) as person(first_name, first_name)',
+      args: ['Jo', 'Jo']
+    })
+  })
+  describe('object subquery property', () => {
+    query({
+      name: 'simple',
+      query: sq.from({ n: sq.l`select ${1} as a` }),
+      text: 'select * from (select $1 as a) as n',
+      args: [1]
+    })
+    query({
+      name: 'complex',
+      query: sq.from({
+        n: sq.return({ a: 1, b: 2 }),
+        m: sq.return`${3} as c`
+      }).return`(n.a + n.b + m.c) as sum`,
+      text:
+        'select (n.a + n.b + m.c) as sum from (select $1 as a, $2 as b) as n, (select $3 as c) as m',
+      args: [1, 2, 3]
+    })
   })
 })

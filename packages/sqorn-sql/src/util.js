@@ -13,8 +13,12 @@ const snakeCase = str =>
     .map(s => lodashSnakeCase(s))
     .join('.'))
 
-const isTaggedTemplate = args =>
-  Array.isArray(args[0]) && typeof args[0][0] === 'string'
+const isTaggedTemplate = args => {
+  // the first argument of a tagged template literal is an array
+  // of strings with a property raw that is an array of strings
+  const [strings] = args
+  return Array.isArray(strings) && Array.isArray(strings.raw)
+}
 
 const buildTaggedTemplate = (ctx, [strings, ...args]) => {
   let i = 0
@@ -62,15 +66,59 @@ const build = (ctx, args) => {
   }
 }
 
-const objectTables = (ctx, obj) => {
+const objectTables = (ctx, object) => {
   let txt = ''
-  const keys = Object.keys(obj)
+  const keys = Object.keys(object)
   for (let i = 0; i < keys.length; ++i) {
     if (i !== 0) txt += ', '
     const key = keys[i]
-    txt += `${obj[key]} as ${key}`
+    txt += table(ctx, key, object[key])
   }
   return txt
+}
+
+const table = (ctx, alias, source) => {
+  if (typeof source === 'string') {
+    return `${source} as ${snakeCase(alias)}`
+  } else if (Array.isArray(source)) {
+    return tableFromArray(ctx, alias, source)
+  } else if (typeof source.bld === 'function') {
+    return `(${source.bld(ctx).text}) as ${snakeCase(alias)}`
+  }
+  return `${ctx.parameter(ctx, source)} as ${snakeCase(alias)}`
+}
+
+const tableFromArray = (ctx, alias, source) => {
+  // get unique columns
+  const keys = uniqueKeysFromObjectArray(source)
+  let columns = ''
+  for (let i = 0; i < keys.length; ++i) {
+    if (i !== 0) columns += ', '
+    columns += snakeCase(keys[i])
+  }
+  // get values
+  let values = ''
+  for (let i = 0; i < source.length; ++i) {
+    if (i !== 0) values += ', '
+    values += '('
+    const object = source[i]
+    for (let j = 0; j < keys.length; ++j) {
+      if (j !== 0) values += ', '
+      values += ctx.parameter(ctx, object[keys[j]])
+    }
+    values += ')'
+  }
+  return `(values ${values}) as ${snakeCase(alias)}(${columns})`
+}
+
+const uniqueKeysFromObjectArray = array => {
+  const keys = {}
+  for (const object of array) {
+    for (const key in object) {
+      keys[key] = true
+    }
+  }
+  return Object.keys(keys)
 }
 
 module.exports = {

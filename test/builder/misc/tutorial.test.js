@@ -2,28 +2,68 @@ const { sq, query } = require('../tape')
 
 describe('tutorial', () => {
   describe('Manual Queries', () => {
-    query({
-      name: 'parameterized argument',
-      query: sq.l`select * from person where age >= ${20} and age < ${30}`,
-      text: 'select * from person where age >= $1 and age < $2',
-      args: [20, 30]
+    describe('SQL', () => {
+      query({
+        name: 'parameterized argument',
+        query: sq.l`select * from person where age >= ${20} and age < ${30}`,
+        text: 'select * from person where age >= $1 and age < $2',
+        args: [20, 30]
+      })
+      query({
+        name: 'chained calls',
+        query: sq.l`select *`.l`from person`
+          .l`where age >= ${20} and age < ${30}`,
+        text: 'select * from person where age >= $1 and age < $2',
+        args: [20, 30]
+      })
+      query({
+        name: 'subquery argument',
+        query: sq.l`select * from person ${sq.l`where age >= ${20} and age < ${30}`}`,
+        text: 'select * from person where age >= $1 and age < $2',
+        args: [20, 30]
+      })
+      query({
+        name: 'function call',
+        query: sq.l`select * from person where age >=`.l(20).l`and age <`.l(30),
+        text: 'select * from person where age >= $1 and age < $2',
+        args: [20, 30]
+      })
     })
-    query({
-      name: 'raw argument',
-      query: sq.l`select * from $${'test_table'}`,
-      text: 'select * from test_table'
+    describe('Raw', () => {
+      query({
+        name: '.l`$${arg}`',
+        query: sq.l`select * from $${'test_table'}`,
+        text: 'select * from test_table'
+      })
+      query({
+        name: '.raw(arg)',
+        query: sq.l`select * from`.raw('test_table').l`where id = ${7}`,
+        text: 'select * from test_table where id = $1',
+        args: [7]
+      })
     })
-    query({
-      name: 'string argument',
-      query: sq.l('select * from person where age >= 20 and age < 30'),
-      text: 'select * from person where age >= 20 and age < 30'
+    describe('Extend', () => {
+      query({
+        name: '.extend',
+        query: sq.extend(
+          sq.l`select *`,
+          sq.l`from person`,
+          sq.l`where age >= ${20} and age < ${30}`
+        ),
+        text: 'select * from person where age >= $1 and age < $2',
+        args: [20, 30]
+      })
     })
-    query({
-      name: 'multiple calls',
-      query: sq.l`select * from person`.l`where age >= ${20}`
-        .l`and age < ${30}`,
-      text: 'select * from person where age >= $1 and age < $2',
-      args: [20, 30]
+    describe('Join', () => {
+      const books = [{ id: 1, title: '1984' }, { id: 2, title: 'Dracula' }]
+      const value = book => sq.l`(${book.id}, ${book.title})`
+      const values = sq.extend(...books.map(value)).join(', ')
+      query({
+        name: 'join',
+        query: sq.l`insert into book(id, title)`.l`values ${values}`.join('\n'),
+        text: 'insert into book(id, title)\nvalues ($1, $2), ($3, $4)',
+        args: [1, '1984', 2, 'Dracula']
+      })
     })
   })
 
@@ -49,6 +89,25 @@ describe('tutorial', () => {
         name: '.from``.from``',
         query: sq.from`book`.from`person`,
         text: 'select * from book, person'
+      })
+      query({
+        name: 'from object - string table source',
+        query: sq.from({ b: 'book', p: 'person' }),
+        text: 'select * from book as b, person as p'
+      })
+      query({
+        name: 'from object - array of objects table source',
+        query: sq.from({
+          people: [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }]
+        }),
+        text: 'select * from (values ($1, $2), ($3, $4)) as people(age, name)',
+        args: [7, 'Jo', 9, 'Mo']
+      })
+      query({
+        name: 'from object - subquery table source',
+        query: sq.from({ countDown: sq.l`unnest(${[3, 2, 1]})` }),
+        text: 'select * from (unnest($1)) as count_down',
+        args: [[3, 2, 1]]
       })
     })
     describe('Where', () => {
@@ -91,11 +150,12 @@ describe('tutorial', () => {
         args: ['Rob', 'Bob']
       })
     })
-    describe('Returning', () => {
+    describe('Select', () => {
       query({
         name: '.return``',
-        query: sq.from`book`.return`title, author`,
-        text: 'select title, author from book'
+        query: sq.return`${1} as a, ${2} as b, ${1} + ${2} as sum`,
+        text: 'select $1 as a, $2 as b, $3 + $4 as sum',
+        args: [1, 2, 1, 2]
       })
       query({
         name: ".return('', '')",
@@ -106,6 +166,21 @@ describe('tutorial', () => {
         name: '.return.return',
         query: sq.from`book`.return('title', 'author').return`id`,
         text: 'select title, author, id from book'
+      })
+      query({
+        name: 'return object - string expression',
+        query: sq.from`person`.return({
+          firstName: 'person.first_name',
+          age: 'person.age'
+        }),
+        text:
+          'select person.first_name as first_name, person.age as age from person'
+      })
+      query({
+        name: 'return object - subquery expression',
+        query: sq.return({ sum: sq.l`${2} + ${3}` }),
+        text: 'select ($1 + $2) as sum',
+        args: [2, 3]
       })
     })
     test('Express Syntax', () => {
