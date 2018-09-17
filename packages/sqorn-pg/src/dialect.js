@@ -16,7 +16,7 @@ const newContext = newContextCreator({ parameter })
 
 // Postgres specific grammar:
 
-// DELETE: the .from call is used in the DELETE clause
+// DELETE: first .from call is used in the DELETE clause
 // subsequent .from calls are used in the USING clause
 const del = ctx => {
   const txt = join(ctx, ctx.frm.slice(0, 1))
@@ -26,7 +26,7 @@ const using = ctx => {
   const txt = join(ctx, ctx.frm.slice(1))
   return txt && `using ${txt}`
 }
-// UPDATE: the .from call is used in the UPDATE clause
+// UPDATE: first .from call is used in the UPDATE clause
 // subsequent .from calls are used in the FROM clause
 const update = ctx => {
   const txt = join(ctx, ctx.frm.slice(0, 1))
