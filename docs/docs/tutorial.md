@@ -129,15 +129,15 @@ sq.extend(
   args: [20, 30] }
 ```
 
-### Join
+### Link
 
-Pass `.join` the string separator to join query parts
+`.link` specifies the separator used to join query parts. `.link` can be called as a template tag or passed a string argument.
 
 ```js
 const books = [{ id: 1, title: '1984' }, { id: 2, title: 'Dracula' }]
 const value = book => sq.l`(${book.id}, ${book.title})`
-const values = sq.extend(...books.map(value)).join(', ')
-sq.l`insert into book(id, title)`.l`values ${values}`.join('\n').query
+const values = sq.extend(...books.map(value)).link`, `
+sq.l`insert into book(id, title)`.l`values ${values}`.link('\n').query
 
 { text: 'insert into book(id, title)\nvalues ($1, $2), ($3, $4)',
   args: [1, '1984', 2, 'Dracula'] }

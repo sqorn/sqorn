@@ -54,13 +54,13 @@ describe('tutorial', () => {
         args: [20, 30]
       })
     })
-    describe('Join', () => {
+    describe('Link', () => {
       const books = [{ id: 1, title: '1984' }, { id: 2, title: 'Dracula' }]
       const value = book => sq.l`(${book.id}, ${book.title})`
-      const values = sq.extend(...books.map(value)).join(', ')
+      const values = sq.extend(...books.map(value)).link`, `
       query({
-        name: 'join',
-        query: sq.l`insert into book(id, title)`.l`values ${values}`.join('\n'),
+        name: 'link',
+        query: sq.l`insert into book(id, title)`.l`values ${values}`.link('\n'),
         text: 'insert into book(id, title)\nvalues ($1, $2), ($3, $4)',
         args: [1, '1984', 2, 'Dracula']
       })

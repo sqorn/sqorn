@@ -4,7 +4,6 @@ const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => ({
   express: 'from',
   separator: ' ',
   sql: [],
-  join: ' ',
   frm: [],
   whr: [],
   ret: [],
@@ -45,7 +44,7 @@ const methods = [
     }
   },
   {
-    name: 'join',
+    name: 'link',
     updateContext: (ctx, args) => {
       ctx.separator = args[0]
     }
