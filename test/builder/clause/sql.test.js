@@ -108,8 +108,13 @@ describe('sql', () => {
   })
   describe('join separator', () => {
     query({
-      name: 'simple',
-      query: sq.l`hi`.l`bye`.join(', '),
+      name: 'string',
+      query: sq.l`hi`.l`bye`.link(', '),
+      text: 'hi, bye'
+    })
+    query({
+      name: 'template string',
+      query: sq.l`hi`.l`bye`.link`, `,
       text: 'hi, bye'
     })
   })

@@ -94,7 +94,7 @@ class HomeSplash extends React.Component {
             {/* <Button href={docUrl('benchmarks.html', language)}>
               Benchmarks
             </Button> */}
-            <Button href={'https://github.com/eejdoowad/sqorn'}>Github</Button>
+            <Button href={'https://github.com/lusakasa/sqorn'}>Github</Button>
           </PromoSection>
         </div>
       </SplashContainer>

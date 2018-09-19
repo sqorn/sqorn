@@ -4,6 +4,8 @@ title: FAQ
 sidebar_label: FAQ
 ---
 
+**This document is inaccurate, outdated and incomplete. Please refer to the tutorial.**
+
 ## How does Sqorn prevent SQL injection?
 
 Sqorn's query builder constructs __parameterized queries__, which are then passed to the underlying database library for execution.

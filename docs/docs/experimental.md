@@ -1,3 +1,38 @@
+# Experiments
+
+## Join
+
+```js
+knex.select('*').from('users').leftJoin('accounts', 'users.id', 'accounts.user_id')
+
+sq.from({ u: 'users' })
+  .join({ a: 'accounts' }).left({ 'u.id': 'a.user_id' })
+// introduce .and and .or that selectively build either .where, .having, or .long
+
+sq.from({ u: 'users' })
+  .join({ a: 'accounts' }).left.on({ 'u.id': 'a.user_id' })
+  .join({ a: 'accounts' }).right.on({ 'u.id': 'a.user_id' })
+
+sq.from({ u: 'users' })
+  .left.join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
+  .right.join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
+  .lateral.right.join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
+  .natural.right.join({ a: 'accounts' })
+
+sq.from({ u: 'users' })
+  .join({ a: 'accounts' }).left.on({ 'u.id': 'a.user_id' })
+  .wrap(
+    sq.right.join({ a: 'accounts' }).using('meow')
+      .natural.full.join({ a: 'accounts' })
+  )
+
+sq.from('users')
+  .from({ a: join('accounts').left({ 'u.id': 'a.user_id' })})
+```
+
+
+## tests
+
 ```js
 const { qry, frm, whr, ret, ord, lim } = require('sqorn')
 

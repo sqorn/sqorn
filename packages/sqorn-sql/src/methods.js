@@ -4,7 +4,6 @@ const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => ({
   express: 'from',
   separator: ' ',
   sql: [],
-  join: ' ',
   frm: [],
   whr: [],
   ret: [],
@@ -45,7 +44,7 @@ const methods = [
     }
   },
   {
-    name: 'join',
+    name: 'link',
     updateContext: (ctx, args) => {
       ctx.separator = args[0]
     }
@@ -59,7 +58,7 @@ const methods = [
   {
     name: 'from',
     updateContext: (ctx, args) => {
-      ctx.frm.push(args)
+      ctx.frm.push({ type: 'from', args })
     }
   },
   {
@@ -129,7 +128,7 @@ const methods = [
     name: 'express',
     updateContext: (ctx, args) => {
       if (ctx.express === 'from') {
-        ctx.frm.push(args)
+        ctx.frm.push({ type: 'from', args })
         ctx.express = 'where'
       } else if (ctx.express === 'where') {
         ctx.whr.push(args)

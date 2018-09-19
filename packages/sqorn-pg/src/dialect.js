@@ -7,7 +7,7 @@ const {
   util
 } = require('sqorn-sql')
 const { wth, where, returning, set } = clauses
-const { join } = util
+const { fromItems } = util
 
 const parameter = (ctx, arg) =>
   arg === undefined ? 'default' : `$${ctx.arg.push(arg)}`
@@ -19,21 +19,21 @@ const newContext = newContextCreator({ parameter })
 // DELETE: first .from call is used in the DELETE clause
 // subsequent .from calls are used in the USING clause
 const del = ctx => {
-  const txt = join(ctx, ctx.frm.slice(0, 1))
+  const txt = fromItems(ctx, ctx.frm.slice(0, 1))
   return txt && `delete from ${txt}`
 }
 const using = ctx => {
-  const txt = join(ctx, ctx.frm.slice(1))
+  const txt = fromItems(ctx, ctx.frm.slice(1))
   return txt && `using ${txt}`
 }
 // UPDATE: first .from call is used in the UPDATE clause
 // subsequent .from calls are used in the FROM clause
 const update = ctx => {
-  const txt = join(ctx, ctx.frm.slice(0, 1))
+  const txt = fromItems(ctx, ctx.frm.slice(0, 1))
   return txt && `update ${txt}`
 }
 const from = ctx => {
-  const txt = join(ctx, ctx.frm.slice(1))
+  const txt = fromItems(ctx, ctx.frm.slice(1))
   return txt && `from ${txt}`
 }
 

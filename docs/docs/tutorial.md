@@ -8,13 +8,15 @@ sidebar_label: Tutorial
 
 Sqorn is a Javascript library *designed* for building SQL queries. Its declarative API lets you construct SQL queries from immutable, composable parts.
 
-Sqorn's query building methods are modeled after SQL clauses but harness Javascript language features to provide an elegant interface to your database. 
+Sqorn's API is engineered for minimalism, generality and power. It evades the feature creep ensaring other SQL query builders that have chosen the wrong abstractions to expose.
 
-Unlike other query builders, Sqorn does not compromise flexibility for abstraction. It exposes the unique features of each supported SQL dialect and lets you integrate raw SQL securely using tagged template literals.
+Sqorn's API is modeled after SQL clauses but harnesses modern Javascript features to provide an intuitive interface to your database. Sqorn's syntactic sugar makes common CRUD operations so simple that it has been accused of being an ORM.
 
-Sqorn makes common CRUD operations so simple that people have accused it of being an ORM, parameterizes all queries so you can be confident your appliction is not vulnerable to SQL injection, and compiles queries [10x faster](https://sqorn.org/benchmarks.html) than [Knex](https://knexjs.org/) and [200x faster](https://sqorn.org/benchmarks.html) than [Squel](https://github.com/hiddentao/squel). 
+Sqorn does not compromise flexibility for abstraction. It exposes the unique features of each supported SQL dialect and lets you securely integrate raw SQL.
 
-Use Sqorn.
+Sqorn parameterizes all queries so you can be confident your appliction is not vulnerable to SQL injection.
+
+Sqorn compiles queries [10x faster](https://sqorn.org/benchmarks.html) than [Knex](https://knexjs.org/) and [200x faster](https://sqorn.org/benchmarks.html) than [Squel](https://github.com/hiddentao/squel). 
 
 ## Setup
 
@@ -127,15 +129,15 @@ sq.extend(
   args: [20, 30] }
 ```
 
-### Join
+### Link
 
-Pass `.join` the string separator to join query parts
+`.link` specifies the separator used to join query parts. `.link` can be called as a template tag or passed a string argument.
 
 ```js
 const books = [{ id: 1, title: '1984' }, { id: 2, title: 'Dracula' }]
 const value = book => sq.l`(${book.id}, ${book.title})`
-const values = sq.extend(...books.map(value)).join(', ')
-sq.l`insert into book(id, title)`.l`values ${values}`.join('\n').query
+const values = sq.extend(...books.map(value)).link`, `
+sq.l`insert into book(id, title)`.l`values ${values}`.link('\n').query
 
 { text: 'insert into book(id, title)\nvalues ($1, $2), ($3, $4)',
   args: [1, '1984', 2, 'Dracula'] }
@@ -408,6 +410,72 @@ TODO, only template string form works
 
 TODO, only template string form works
 
+### Join
+
+Construct Joins with `.join`, which accepts the same arguments as `.from`. When no join conditions are specified, Sqorn builds a natural join.
+
+```js
+sq.from`book`.join`author`.query
+
+{ text: 'select * from book natural join author',
+  args: [] }
+```
+
+Specify join conditions with `.on`, which accepts the same arguments as `.where`.
+
+```js
+sq.from({ b: 'book' }).join({ a: 'author'}).on`b.author_id = a.id`.query
+
+{ text: 'select * from book as b join author as a on (b.author_id = a.id)',
+  args: [] }
+```
+
+Multiple calls to `.on` are joined with `and`.
+
+```js
+sq.from({ b: 'book' })
+  .join({ a: 'author'}).on`b.author_id = a.id`.on({ 'b.genre': 'Fantasy' }).query
+
+{ text: 'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1)',
+  args: ['Fantasy'] }
+```
+
+Alternatively, specify join columns with `.using`.
+
+```js
+sq.from`book`.join`author`.using`author_id`.query
+
+{ text: 'select * from book join author using (author_id)',
+  args: [] }
+```
+
+`.using` also accepts column names as string arguments. It can be called multiple times.
+
+```js
+sq.from`a`.join`b`.using('x', 'y').using`z`.query
+
+{ text: 'select * from a join b using (x, y, z)',
+  args: [] }
+```
+
+To change the join type, call `.left`, `.right`, `.full`, or `.cross` **before** `.join`.
+
+```js
+sq.from`book`.left.join`author`.right.join`publisher`.query
+
+{ text: 'select * from book natural left join author natural right join publisher',
+  args: [] }
+```
+
+The last join type specifier determines the join type. To explicitly perform an inner join, call `.inner`. Sqorn never generates the optional *inner* and *outer* keywords.
+
+```js
+sq.from`book`.left.right.join`author`.cross.inner.join`publisher`.query
+
+{ text: 'select * from book natural right join author natural join publisher',
+  query: []}
+```
+
 ### With
 
 CTEs
@@ -637,55 +705,3 @@ TODO
 
 <!-- TODO -->
 
-## Joins
-
-
-### Inner
-
-`.innerJoin`
-
-TODO
-
-### Full
-
-`.fullJoin`
-
-TODO
-
-### Left
-
-`.leftJoin`
-
-TODO
-
-### Right
-
-`.rightJoin`
-
-TODO
-
-### Natural
-
-`.naturalJoin`
-
-TODO
-
-### Cross
-
-`.crossJoin`
-
-TODO
-
-## Operations
-
-### And, Or, Not
-
-TODO
-
-### Binary Operations
-
-TODO
-
-### N-ary Operations
-
-TODO

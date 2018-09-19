@@ -1,47 +1,10 @@
-const lodashCamelCase = require('lodash.camelcase')
-const lodashSnakeCase = require('lodash.snakecase')
+const {
+  isTaggedTemplate,
+  buildTaggedTemplate,
+  snakeCase
+} = require('./helpers')
 
-const camelCaseCache = {}
-const camelCase = str =>
-  camelCaseCache[str] || (camelCaseCache[str] = lodashCamelCase(str))
-
-const snakeCaseCache = {}
-const snakeCase = str =>
-  snakeCaseCache[str] ||
-  (snakeCaseCache[str] = str
-    .split('.')
-    .map(s => lodashSnakeCase(s))
-    .join('.'))
-
-const isTaggedTemplate = args => {
-  // the first argument of a tagged template literal is an array
-  // of strings with a property raw that is an array of strings
-  const [strings] = args
-  return Array.isArray(strings) && Array.isArray(strings.raw)
-}
-
-const buildTaggedTemplate = (ctx, [strings, ...args]) => {
-  let i = 0
-  let txt = ''
-  for (; i < args.length; ++i) {
-    const arg = args[i]
-    const prevString = strings[i]
-    const lastCharIndex = prevString.length - 1
-    if (prevString[lastCharIndex] === '$') {
-      // raw arg
-      txt += prevString.substr(0, lastCharIndex) + args[i]
-    } else if (arg && typeof arg.bld === 'function') {
-      // sql builder arg
-      txt += prevString + arg.bld(ctx).text
-    } else {
-      // parameterized arg
-      txt += prevString + ctx.parameter(ctx, arg)
-    }
-  }
-  return txt + strings[i]
-}
-
-const join = (ctx, calls) => {
+const expressions = (ctx, calls) => {
   let txt = ''
   for (let i = 0; i < calls.length; ++i) {
     if (i !== 0) txt += ', '
@@ -121,11 +84,4 @@ const uniqueKeysFromObjectArray = array => {
   return Object.keys(keys)
 }
 
-module.exports = {
-  camelCase,
-  snakeCase,
-  isTaggedTemplate,
-  buildTaggedTemplate,
-  build,
-  join
-}
+module.exports = { expressions }

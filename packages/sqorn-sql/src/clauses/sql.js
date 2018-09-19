@@ -10,16 +10,14 @@ module.exports = ctx => {
   return txt
 }
 
-const sql = (ctx, { args, raw }) => {
-  const isTemplateString = isTaggedTemplate(args)
-  return raw
-    ? isTemplateString
+const sql = (ctx, { args, raw }) =>
+  raw
+    ? isTaggedTemplate(args)
       ? unescapedTemplateString(args)
       : args[0]
     : isTaggedTemplate(args)
       ? buildTaggedTemplate(ctx, args)
       : ctx.parameter(ctx, args[0])
-}
 
 const unescapedTemplateString = ([strings, ...args]) => {
   let txt = ''
