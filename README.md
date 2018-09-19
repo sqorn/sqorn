@@ -85,7 +85,7 @@ Sqorn is a monorepo managed with Lerna. It contains the following packages:
 * [**Sqorn SQL:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-sql) Utilities for making SQL query builders
 * [**Sqorn Postgres:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-pg) A Javascript library for building Postgres queries
 * [**Sqorn SQLite:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-sqlite) A Javascript library for building SQLite queries
-* [**Sqorn MySQL:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-msyql) A Javascript library for building MySQL queries
+* [**Sqorn MySQL:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-mysql) A Javascript library for building MySQL queries
 
 Clone the repo then run the following commands to install all dependencies:
 
