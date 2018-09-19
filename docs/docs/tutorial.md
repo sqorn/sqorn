@@ -8,13 +8,15 @@ sidebar_label: Tutorial
 
 Sqorn is a Javascript library *designed* for building SQL queries. Its declarative API lets you construct SQL queries from immutable, composable parts.
 
-Sqorn prioritizes developer experience. Its API is modeled after SQL clauses but harnesses Javascript language features to provide an intuitive interface to your database. To minimizes API surface area, Sqorn exposes generic, multi-purpose building blocks. Sqorn's syntactic sugar makes common CRUD operations so simple that it has been accused of being an ORM.
+Sqorn's API is engineered for minimalism, generality and power. It evades the feature creep ensaring other SQL query builders that have chosen the wrong abstractions to expose.
 
-Unlike other query builders, Sqorn does not compromise flexibility for abstraction. It exposes the unique features of each supported SQL dialect and lets you integrate raw SQL securely using tagged template literals.
+Sqorn's API is modeled after SQL clauses but harnesses modern Javascript features to provide an intuitive interface to your database. Sqorn's syntactic sugar makes common CRUD operations so simple that it has been accused of being an ORM.
 
-Sqorn parameterizes all queries so you can be confident your appliction is not vulnerable to SQL injection. It compiles queries [10x faster](https://sqorn.org/benchmarks.html) than [Knex](https://knexjs.org/) and [200x faster](https://sqorn.org/benchmarks.html) than [Squel](https://github.com/hiddentao/squel). 
+Sqorn does not compromise flexibility for abstraction. It exposes the unique features of each supported SQL dialect and lets you securely integrate raw SQL.
 
-Use Sqorn.
+Sqorn parameterizes all queries so you can be confident your appliction is not vulnerable to SQL injection.
+
+Sqorn compiles queries [10x faster](https://sqorn.org/benchmarks.html) than [Knex](https://knexjs.org/) and [200x faster](https://sqorn.org/benchmarks.html) than [Squel](https://github.com/hiddentao/squel). 
 
 ## Setup
 
