@@ -68,7 +68,7 @@ sq.extend(
   sq.where({ language: 'French' })
 )
 // select distinct author from book
-// where language = 'French' and genre = 'Fantsy'
+// where language = 'French' and genre = 'Fantasy'
 
 // EMBED Queries
 sq.return`now() today, (${sq.return`now() + '1 day'`}) tomorrow`
