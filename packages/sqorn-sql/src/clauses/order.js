@@ -1,7 +1,7 @@
-const { build } = require('../util')
+const { buildTaggedTemplate } = require('../util')
 
 module.exports = ctx => {
   if (!ctx.ord) return
-  const txt = build(ctx, ctx.ord)
+  const txt = buildTaggedTemplate(ctx, ctx.ord)
   return txt && `order by ${txt}`
 }

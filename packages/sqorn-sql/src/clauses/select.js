@@ -1,3 +1,3 @@
-const { join } = require('../util')
+const { expressions } = require('../util')
 
-module.exports = ctx => `select ${join(ctx, ctx.ret) || '*'}`
+module.exports = ctx => `select ${expressions(ctx, ctx.ret) || '*'}`

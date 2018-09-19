@@ -8,9 +8,10 @@ module.exports = ctx => {
 
 const set = ctx => {
   const updates = ctx.set
-  let txt = change(ctx, updates[0])
-  for (let i = 1; i < updates.length; ++i) {
-    txt += ', ' + change(ctx, updates[i])
+  let txt = ''
+  for (let i = 0; i < updates.length; ++i) {
+    if (i !== 0) txt += ', '
+    txt += change(ctx, updates[i])
   }
   return txt
 }
@@ -26,10 +27,10 @@ const change = (ctx, args) => {
 
 const objectChange = (ctx, obj) => {
   const keys = Object.keys(obj)
-  if (keys.length === 0) return ''
-  let txt = buildCondition(ctx, obj, keys[0])
-  for (let i = 1; i < keys.length; ++i) {
-    txt += ', ' + buildCondition(ctx, obj, keys[i])
+  let txt = ''
+  for (let i = 0; i < keys.length; ++i) {
+    if (i !== 0) txt += ', '
+    txt += buildCondition(ctx, obj, keys[i])
   }
   return txt
 }

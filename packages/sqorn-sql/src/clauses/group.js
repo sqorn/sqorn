@@ -1,7 +1,7 @@
-const { build } = require('../util')
+const { buildTaggedTemplate } = require('../util')
 
 module.exports = ctx => {
   if (!ctx.grp) return
-  const txt = build(ctx, ctx.grp)
+  const txt = buildTaggedTemplate(ctx, ctx.grp)
   return txt && `group by ${txt}`
 }

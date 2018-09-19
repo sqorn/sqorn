@@ -1,7 +1,7 @@
-const { build } = require('../util')
+const { buildTaggedTemplate } = require('../util')
 
 module.exports = ctx => {
   if (!ctx.lim) return
-  const txt = build(ctx, ctx.lim)
+  const txt = buildTaggedTemplate(ctx, ctx.lim)
   return txt && `limit ${txt}`
 }

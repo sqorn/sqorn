@@ -1,6 +1,6 @@
-const { join } = require('../util')
+const { fromItems } = require('../util')
 
 module.exports = ctx => {
-  const txt = join(ctx, ctx.frm)
+  const txt = fromItems(ctx, ctx.frm)
   return txt && `delete from ${txt}`
 }

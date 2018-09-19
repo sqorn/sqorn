@@ -4,7 +4,7 @@ title: API
 sidebar_label: API
 ---
 
-**This document is inaccurate, outdated and incomplete**
+**This document is inaccurate, outdated and incomplete. Please refer to the tutorial.**
 
 ## sqorn
 
