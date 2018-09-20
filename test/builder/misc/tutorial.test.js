@@ -124,6 +124,14 @@ describe('tutorial', () => {
         args: ['Fantasy', 2000]
       })
       query({
+        name: '.where``.where``',
+        query: sq.from`person`.where`name = ${'Rob'}`.or`name = ${'Bob'}`
+          .and`age = ${7}`,
+        text:
+          'select * from person where (name = $1) or (name = $2) and (age = $3)',
+        args: ['Rob', 'Bob', 7]
+      })
+      query({
         name: '.where({})',
         query: sq.from`book`.where({ genre: 'Fantasy', year: 2000 }),
         text: 'select * from book where (genre = $1 and year = $2)',
@@ -204,6 +212,15 @@ describe('tutorial', () => {
           .on`b.author_id = a.id`.on({ 'b.genre': 'Fantasy' }),
         text:
           'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1)',
+        args: ['Fantasy']
+      })
+      query({
+        name: '.and / .or',
+        query: sq.from({ b: 'book' }).join({ a: 'author' })
+          .on`b.author_id = a.id`.and({ 'b.genre': 'Fantasy' })
+          .or`b.special = true`,
+        text:
+          'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1) or (b.special = true)',
         args: ['Fantasy']
       })
       query({
