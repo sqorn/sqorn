@@ -183,6 +183,57 @@ describe('tutorial', () => {
         args: [2, 3]
       })
     })
+    describe('Join', () => {
+      query({
+        name: 'natural join',
+        query: sq.from`book`.join`author`,
+        text: 'select * from book natural join author',
+        args: []
+      })
+      query({
+        name: 'on',
+        query: sq.from({ b: 'book' }).join({ a: 'author' })
+          .on`b.author_id = a.id`,
+        text:
+          'select * from book as b join author as a on (b.author_id = a.id)',
+        args: []
+      })
+      query({
+        name: 'multiple on',
+        query: sq.from({ b: 'book' }).join({ a: 'author' })
+          .on`b.author_id = a.id`.on({ 'b.genre': 'Fantasy' }),
+        text:
+          'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1)',
+        args: ['Fantasy']
+      })
+      query({
+        name: 'using',
+        query: sq.from`book`.join`author`.using`author_id`,
+        text: 'select * from book join author using (author_id)',
+        args: []
+      })
+      query({
+        name: 'multiple using',
+        query: sq.from`a`.join`b`.using('x', 'y').using`z`,
+        text: 'select * from a join b using (x, y, z)',
+        args: []
+      })
+      query({
+        name: 'join type',
+        query: sq.from`book`.left.join`author`.right.join`publisher`,
+        text:
+          'select * from book natural left join author natural right join publisher',
+        args: []
+      })
+      query({
+        name: 'multiple join type',
+        query: sq.from`book`.left.right.join`author`.cross.inner
+          .join`publisher`,
+        text:
+          'select * from book natural right join author natural join publisher',
+        args: []
+      })
+    })
     test('Express Syntax', () => {
       const name = 'Dalinar'
       // a == b and b ==c --> a == c

@@ -4,12 +4,11 @@ const {
   snakeCase
 } = require('./helpers')
 
-const conditions = ctx => {
+const conditions = (ctx, whr) => {
   let txt = ''
-  const calls = ctx.whr
-  for (let i = 0; i < calls.length; ++i) {
+  for (let i = 0; i < whr.length; ++i) {
     if (i !== 0) txt += ' and '
-    txt += condition(ctx, calls[i])
+    txt += condition(ctx, whr[i].args)
   }
   return txt
 }

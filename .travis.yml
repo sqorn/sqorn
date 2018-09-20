@@ -15,4 +15,4 @@ install:
   - npm run bootstrap
 
 script:
-  - npm run test -- --coverage --coverageReporters=text-lcov | coveralls
+  - (npm run test -- --coverage --coverageReporters=text-lcov | ./node_modules/.bin/coveralls; exit ${PIPESTATUS[0]})
