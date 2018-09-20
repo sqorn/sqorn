@@ -15,4 +15,4 @@ install:
   - npm run bootstrap
 
 script:
-  - ./node_modules/.bin/jest --coverage --coverageReporters=text-lcov | ./node_modules/.bin/coveralls
+  - (./node_modules/.bin/jest --coverage --coverageReporters=text-lcov | ./node_modules/.bin/coveralls; exit ${PIPESTATUS[0]})
