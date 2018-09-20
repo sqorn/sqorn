@@ -288,7 +288,7 @@ Filter result rows by adding a `where` clause with `.where`.
 ```js
 sq.from`book`.where`genre = ${'Fantasy'}`.query
 
-{ text: 'select * from book where genre = $1',
+{ text: 'select * from book where (genre = $1)',
   args: ['Fantasy'] }
 ```
 
@@ -297,8 +297,17 @@ Multiple `.where` calls are joined with `and`.
 ```js
 sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`.query
 
-{ text: 'select * from book where genre = $1 and year = $2',
+{ text: 'select * from book where (genre = $1) and (year = $2)',
   args: ['Fantasy', 2000] }
+```
+
+`.and` and `.or` can be called **after** calling `.where`. They accept the same arguments as `.where`.
+
+```js
+sq.from`person`.where`name = ${'Rob'}`.or`name = ${'Bob'}`.and`age = ${7}`.query
+
+{ text: 'select * from person where (name = $1) or (name = $2) and (age = $3)',
+  args: ['Rob', 'Bob', 7]}
 ```
 
 It is sometimes easier to specify conditions with an object.
@@ -306,7 +315,7 @@ It is sometimes easier to specify conditions with an object.
 ```js
 sq.from`book`.where({ genre: 'Fantasy', year: 2000 }).query
 
-{ text: 'select * from book where genre = $1 and year = $2',
+{ text: 'select * from book where (genre = $1 and year = $2)',
   args: ['Fantasy', 2000] }
 ```
 
@@ -315,7 +324,7 @@ By default keys are converted from `CamelCase` to `snake_case`.
 ```js
 sq.from`person`.where({ firstName: 'Kaladin' }).query
 
-{ text: 'select * from person where first_name = $1',
+{ text: 'select * from person where (first_name = $1)',
   args: ['Kaladin'] }
 ```
 
@@ -326,7 +335,7 @@ const minYear = sq.l`year >= ${20}`
 const maxYear = sq.l`year < ${30}`
 sq.from`person`.where({ minYear, maxYear }).query
 
-{ text: 'select * from person where year >= $1 and year < $2',
+{ text: 'select * from person where (year >= $1 and year < $2)',
   args: [20, 30] }
 ```
 
@@ -335,11 +344,9 @@ Multiple objects passed to `.where` are joined with `or`.
 ```js
 sq.from`person`.where({ name: 'Rob' }, { name: 'Bob' }).query
 
-{ text: 'select * from person where name = $1 or name = $2',
+{ text: 'select * from person where (name = $1 or name = $2)',
   args: ['Rob', 'Bob'] }
 ```
-
-[Advanced Queries - Where](#where-1) explains how to build complex `where` conditions.
 
 ### Select
 
@@ -437,6 +444,16 @@ sq.from({ b: 'book' })
   .join({ a: 'author'}).on`b.author_id = a.id`.on({ 'b.genre': 'Fantasy' }).query
 
 { text: 'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1)',
+  args: ['Fantasy'] }
+```
+
+`.and` and `.or` can be chained **after** `.on`.
+
+```js
+sq.from({ b: 'book' })
+  .join({ a: 'author'}).on`b.author_id = a.id`.and({ 'b.genre': 'Fantasy' }).or`b.special = true`.query
+
+{ text: 'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1) or (b.special = true)',
   args: ['Fantasy'] }
 ```
 

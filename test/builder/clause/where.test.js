@@ -118,4 +118,40 @@ describe('where', () => {
       args: ['Jo', 'Schmo', 'Jo', 'San Diego']
     })
   })
+  describe('.and .or', () => {
+    query({
+      name: 'and',
+      query: sq.where`name = ${'Joe'}`.and`age = ${8}`,
+      text: 'select * where (name = $1) and (age = $2)',
+      args: ['Joe', 8]
+    })
+    query({
+      name: 'or',
+      query: sq.where`name = ${'Joe'}`.or`age = ${8}`,
+      text: 'select * where (name = $1) or (age = $2)',
+      args: ['Joe', 8]
+    })
+    query({
+      name: 'multiple and/or',
+      query: sq.where`name = ${'Joe'}`.or`age = ${8}`.and`color = ${'blue'}`,
+      text: 'select * where (name = $1) or (age = $2) and (color = $3)',
+      args: ['Joe', 8, 'blue']
+    })
+    query({
+      name: 'and/or object',
+      query: sq.where({ name: 'Joe' }).or({ age: 8 }),
+      text: 'select * where (name = $1) or (age = $2)',
+      args: ['Joe', 8]
+    })
+  })
+  describe('applys correctly to .where and .on', () => {
+    query({
+      name: 'and',
+      query: sq.from`a`.join`b`.on`a.id = b.id`.or`b.id is ${3}`
+        .where`a.x = ${7}`.and`b.y = ${8}`,
+      text:
+        'select * from a join b on (a.id = b.id) or (b.id is $1) where (a.x = $2) and (b.y = $3)',
+      args: [3, 7, 8]
+    })
+  })
 })
