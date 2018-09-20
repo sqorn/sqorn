@@ -15,4 +15,4 @@ install:
   - npm run bootstrap
 
 script:
-  - npm run test -- --coverage --coverageReporters=text-lcov | coveralls
+  - ./node_modules/.bin/jest --coverage --coverageReporters=text-lcov | ./node_modules/.bin/coveralls
