@@ -1,17 +1,34 @@
 /** Initial ctx value */
-const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => ({
-  type: 'select',
-  express: 'from',
-  separator: ' ',
-  sql: [],
-  frm: [],
-  whr: [],
-  ret: [],
-  ins: [],
-  set: [],
-  arg,
-  parameter
-})
+const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => {
+  const whr = []
+  return {
+    // query type: 'sql' | 'select' | 'delete' | 'insert' | 'update'
+    type: 'select',
+    // express syntax status: 'from' | 'where' | 'return'
+    express: 'from',
+    // associates calls to .and and .or with calls to .where, .on, or .having
+    target: whr,
+    // next join target
+    nextJoin: { type: 'join', join: 'inner' },
+    // current join target, set to ctx.nextJoin on call to .join
+    join: undefined,
+    // string used to join clauses
+    separator: ' ',
+    // clause data, e.g. sq.from() modifies ctx.frm
+    sql: [],
+    frm: [],
+    whr,
+    ret: [],
+    ins: [],
+    set: [],
+    // parameterized query arguments, initialized to [] but subqueries
+    // inherit parent query's arg
+    arg,
+    // function that parameterizes an argument by adding it to ctx.arg then
+    // returning the result text, e.g. '$1', '$2', ..., or '?' for mysql
+    parameter
+  }
+}
 
 /** Query building methods */
 const methods = [
@@ -57,19 +74,20 @@ const methods = [
   {
     name: 'where',
     updateContext: (ctx, args) => {
-      ctx.whr.push(args)
+      ctx.whr.push({ type: 'and', args })
+      ctx.target = ctx.whr
     }
   },
   {
     name: 'and',
     updateContext: (ctx, args) => {
-      throw Error('Unimplemented')
+      ctx.target.push({ type: 'and', args })
     }
   },
   {
     name: 'or',
     updateContext: (ctx, args) => {
-      throw Error('Unimplemented')
+      ctx.target.push({ type: 'or', args })
     }
   },
   {
@@ -116,55 +134,68 @@ const methods = [
   },
   {
     name: 'join',
-    updateConext: (ctx, args) => {
-      throw Error('Unimplemented')
+    updateContext: (ctx, args) => {
+      ctx.join = ctx.nextJoin
+      ctx.join.args = args
+      ctx.nextJoin = { type: 'join', join: 'inner' }
+      ctx.frm.push(ctx.join)
     }
   },
   {
     name: 'left',
     getter: true,
-    updateConext: ctx => {
-      throw Error('Unimplemented')
+    updateContext: ctx => {
+      ctx.nextJoin.join = 'left'
     }
   },
   {
     name: 'right',
     getter: true,
-    updateConext: ctx => {
-      throw Error('Unimplemented')
+    updateContext: ctx => {
+      ctx.nextJoin.join = 'right'
     }
   },
   {
     name: 'full',
     getter: true,
-    updateConext: ctx => {
-      throw Error('Unimplemented')
+    updateContext: ctx => {
+      ctx.nextJoin.join = 'full'
     }
   },
   {
     name: 'cross',
     getter: true,
-    updateConext: ctx => {
-      throw Error('Unimplemented')
+    updateContext: ctx => {
+      ctx.nextJoin.join = 'cross'
     }
   },
   {
     name: 'inner',
     getter: true,
-    updateConext: ctx => {
-      throw Error('Unimplemented')
+    updateContext: ctx => {
+      ctx.nextJoin.join = 'inner'
     }
   },
   {
     name: 'on',
     updateContext: (ctx, args) => {
-      throw Error('Unimplemented')
+      const { join } = ctx
+      if (join.on) {
+        join.on.push({ type: 'and', args })
+      } else {
+        ctx.target = join.on = [{ type: 'and', args }]
+      }
     }
   },
   {
     name: 'using',
     updateContext: (ctx, args) => {
-      throw Error('Unimplemented')
+      const { join } = ctx
+      if (join.using) {
+        join.using.push(args)
+      } else {
+        join.using = [args]
+      }
     }
   },
   {
@@ -202,7 +233,7 @@ const methods = [
         ctx.frm.push({ type: 'from', args })
         ctx.express = 'where'
       } else if (ctx.express === 'where') {
-        ctx.whr.push(args)
+        ctx.whr.push({ type: 'and', args })
         ctx.express = 'return'
       } else if (ctx.express === 'return') {
         ctx.ret.push(args)

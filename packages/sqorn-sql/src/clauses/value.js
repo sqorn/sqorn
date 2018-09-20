@@ -2,7 +2,7 @@ const { isTaggedTemplate, buildTaggedTemplate, snakeCase } = require('../util')
 
 module.exports = ctx => {
   const { columns, values } = inserts(ctx)
-  return '(' + columns + ') values ' + values
+  return `(${columns})${ctx.separator}values ${values}`
 }
 
 const inserts = ctx => {

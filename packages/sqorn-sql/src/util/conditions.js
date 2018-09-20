@@ -9,7 +9,7 @@ const conditions = ctx => {
   const calls = ctx.whr
   for (let i = 0; i < calls.length; ++i) {
     if (i !== 0) txt += ' and '
-    txt += condition(ctx, calls[i])
+    txt += condition(ctx, calls[i].args)
   }
   return txt
 }
