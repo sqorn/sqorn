@@ -1,6 +1,6 @@
 {
   "name": "sqorn-mssql",
-  "version": "0.0.28",
+  "version": "0.0.29",
   "description": "A Javascript library for building MSSQL queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
