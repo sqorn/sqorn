@@ -9,7 +9,7 @@ const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => {
     // associates calls to .and and .or with calls to .where, .on, or .having
     target: whr,
     // next join target
-    nextJoin: { type: 'join', join: 'inner' },
+    nextJoin: { join: 'inner' },
     // current join target, set to ctx.nextJoin on call to .join
     join: undefined,
     // string used to join clauses
@@ -55,6 +55,7 @@ const methods = [
   {
     name: 'with',
     updateContext: (ctx, args) => {
+      throw Error('Unimplemented')
       ctx.with.push(args)
     }
   },
@@ -68,7 +69,7 @@ const methods = [
   {
     name: 'from',
     updateContext: (ctx, args) => {
-      ctx.frm.push({ type: 'from', args })
+      ctx.frm.push({ args })
     }
   },
   {
@@ -137,7 +138,7 @@ const methods = [
     updateContext: (ctx, args) => {
       ctx.join = ctx.nextJoin
       ctx.join.args = args
-      ctx.nextJoin = { type: 'join', join: 'inner' }
+      ctx.nextJoin = { join: 'inner' }
       ctx.frm.push(ctx.join)
     }
   },

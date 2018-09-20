@@ -3,20 +3,56 @@ const {
   buildTaggedTemplate,
   snakeCase
 } = require('./helpers')
+const { conditions } = require('./conditions')
 
 // utilities for building from_items, see:
 // https://www.postgresql.org/docs/9.5/static/sql-select.html
 
-const fromItems = (ctx, calls) => {
+const fromItems = (ctx, froms) => {
   let txt = ''
-  for (let i = 0; i < calls.length; ++i) {
-    if (i !== 0) txt += ', '
-    txt += build(ctx, calls[i].args)
+  for (let i = 0; i < froms.length; ++i) {
+    const from = froms[i]
+    if (i !== 0) txt += join(from)
+    txt += fromItem(ctx, from)
+    txt += joinConditions(ctx, from)
   }
   return txt
 }
 
-const build = (ctx, args) => {
+const join = from =>
+  from.join
+    ? `${from.on || from.using ? '' : ' natural'} ${joins[from.join]} `
+    : ', '
+
+const joins = {
+  inner: 'join',
+  left: 'left join',
+  right: 'right join',
+  full: 'full join',
+  cross: 'cross join'
+}
+
+const joinConditions = (ctx, from) =>
+  (from.on && ` on ${conditions(ctx, from.on)}`) ||
+  (from.using && ` using (${using(ctx, from.using)})`) ||
+  ''
+
+const using = (ctx, using) => {
+  let txt = ''
+  for (let i = 0; i < using.length; ++i) {
+    const args = using[i]
+    if (i !== 0) txt += ', '
+    if (typeof args[0] === 'string') {
+      txt += args.join(', ')
+    } else {
+      txt += buildTaggedTemplate(ctx, args)
+    }
+  }
+  return txt
+}
+
+const fromItem = (ctx, from) => {
+  const { args } = from
   if (args === undefined) {
     // no from clause
     return ''

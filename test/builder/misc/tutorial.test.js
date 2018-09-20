@@ -227,11 +227,11 @@ describe('tutorial', () => {
       })
       query({
         name: 'multiple join type',
-        query: sq.from`book`.left.right.join`author`.cross.inner.join`publisher`
-          .query,
+        query: sq.from`book`.left.right.join`author`.cross.inner
+          .join`publisher`,
         text:
           'select * from book natural right join author natural join publisher',
-        query: []
+        args: []
       })
     })
     test('Express Syntax', () => {
