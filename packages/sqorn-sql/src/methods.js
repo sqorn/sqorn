@@ -16,20 +16,6 @@ const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => ({
 /** Query building methods */
 const methods = [
   {
-    name: 'delete',
-    getter: true,
-    updateContext: ctx => {
-      ctx.type = 'delete'
-    }
-  },
-  {
-    name: 'recursive',
-    getter: true,
-    updateContext: ctx => {
-      ctx.recursive = true
-    }
-  },
-  {
     name: 'l',
     updateContext: (ctx, args) => {
       ctx.type = 'sql'
@@ -56,6 +42,13 @@ const methods = [
     }
   },
   {
+    name: 'recursive',
+    getter: true,
+    updateContext: ctx => {
+      throw Error('Unimplemented')
+    }
+  },
+  {
     name: 'from',
     updateContext: (ctx, args) => {
       ctx.frm.push({ type: 'from', args })
@@ -65,6 +58,24 @@ const methods = [
     name: 'where',
     updateContext: (ctx, args) => {
       ctx.whr.push(args)
+    }
+  },
+  {
+    name: 'and',
+    updateContext: (ctx, args) => {
+      throw Error('Unimplemented')
+    }
+  },
+  {
+    name: 'or',
+    updateContext: (ctx, args) => {
+      throw Error('Unimplemented')
+    }
+  },
+  {
+    name: 'wrap',
+    updateContext: (ctx, args) => {
+      throw Error('Unimplemented')
     }
   },
   {
@@ -101,6 +112,66 @@ const methods = [
     name: 'offset',
     updateContext: (ctx, args) => {
       ctx.off = args
+    }
+  },
+  {
+    name: 'join',
+    updateConext: (ctx, args) => {
+      throw Error('Unimplemented')
+    }
+  },
+  {
+    name: 'left',
+    getter: true,
+    updateConext: ctx => {
+      throw Error('Unimplemented')
+    }
+  },
+  {
+    name: 'right',
+    getter: true,
+    updateConext: ctx => {
+      throw Error('Unimplemented')
+    }
+  },
+  {
+    name: 'full',
+    getter: true,
+    updateConext: ctx => {
+      throw Error('Unimplemented')
+    }
+  },
+  {
+    name: 'cross',
+    getter: true,
+    updateConext: ctx => {
+      throw Error('Unimplemented')
+    }
+  },
+  {
+    name: 'inner',
+    getter: true,
+    updateConext: ctx => {
+      throw Error('Unimplemented')
+    }
+  },
+  {
+    name: 'on',
+    updateContext: (ctx, args) => {
+      throw Error('Unimplemented')
+    }
+  },
+  {
+    name: 'using',
+    updateContext: (ctx, args) => {
+      throw Error('Unimplemented')
+    }
+  },
+  {
+    name: 'delete',
+    getter: true,
+    updateContext: ctx => {
+      ctx.type = 'delete'
     }
   },
   {
