@@ -5,6 +5,7 @@ module.exports = {
   where: require('./where'),
   group: require('./group'),
   having: require('./having'),
+  setop: require('./setop'),
   order: require('./order'),
   limit: require('./limit'),
   offset: require('./offset'),

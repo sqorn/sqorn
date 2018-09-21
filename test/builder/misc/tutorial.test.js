@@ -191,6 +191,40 @@ describe('tutorial', () => {
         args: [2, 3]
       })
     })
+    describe('Set Operators', () => {
+      const Person = sq.from`person`
+      const Young = Person.where`age < 30`
+      const Middle = Person.where`age >= 30 and age < 60`
+      const Old = Person.where`age >= 60`
+      query({
+        name: '.except',
+        query: Person.except(Young),
+        text:
+          'select * from person except (select * from person where (age < 30))',
+        args: []
+      })
+      query({
+        name: '.union, multiple args',
+        query: Young.union(Middle, Old),
+        text:
+          'select * from person where (age < 30) union (select * from person where (age >= 30 and age < 60)) union (select * from person where (age >= 60))',
+        args: []
+      })
+      query({
+        name: 'union all',
+        query: Young.union.all(Old),
+        text:
+          'select * from person where (age < 30) union all (select * from person where (age >= 60))',
+        args: []
+      })
+      query({
+        name: 'chain set ops',
+        query: Person.except(Young).intersect(Person.except(Old)),
+        text:
+          'select * from person except (select * from person where (age < 30)) intersect (select * from person except (select * from person where (age >= 60)))',
+        args: []
+      })
+    })
     describe('Join', () => {
       query({
         name: 'natural join',
