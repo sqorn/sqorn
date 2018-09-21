@@ -1,7 +1,14 @@
 const { buildTaggedTemplate } = require('../util')
 
 module.exports = ctx => {
-  if (!ctx.off) return
-  const txt = buildTaggedTemplate(ctx, ctx.off)
-  return txt && `offset ${txt}`
+  const { offset } = ctx
+  const firstArg = offset[0]
+  return (
+    firstArg !== undefined &&
+    `offset ${
+      typeof firstArg === 'number'
+        ? ctx.parameter(ctx, firstArg)
+        : buildTaggedTemplate(ctx, ctx.offset)
+    }`
+  )
 }

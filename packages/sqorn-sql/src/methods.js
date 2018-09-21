@@ -28,6 +28,10 @@ const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => {
     ins: [],
     // update/set args
     set: [],
+    // limit
+    limit: [],
+    // offset
+    offset: [],
     // parameterized query arguments, initialized to [] but subqueries
     // inherit parent query's arg
     arg,
@@ -182,13 +186,13 @@ const methods = [
   {
     name: 'limit',
     updateContext: (ctx, args) => {
-      ctx.lim = args
+      ctx.limit = args
     }
   },
   {
     name: 'offset',
     updateContext: (ctx, args) => {
-      ctx.off = args
+      ctx.offset = args
     }
   },
   {

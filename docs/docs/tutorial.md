@@ -411,11 +411,62 @@ TODO, only template string form works
 
 ### Limit
 
-TODO, only template string form works
+Pass `.limit` the maximum number of rows to fetch.
+
+```js
+sq.from`person`.limit(8).query
+
+{ text: 'select * from person limit $1',
+  args: [8] }
+```
+
+`.limit` can also be called as a template tag.
+
+```js
+sq.from`person`.limit`8`.query
+
+{ text: 'select * from person limit 8',
+  args: [] }
+```
+
+Only the last call to `.limit` is used.
+
+```js
+sq.from`person`.limit(7).limit(5).query
+
+{ text: 'select * from person limit $1',
+  args: [5] }
+```
 
 ### Offset
 
-TODO, only template string form works
+Pass `.offset` the number of rows to skip before returning rows.
+
+```js
+sq.from`person`.offset(8).query
+
+{ text: 'select * from person offset $1',
+  args: [8] }
+```
+
+
+`.offset` can also be called as a template tag.
+
+```js
+sq.from`person`.offset`8`.query
+
+{ text: 'select * from person offset 8',
+  args: [] }
+```
+
+Only the last call to `.offset` is used.
+
+```js
+sq.from`person`.offset(7).offset(5).query
+
+{ text: 'select * from person offset $1',
+  args: [5] }
+```
 
 ### Join
 
