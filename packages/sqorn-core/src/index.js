@@ -1,7 +1,7 @@
 module.exports = ({ database, dialect }) => (config = {}) => {
   const { methods, newContext, queries } = dialect
 
-  const updateContext = {}
+  const contextUpdaters = {}
   // create context object ctx by processing methods linked list
   const context = (method, ctx) => {
     // follow method links to construct methods array (in reverse)
@@ -12,15 +12,20 @@ module.exports = ({ database, dialect }) => (config = {}) => {
     // build methods object by processing methods in call order
     for (let i = methods.length - 1; i >= 0; --i) {
       const method = methods[i]
-      updateContext[method.name](ctx, method.args)
+      contextUpdaters[method.name](ctx, method.args)
     }
     return ctx
   }
   // setup context update functions
   for (const method of methods) {
-    updateContext[method.name] = method.updateContext
+    const { name, updateContext, properties = {} } = method
+    contextUpdaters[name] = updateContext
+    for (const key in properties) {
+      contextUpdaters[`${name}.${key}`] = properties[key]
+    }
   }
-  updateContext.extend = (ctx, args) => {
+
+  contextUpdaters.extend = (ctx, args) => {
     for (const builder of args) {
       context(builder.method, ctx)
     }
@@ -73,13 +78,35 @@ module.exports = ({ database, dialect }) => (config = {}) => {
 
   // add query building methods
   for (const method of methods) {
-    const { getter, name } = method
+    const { getter, name, properties } = method
     if (getter) {
       // add getter methods
       Object.defineProperty(builder, name, {
         get: function() {
           return this.create({ name, prev: this.method })
         }
+      })
+    } else if (properties) {
+      // certain builder methods are both callable and have subproperties
+      // e.g. .union() and .union.all()
+      const subBuilderPrototype = {}
+      for (const key in properties) {
+        subBuilderPrototype[key] = function(...args) {
+          return builder.create({
+            name: `${name}.${key}`,
+            args,
+            prev: this.method
+          })
+        }
+      }
+      const subBuilder = function() {
+        let fn = (...args) => this.create({ name, args, prev: this.method })
+        fn.method = this.method
+        Object.setPrototypeOf(fn, subBuilderPrototype)
+        return fn
+      }
+      Object.defineProperty(builder, name, {
+        get: subBuilder
       })
     } else {
       // add function call methods

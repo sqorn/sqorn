@@ -493,6 +493,45 @@ sq.from`book`.left.right.join`author`.cross.inner.join`publisher`.query
   query: []}
 ```
 
+### Set Operators
+
+Pass **select** subqueries to `.union`, `.intersect`, and `.except` to perform set operations.
+
+```js
+const Person = sq.from`person`
+const Young = Person.where`age < 30`
+const Middle = Person.where`age >= 30 and age < 60`
+const Old = Person.where`age >= 60`
+
+Person.except(Young).query
+
+{ text: 'select * from person except (select * from person where (age < 30))',
+  args: [] }
+
+Young.union(Middle, Old).query
+
+{ text: 'select * from person where (age < 30) union (select * from person where (age >= 30 and age < 60)) union (select * from person where (age >= 60))',
+  args: [] }
+```
+
+`.union.all`, `.intersect.all`, and `.except.all` can be used to prevent duplicate elimination.
+
+```js
+Young.union.all(Old).query
+
+{ text: 'select * from person where (age < 30) union all (select * from person where (age >= 60))',
+  args: [] }
+```
+
+Set operators can be chained.
+
+```js
+Person.except(Young).intersect(Person.except(Old)).query
+
+{ text: 'select * from person except (select * from person where (age < 30)) intersect (select * from person except (select * from person where (age >= 60)))',
+  args: [] }
+```
+
 ### With
 
 CTEs

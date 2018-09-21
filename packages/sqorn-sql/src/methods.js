@@ -14,12 +14,19 @@ const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => {
     join: undefined,
     // string used to join clauses
     separator: ' ',
-    // clause data, e.g. sq.from() modifies ctx.frm
+    // raw sql args (from .l)
     sql: [],
+    // from clause args
     frm: [],
+    // where clause args
     whr,
+    // select/returning clause args
     ret: [],
+    // union/intersect/except args
+    setop: [],
+    // insert args
     ins: [],
+    // update/set args
     set: [],
     // parameterized query arguments, initialized to [] but subqueries
     // inherit parent query's arg
@@ -27,6 +34,24 @@ const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => {
     // function that parameterizes an argument by adding it to ctx.arg then
     // returning the result text, e.g. '$1', '$2', ..., or '?' for mysql
     parameter
+  }
+}
+
+const express = {
+  from: (ctx, args) => {
+    ctx.frm.push({ type: 'from', args })
+    ctx.express = 'where'
+  },
+  where: (ctx, args) => {
+    ctx.whr.push({ type: 'and', args })
+    ctx.express = 'return'
+  },
+  return: (ctx, args) => {
+    ctx.ret.push(args)
+    ctx.express = 'done'
+  },
+  done: () => {
+    // noop
   }
 }
 
@@ -113,6 +138,39 @@ const methods = [
     name: 'having',
     updateContext: (ctx, args) => {
       ctx.hav = args
+    }
+  },
+  {
+    name: 'union',
+    updateContext: (ctx, args) => {
+      ctx.setop.push({ type: 'union', args })
+    },
+    properties: {
+      all: (ctx, args) => {
+        ctx.setop.push({ type: 'union all', args })
+      }
+    }
+  },
+  {
+    name: 'intersect',
+    updateContext: (ctx, args) => {
+      ctx.setop.push({ type: 'intersect', args })
+    },
+    properties: {
+      all: (ctx, args) => {
+        ctx.setop.push({ type: 'intersect all', args })
+      }
+    }
+  },
+  {
+    name: 'except',
+    updateContext: (ctx, args) => {
+      ctx.setop.push({ type: 'except', args })
+    },
+    properties: {
+      all: (ctx, args) => {
+        ctx.setop.push({ type: 'except all', args })
+      }
     }
   },
   {
@@ -230,16 +288,7 @@ const methods = [
   {
     name: 'express',
     updateContext: (ctx, args) => {
-      if (ctx.express === 'from') {
-        ctx.frm.push({ type: 'from', args })
-        ctx.express = 'where'
-      } else if (ctx.express === 'where') {
-        ctx.whr.push({ type: 'and', args })
-        ctx.express = 'return'
-      } else if (ctx.express === 'return') {
-        ctx.ret.push(args)
-        ctx.express = 'done'
-      }
+      express[ctx.express](ctx, args)
     }
   }
 ]

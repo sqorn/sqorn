@@ -5,6 +5,7 @@ const {
   where,
   group,
   having,
+  setop,
   order,
   limit,
   offset,
@@ -33,7 +34,18 @@ const query = (...clauses) => ctx => {
 const queries = {
   sql: query(sql),
   raw: query(raw),
-  select: query(wth, select, from, where, group, having, order, limit, offset),
+  select: query(
+    wth,
+    select,
+    from,
+    where,
+    group,
+    having,
+    setop,
+    order,
+    limit,
+    offset
+  ),
   delete: query(wth, del, where, returning),
   insert: query(wth, insert, value, returning),
   update: query(wth, update, set, where, returning)
