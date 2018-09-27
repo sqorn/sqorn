@@ -16,7 +16,7 @@ Sqorn does not compromise flexibility for abstraction. It exposes the unique fea
 
 Sqorn parameterizes all queries so you can be confident your appliction is not vulnerable to SQL injection.
 
-Sqorn compiles queries [10x faster](https://sqorn.org/benchmarks.html) than [Knex](https://knexjs.org/) and [200x faster](https://sqorn.org/benchmarks.html) than [Squel](https://github.com/hiddentao/squel). 
+Sqorn compiles queries [10x faster](https://sqorn.org/benchmarks.html) than [Knex](https://knexjs.org/) and [200x faster](https://sqorn.org/benchmarks.html) than [Squel](https://github.com/hiddentao/squel).
 
 ## Setup
 
@@ -215,7 +215,7 @@ const createAccount = async (email, password) =>  {
 
 ### From
 
-The simplest `select` query gets all rows from a table. Specify a `from` clause with `.from`.
+The simplest *SELECT* query gets all rows from a table. Specify a *FROM* clause with `.from`.
 
 ```js
 sq.from`book`.query
@@ -224,21 +224,14 @@ sq.from`book`.query
   args: [] }
 ```
 
-`.from` also accepts raw string table names. **To prevent SQL injection, do not pass user-provided table names.**
+`.from` also accepts table names as strings.
+
+**To prevent SQL injection, do not pass user-provided table names.**
 
 ```js
 sq.from('book', 'author').query
 
 { text: 'select * from book, author',
-  args: [] }
-```
-
-The argument may be a joined table.
-
-```js
-sq.from`book left join author on book.author_id = author.id`.query
-
-{ text: 'select * from book left join author on book.author_id = author.id',
   args: [] }
 ```
 
@@ -251,9 +244,11 @@ sq.from`book`.from`person`.query
   args: [] }
 ```
 
-You can pass `.from` an object whose keys are table aliases and whose values are table sources.
+Pass `.from` an object to add an *AS* clause. Object Keys are *aliases* and object values are *sources*.
 
-Table sources can be strings. **To prevent SQL injection, do not pass user-provided table names.**
+Table sources can be strings.
+
+**To prevent SQL injection, do not pass user-provided table names.**
 
 ```js
 sq.from({ b: 'book', p: 'person' }).query
@@ -262,7 +257,7 @@ sq.from({ b: 'book', p: 'person' }).query
   args: [] }
 ```
 
-Table sources can be arrays of objects.
+Table sources can be arrays of row objects.
 
 ```js
 sq.from({ people: [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }] }).query
@@ -271,19 +266,46 @@ sq.from({ people: [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }] }).query
   args: [8, 'Jo', 9, 'Mo'] }
 ```
 
-Table sources can be subqueries.
+Table sources can be *SELECT* subqueries.
 
 ```js
-// a postgres only query:
+sq.from({ b: sq.from`book` }).query
+
+{ text: 'select * from (select * from book) as b',
+  args: [] }
+```
+
+Table sources can be manually constructed subqueries. These will *not* be parenthesized automatically.
+
+```js
+// a Postgres-only query
 sq.from({ countDown: sq.l`unnest(${[3, 2, 1]})` }).query
 
 { text: 'select * from unnest($1) as count_down',
   args: [[3, 2, 1]] }
 ```
 
+`.from` accepts multiple string or object arguments.
+
+```js
+sq.from({ b: 'book' }, 'person').query
+
+{ text: 'select * from book as b, person',
+  args: [] }
+```
+
+Construct join tables manually or learn about [building joins](#join).
+
+```js
+sq.from`book left join author on book.author_id = author.id`.query
+
+{ text: 'select * from book left join author on book.author_id = author.id',
+  args: [] }
+```
+
 ### Where
 
-Filter result rows by adding a `where` clause with `.where`.
+Filter result rows by adding a *WHERE* clause with `.where`.
 
 ```js
 sq.from`book`.where`genre = ${'Fantasy'}`.query
@@ -292,7 +314,7 @@ sq.from`book`.where`genre = ${'Fantasy'}`.query
   args: ['Fantasy'] }
 ```
 
-Multiple `.where` calls are joined with `and`.
+Multiple `.where` calls are joined with *AND*.
 
 ```js
 sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`.query
@@ -301,7 +323,7 @@ sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`.query
   args: ['Fantasy', 2000] }
 ```
 
-`.and` and `.or` can be called **after** calling `.where`. They accept the same arguments as `.where`.
+`.and` and `.or` can be called *after* calling `.where`. They accept the same arguments as `.where`.
 
 ```js
 sq.from`person`.where`name = ${'Rob'}`.or`name = ${'Bob'}`.and`age = ${7}`.query
@@ -326,6 +348,15 @@ sq.from`person`.where({ firstName: 'Kaladin' }).query
 
 { text: 'select * from person where (first_name = $1)',
   args: ['Kaladin'] }
+```
+
+Construct raw object values with a *single, unchained* call to `sq.raw`.
+
+```js
+sq.from('book', 'author').where({ 'book.id': sq.raw('author.id') }).query
+
+{ text: 'select * from book, author where book.id = author.id',
+  args: [] }
 ```
 
 If you need a non-equality condition, add a property whose value is created with `sq.l`. The property's key will be ignored.
@@ -359,7 +390,9 @@ sq.return`${1} as a, ${2} as b, ${1} + ${2} as sum`.query
   args: [1, 2, 1, 2] }
 ```
 
-`.return` also accepts raw string column names. **To prevent SQL injection, do not pass user-provided column names.**
+`.return` also accepts column names as strings.
+
+**To prevent SQL injection, do not pass user-provided column names.**
 
 ```js
 sq.from`book`.return('title', 'author').query
@@ -379,7 +412,9 @@ sq.from`book`.return('title', 'author').return`id`.query
 
 You can pass `.return` an object whose keys are output names and whose values are expressions.
 
-Expressions can be strings. **To prevent SQL injection, do not pass user-provided expressions.**
+Expressions can be strings.
+
+**To prevent SQL injection, do not pass user-provided expressions.**
 
 ```js
 sq.from`person`.return({ firstName: 'person.first_name' , age: 'person.age' }).query
@@ -396,6 +431,59 @@ sq.return({ sum: sq.l`${2} + ${3}` }).query
 { text: 'select ($1 + $2) as sum',
   args: [2, 3] }
 ```
+
+Call `.distinct` before `.return` to get only one row for each group of duplicates.
+
+```js
+sq.from`book`.distinct.return`genre`.return`author`.query
+
+{ text: 'select distinct genre, author from book',
+  args: [] }
+```
+
+When using Sqorn Postgres, call `.distinct.on` to get only the first row from each group matching the argument expressions.
+
+```js
+sq.from`weather`
+  .distinct.on`location`.return`location, time, report`.query
+
+{ text: 'select distinct on (location) location, time, report from weather',
+  args: [] }
+```
+
+`.on` accepts column names as strings.
+
+**To prevent SQL injection, do not pass user-provided column names.**
+
+```js
+sq.from('weather')
+  .distinct.on('location', 'time').return('location', 'time', 'report').query
+
+{ text: 'select distinct on (location, time) location, time, report from weather',
+  args: [] }
+```
+
+`.on` can be called multiple times.
+
+```js
+sq.from('weather')
+  .distinct.on('location').on('time').return('location', 'time', 'report')
+  .query
+
+{ text: 'select distinct on (location, time) location, time, report from weather',
+  args: [] }
+```
+
+`.on` accepts subqueries.
+
+```js
+sq.from`generate_series(0, 10) as n`
+  .distinct.on(sq.l`n / 3`).return`n`.query
+
+{ text: 'select distinct on (n / 3) n from generate_series(0,10) as n',
+  args: [] }
+```
+
 
 ### Group By
 
@@ -470,7 +558,7 @@ sq.from`person`.offset(7).offset(5).query
 
 ### Join
 
-Construct Joins with `.join`, which accepts the same arguments as `.from`. When no join conditions are specified, Sqorn builds a natural join.
+Call `.join` to build a *JOIN* clause. It accepts the same arguments as `.from`. Sqorn builds a natural join by default.
 
 ```js
 sq.from`book`.join`author`.query
@@ -492,7 +580,7 @@ Multiple calls to `.on` are joined with `and`.
 
 ```js
 sq.from({ b: 'book' })
-  .join({ a: 'author'}).on`b.author_id = a.id`.on({ 'b.genre': 'Fantasy' }).query
+  .join({ a: 'author'}).on({ 'b.author_id': sq.raw('a.id') }).on({ 'b.genre': 'Fantasy' }).query
 
 { text: 'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1)',
   args: ['Fantasy'] }
@@ -502,7 +590,7 @@ sq.from({ b: 'book' })
 
 ```js
 sq.from({ b: 'book' })
-  .join({ a: 'author'}).on`b.author_id = a.id`.and({ 'b.genre': 'Fantasy' }).or`b.special = true`.query
+  .join({ a: 'author'}).on`$${'b.author_id'} = $${'a.id'}`.and({ 'b.genre': 'Fantasy' }).or`b.special = true`.query
 
 { text: 'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1) or (b.special = true)',
   args: ['Fantasy'] }
@@ -617,8 +705,8 @@ sq.from('person').where({ name: 'Jo' }).return('age')
 `Delete` queries look like `Select` queries with an additional call to `.delete`.
 
 ```js
-sq.from`person`.delete.query
-sq.delete.from`person`.query // equivalent
+sq.delete.from`person`.query
+sq.from`person`.delete.query // equivalent
 
 { text: 'delete from person',
   args: [] }
@@ -627,16 +715,16 @@ sq.delete.from`person`.query // equivalent
 Filter the rows to delete with `.where`
 
 ```js
-sq.from`person`.where`id = ${723}`.delete.query
+sq.delete.from`person`.where`id = ${723}`.query
 
 { text: 'delete from person where id = $1',
   args: [723] }
 ```
 
-Return the deleted rows with `.return`
+Return the deleted rows with `.return`.
 
 ```js
-sq.from`person`.return`name`.delete.query
+sq.delete.from`person`.return`name`.query
 
 { text: 'delete from person returning name',
   args: [] }

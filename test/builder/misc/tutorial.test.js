@@ -80,23 +80,17 @@ describe('tutorial', () => {
         text: 'select * from book, author'
       })
       query({
-        name: '.from`join`',
-        query: sq.from`book left join author on book.author_id = author.id`,
-        text:
-          'select * from book left join author on book.author_id = author.id'
-      })
-      query({
         name: '.from``.from``',
         query: sq.from`book`.from`person`,
         text: 'select * from book, person'
       })
       query({
-        name: 'from object - string table source',
+        name: '.from object - string table source',
         query: sq.from({ b: 'book', p: 'person' }),
         text: 'select * from book as b, person as p'
       })
       query({
-        name: 'from object - array of objects table source',
+        name: '.from object - array of row objects',
         query: sq.from({
           people: [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }]
         }),
@@ -104,10 +98,28 @@ describe('tutorial', () => {
         args: [7, 'Jo', 9, 'Mo']
       })
       query({
-        name: 'from object - subquery table source',
+        name: '.from object - select subquery',
+        query: sq.from({ b: sq.from`book` }),
+        text: 'select * from (select * from book) as b',
+        args: []
+      })
+      query({
+        name: '.from object - subquery table source',
         query: sq.from({ countDown: sq.l`unnest(${[3, 2, 1]})` }),
         text: 'select * from (unnest($1)) as count_down',
         args: [[3, 2, 1]]
+      })
+      query({
+        name: '.from - mix objects and strings',
+        query: sq.from({ b: 'book' }, 'person'),
+        text: 'select * from book as b, person',
+        args: []
+      })
+      query({
+        name: '.from`join`',
+        query: sq.from`book left join author on book.author_id = author.id`,
+        text:
+          'select * from book left join author on book.author_id = author.id'
       })
     })
     describe('Where', () => {
@@ -143,6 +155,14 @@ describe('tutorial', () => {
         text: 'select * from person where (first_name = $1)',
         args: ['Kaladin']
       })
+      query({
+        name: '.where({ key: sq.raw() })',
+        query: sq
+          .from('book', 'author')
+          .where({ 'book.id': sq.raw('author.id') }),
+        text: 'select * from book, author where book.id = author.id',
+        args: []
+      })
       const condMinYear = sq.l`year >= ${20}`
       const condMaxYear = sq.l`year < ${30}`
       query({
@@ -176,7 +196,7 @@ describe('tutorial', () => {
         text: 'select title, author, id from book'
       })
       query({
-        name: 'return object - string expression',
+        name: '.return object - string expression',
         query: sq.from`person`.return({
           firstName: 'person.first_name',
           age: 'person.age'
@@ -185,10 +205,52 @@ describe('tutorial', () => {
           'select person.first_name as first_name, person.age as age from person'
       })
       query({
-        name: 'return object - subquery expression',
+        name: '.return object - subquery expression',
         query: sq.return({ sum: sq.l`${2} + ${3}` }),
         text: 'select ($1 + $2) as sum',
         args: [2, 3]
+      })
+      query({
+        name: '.distinct.return',
+        query: sq.from`book`.distinct.return`genre`.return`author`,
+        text: 'select distinct genre, author from book',
+        args: []
+      })
+      query({
+        name: '.distinct.on``.return',
+        query: sq.from`weather`.distinct.on`location`
+          .return`location, time, report`,
+        text:
+          'select distinct on (location) location, time, report from weather',
+        args: []
+      })
+      query({
+        name: ".distinct.on('', '').return",
+        query: sq
+          .from('weather')
+          .distinct.on('location', 'time')
+          .return('location', 'time', 'report'),
+        text:
+          'select distinct on (location, time) location, time, report from weather',
+        args: []
+      })
+      query({
+        name: ".distinct.on('', '').return",
+        query: sq
+          .from('weather')
+          .distinct.on('location')
+          .on('time')
+          .return('location', 'time', 'report'),
+        text:
+          'select distinct on (location, time) location, time, report from weather',
+        args: []
+      })
+      query({
+        name: ".distinct.on('', '').return",
+        query: sq.from`generate_series(0, 10) as n`.distinct.on(sq.l`n / 3`)
+          .return`n`,
+        text: 'select distinct on (n / 3) n from generate_series(0,10) as n',
+        args: []
       })
     })
     describe('Limit', () => {
@@ -282,8 +344,11 @@ describe('tutorial', () => {
       })
       query({
         name: 'multiple on',
-        query: sq.from({ b: 'book' }).join({ a: 'author' })
-          .on`b.author_id = a.id`.on({ 'b.genre': 'Fantasy' }),
+        query: sq
+          .from({ b: 'book' })
+          .join({ a: 'author' })
+          .on({ 'b.author_id': sq.raw('a.id') })
+          .on({ 'b.genre': 'Fantasy' }),
         text:
           'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1)',
         args: ['Fantasy']
@@ -291,7 +356,7 @@ describe('tutorial', () => {
       query({
         name: '.and / .or',
         query: sq.from({ b: 'book' }).join({ a: 'author' })
-          .on`b.author_id = a.id`.and({ 'b.genre': 'Fantasy' })
+          .on`$${'b.author_id'} = $${'a.id'}`.and({ 'b.genre': 'Fantasy' })
           .or`b.special = true`,
         text:
           'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1) or (b.special = true)',
@@ -353,21 +418,23 @@ describe('tutorial', () => {
 
   describe('Manipulation Queries', () => {
     describe('Delete', () => {
-      expect(sq.from`person`.delete.query).toEqual(sq.delete.from`person`.query)
+      expect(sq.delete.from`person`.delete.query).toEqual(
+        sq.from`person`.delete.query
+      )
       query({
         name: '.delete',
-        query: sq.from`person`.delete,
+        query: sq.delete.from`person`,
         text: 'delete from person'
       })
       query({
         name: '.where.delete',
-        query: sq.from`person`.where`id = ${723}`.delete,
+        query: sq.delete.from`person`.where`id = ${723}`,
         text: 'delete from person where (id = $1)',
         args: [723]
       })
       query({
         name: '.return.delete',
-        query: sq.from`person`.return`name`.delete,
+        query: sq.delete.from`person`.return`name`,
         text: 'delete from person returning name'
       })
       query({
