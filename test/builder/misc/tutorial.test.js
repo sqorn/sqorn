@@ -499,6 +499,23 @@ describe('tutorial', () => {
         ]
       })
       query({
+        name: '.insert({}).insert({}).insert({})',
+        query: sq.from`book`.insert(
+          { title: 'The Way of Kings', year: 2010 },
+          { title: 'Words of Radiance', year: null },
+          { title: 'Oathbringer' }
+        ),
+        text:
+          'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
+        args: [
+          'The Way of Kings',
+          2010,
+          'Words of Radiance',
+          null,
+          'Oathbringer'
+        ]
+      })
+      query({
         name: '',
         query: sq.from`book`.insert({ title: 'Squirrels and Acorns' })
           .return`id`,

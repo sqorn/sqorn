@@ -215,7 +215,7 @@ const createAccount = async (email, password) =>  {
 
 ### From
 
-The simplest *SELECT* query gets all rows from a table. Specify a *FROM* clause with `.from`.
+The simplest *select* query gets all rows from a table. Specify a *from* clause with `.from`.
 
 ```js
 sq.from`book`.query
@@ -244,7 +244,7 @@ sq.from`book`.from`person`.query
   args: [] }
 ```
 
-Pass `.from` an object to add an *AS* clause. Object Keys are *aliases* and object values are *sources*.
+Pass `.from` an object to add an *as* clause. Object Keys are *aliases* and object values are *sources*.
 
 Table sources can be strings.
 
@@ -305,7 +305,7 @@ sq.from`book left join author on book.author_id = author.id`.query
 
 ### Where
 
-Filter result rows by adding a *WHERE* clause with `.where`.
+Filter result rows by adding a *where* clause with `.where`.
 
 ```js
 sq.from`book`.where`genre = ${'Fantasy'}`.query
@@ -314,7 +314,7 @@ sq.from`book`.where`genre = ${'Fantasy'}`.query
   args: ['Fantasy'] }
 ```
 
-Multiple `.where` calls are joined with *AND*.
+Multiple `.where` calls are joined with *and*.
 
 ```js
 sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`.query
@@ -558,7 +558,7 @@ sq.from`person`.offset(7).offset(5).query
 
 ### Join
 
-Call `.join` to build a *JOIN* clause. It accepts the same arguments as `.from`. Sqorn builds a natural join by default.
+Call `.join` to build a *join* clause. It accepts the same arguments as `.from`. Sqorn builds a *natural join* by default.
 
 ```js
 sq.from`book`.join`author`.query
@@ -623,7 +623,7 @@ sq.from`book`.left.join`author`.right.join`publisher`.query
   args: [] }
 ```
 
-The last join type specifier determines the join type. To explicitly perform an inner join, call `.inner`. Sqorn never generates the optional *inner* and *outer* keywords.
+The last join type specifier determines the join type. To explicitly perform an *inner join*, call `.inner`. Sqorn never generates the optional *inner* and *outer* keywords.
 
 ```js
 sq.from`book`.left.right.join`author`.cross.inner.join`publisher`.query
@@ -702,7 +702,7 @@ sq.from('person').where({ name: 'Jo' }).return('age')
 
 ### Delete
 
-`Delete` queries look like `Select` queries with an additional call to `.delete`.
+*Delete* queries look like *select* queries with an additional call to `.delete`.
 
 ```js
 sq.delete.from`person`.query
@@ -748,7 +748,7 @@ sq`book`.delete.delete.delete.query
   args: [] }
 ```
 
-When using Sqorn Postgres, the first `.from` call forms the `DELETE` clause. Subsequent `.from` calls form the `USING` clause.
+When using Sqorn Postgres, the first `.from` call forms the *delete* clause. Subsequent `.from` calls form the *using* clause.
 
 ```js
 sq.delete
@@ -776,18 +776,18 @@ sq.from`person`
   args: ['Shallan', 'Davar', 'Navani', 'Kholin'] }
 ```
 
-You can pass `.insert` column names as strings. You must then pass`.value` corresponding row values. `null` values are inserted as `NULL` while `undefined` values are inserted as `DEFAULT`.
+You can pass `.insert` column names as strings. You must then pass`.value` corresponding row values. `undefined` values are inserted as `default`.
 
 ```js
 sq.from`book`
   .insert('title', 'year')
-  .value('The Way of Kings', years[0])
+  .value('The Way of Kings', 2010)
   .value('Words of Radiance', null)
   .value('Oathbringer')
   .query
 
-{ text: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
-  args: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
+{ text: 'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
+  args: ['The Way of Kings', 2010, 'Words of Radiance', null, 'Oathbringer'] }
 ```
 
 When called as a template string or passed string column names, `.insert` may only be called once.
@@ -801,8 +801,8 @@ sq.from`book`
   .insert({ title: 'Oathbringer' })
   .query
 
-{ text: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
-  args: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
+{ text: 'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
+  args: ['The Way of Kings', 2010, 'Words of Radiance', null, 'Oathbringer'] }
 ```
 
 Alternatively, multiple objects may be passed to `.insert`
@@ -814,7 +814,7 @@ sq.from`book`
        { title: 'Oathbringer' })
   .query
 
-{ text: 'insert into book (title, year) values ($1, $2), ($3, NULL), ($4, DEFAULT)',
+{ text: 'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
   args: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
 ```
 
@@ -873,7 +873,7 @@ sq.from`person`
   args: ['Robert', 'Rob', 'Matt'] }
 ```
 
-When using Sqorn Postgres, the first `.from` call forms the `UPDATE` clause. Subsequent `.from` calls form the `FROM` clause.
+When using Sqorn Postgres, the first `.from` call forms the *update* clause. Subsequent `.from` calls form the *from* clause.
 
 ```js
 sq.from`book`
