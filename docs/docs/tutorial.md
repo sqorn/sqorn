@@ -539,9 +539,18 @@ sq.from`person`.limit(8).query
 `.limit` can be called as a template tag.
 
 ```js
-sq.from`person`.limit`8`.query
+sq.from`person`.limit`1 + 7`.query
 
-{ text: 'select * from person limit 8',
+{ text: 'select * from person limit 1 + 7',
+  args: [] }
+```
+
+You can pass `.limit` a *manually constructed subquery*.
+
+```js
+sq.from`person`.limit(sq.l`1 + 7`).query
+
+{ text: 'select * from person limit 1 + 7',
   args: [] }
 ```
 
@@ -569,9 +578,18 @@ sq.from`person`.offset(8).query
 `.offset` can be called as a template tag.
 
 ```js
-sq.from`person`.offset`8`.query
+sq.from`person`.offset`1 + 7`.query
 
-{ text: 'select * from person offset 8',
+{ text: 'select * from person offset 1 + 7',
+  args: [] }
+```
+
+You can pass `.offset` a *manually constructed subquery*.
+
+```js
+sq.from`person`.offset(sq.l`1 + 7`).query
+
+{ text: 'select * from person offset 1 + 7',
   args: [] }
 ```
 
