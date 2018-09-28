@@ -1,6 +1,6 @@
 {
   "name": "sqorn-sql",
-  "version": "0.0.30",
+  "version": "0.0.31",
   "description": "Utilities for making SQL query builders with Sqorn",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
