@@ -1,3 +1,4 @@
 const { expressions } = require('../util')
 
-module.exports = ctx => `select ${expressions(ctx, ctx.ret) || '*'}`
+module.exports = ctx =>
+  `select${ctx.distinct ? ' distinct' : ''} ${expressions(ctx, ctx.ret) || '*'}`

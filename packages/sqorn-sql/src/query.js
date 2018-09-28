@@ -15,8 +15,7 @@ const {
   value,
   update,
   set,
-  sql,
-  raw
+  sql
 } = require('./clauses')
 
 const query = (...clauses) => ctx => {
@@ -28,12 +27,13 @@ const query = (...clauses) => ctx => {
       text += str
     }
   }
-  return { text, args: ctx.arg }
+  return { text, args: ctx.arg, type: ctx.type }
 }
 
+const sqlQuery = query(sql)
 const queries = {
-  sql: query(sql),
-  raw: query(raw),
+  sql: sqlQuery,
+  arg: sqlQuery,
   select: query(
     wth,
     select,

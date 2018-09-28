@@ -8,21 +8,21 @@ const { conditions } = require('./conditions')
 // utilities for building from_items, see:
 // https://www.postgresql.org/docs/9.5/static/sql-select.html
 
-const fromItems = (ctx, froms) => {
+const fromItems = (ctx, froms, start = 0, end = froms.length) => {
+  if (end > froms.length) end = froms.length
   let txt = ''
-  for (let i = 0; i < froms.length; ++i) {
+  for (let i = start; i < end; ++i) {
     const from = froms[i]
-    if (i !== 0) txt += join(from)
-    txt += fromItem(ctx, from)
-    txt += joinConditions(ctx, from)
+    const isJoin = from.join
+    if (i !== start) txt += isJoin ? join(from) : ', '
+    txt += fromItem(ctx, from.args)
+    if (isJoin) txt += joinConditions(ctx, from)
   }
   return txt
 }
 
 const join = from =>
-  from.join
-    ? `${from.on || from.using ? '' : ' natural'} ${joins[from.join]} `
-    : ', '
+  `${from.on || from.using ? '' : ' natural'} ${joins[from.join]} `
 
 const joins = {
   inner: 'join',
@@ -51,20 +51,28 @@ const using = (ctx, using) => {
   return txt
 }
 
-const fromItem = (ctx, from) => {
-  const { args } = from
-  if (args === undefined) {
-    // no from clause
-    return ''
-  } else if (typeof args[0] === 'string') {
-    // string table names
-    return args.join(', ')
-  } else if (isTaggedTemplate(args)) {
-    // template string tables
-    return buildTaggedTemplate(ctx, args)
-  } else {
-    return objectTables(ctx, args[0])
-    // object tables
+const fromItem = (ctx, args) =>
+  isTaggedTemplate(args) ? buildTaggedTemplate(ctx, args) : fromArgs(ctx, args)
+
+const fromArgs = (ctx, args) => {
+  let txt = ''
+  for (let i = 0; i < args.length; ++i) {
+    if (i !== 0) txt += ', '
+    txt += fromArg(ctx, args[i])
+  }
+  return txt
+}
+
+const fromArg = (ctx, arg) => {
+  switch (typeof arg) {
+    case 'string':
+      return arg
+    case 'object':
+      return objectTables(ctx, arg)
+    case 'function':
+      return arg.bld(ctx).text
+    default:
+      throw Error('Invalid .from argument:', arg)
   }
 }
 
@@ -74,18 +82,21 @@ const objectTables = (ctx, object) => {
   for (let i = 0; i < keys.length; ++i) {
     if (i !== 0) txt += ', '
     const key = keys[i]
-    txt += table(ctx, key, object[key])
+    txt += tableAsAlias(ctx, key, object[key])
   }
   return txt
 }
 
-const table = (ctx, alias, source) => {
+const tableAsAlias = (ctx, alias, source) => {
   if (typeof source === 'string') {
     return `${source} as ${snakeCase(alias)}`
   } else if (Array.isArray(source)) {
     return tableFromArray(ctx, alias, source)
   } else if (typeof source.bld === 'function') {
-    return `(${source.bld(ctx).text}) as ${snakeCase(alias)}`
+    const subquery = source.bld(ctx)
+    return subquery.type === 'select'
+      ? `(${subquery.text}) as ${snakeCase(alias)}`
+      : `${subquery.text} as ${snakeCase(alias)}`
   }
   return `${ctx.parameter(ctx, source)} as ${snakeCase(alias)}`
 }

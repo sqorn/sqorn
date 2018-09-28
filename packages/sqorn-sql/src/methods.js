@@ -2,11 +2,12 @@
 const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => {
   const whr = []
   return {
-    // query type: 'sql' | 'select' | 'delete' | 'insert' | 'update'
+    // query type: 'raw' | sql' | 'select' | 'delete' | 'insert' | 'update'
     type: 'select',
     // express syntax status: 'from' | 'where' | 'return'
     express: 'from',
-    // associates calls to .and and .or with calls to .where, .on, or .having
+    // saves context needed to interpret proceeding method calls
+    // modified by .where, .join.on, .distinct.on and .having
     target: whr,
     // next join target
     nextJoin: { join: 'inner' },
@@ -60,92 +61,84 @@ const express = {
 }
 
 /** Query building methods */
-const methods = [
-  {
-    name: 'l',
+const methods = {
+  l: {
     updateContext: (ctx, args) => {
       ctx.type = 'sql'
       ctx.sql.push({ args, raw: false })
     }
   },
-  {
-    name: 'raw',
+  raw: {
     updateContext: (ctx, args) => {
-      ctx.type = 'sql'
+      ctx.type = ctx.type === 'select' ? 'arg' : 'sql'
       ctx.sql.push({ args, raw: true })
     }
   },
-  {
-    name: 'link',
+  link: {
     updateContext: (ctx, args) => {
       ctx.separator = args[0]
     }
   },
-  {
-    name: 'with',
+  with: {
     updateContext: (ctx, args) => {
       throw Error('Unimplemented')
       ctx.with.push(args)
     }
   },
-  {
-    name: 'recursive',
+  recursive: {
     getter: true,
     updateContext: ctx => {
       throw Error('Unimplemented')
     }
   },
-  {
-    name: 'from',
+  from: {
     updateContext: (ctx, args) => {
       ctx.frm.push({ args })
     }
   },
-  {
-    name: 'where',
+  where: {
     updateContext: (ctx, args) => {
       ctx.whr.push({ type: 'and', args })
       ctx.target = ctx.whr
     }
   },
-  {
-    name: 'and',
+  and: {
     updateContext: (ctx, args) => {
       ctx.target.push({ type: 'and', args })
     }
   },
-  {
-    name: 'or',
+  or: {
     updateContext: (ctx, args) => {
       ctx.target.push({ type: 'or', args })
     }
   },
-  {
-    name: 'wrap',
+  wrap: {
     updateContext: (ctx, args) => {
       throw Error('Unimplemented')
     }
   },
-  {
-    name: 'return',
+  return: {
     updateContext: (ctx, args) => {
       ctx.ret.push(args)
     }
   },
-  {
-    name: 'group',
+  distinct: {
+    getter: true,
+    updateContext: ctx => {
+      ctx.target = true
+    }
+  },
+  group: {
     updateContext: (ctx, args) => {
       ctx.grp = args
     }
   },
-  {
-    name: 'having',
+  having: {
     updateContext: (ctx, args) => {
       ctx.hav = args
     }
   },
-  {
-    name: 'union',
+  union: {
     updateContext: (ctx, args) => {
       ctx.setop.push({ type: 'union', args })
     },
@@ -155,8 +148,7 @@ const methods = [
       }
     }
   },
-  {
-    name: 'intersect',
+  intersect: {
     updateContext: (ctx, args) => {
       ctx.setop.push({ type: 'intersect', args })
     },
@@ -166,8 +158,7 @@ const methods = [
       }
     }
   },
-  {
-    name: 'except',
+  except: {
     updateContext: (ctx, args) => {
       ctx.setop.push({ type: 'except', args })
     },
@@ -177,26 +168,22 @@ const methods = [
       }
     }
   },
-  {
-    name: 'order',
+  order: {
     updateContext: (ctx, args) => {
       ctx.ord = args
     }
   },
-  {
-    name: 'limit',
+  limit: {
     updateContext: (ctx, args) => {
       ctx.limit = args
     }
   },
-  {
-    name: 'offset',
+  offset: {
     updateContext: (ctx, args) => {
       ctx.offset = args
     }
   },
-  {
-    name: 'join',
+  join: {
     updateContext: (ctx, args) => {
       ctx.join = ctx.nextJoin
       ctx.join.args = args
@@ -204,43 +191,37 @@ const methods = [
       ctx.frm.push(ctx.join)
     }
   },
-  {
-    name: 'left',
+  left: {
     getter: true,
     updateContext: ctx => {
       ctx.nextJoin.join = 'left'
     }
   },
-  {
-    name: 'right',
+  right: {
     getter: true,
     updateContext: ctx => {
       ctx.nextJoin.join = 'right'
     }
   },
-  {
-    name: 'full',
+  full: {
     getter: true,
     updateContext: ctx => {
       ctx.nextJoin.join = 'full'
     }
   },
-  {
-    name: 'cross',
+  cross: {
     getter: true,
     updateContext: ctx => {
       ctx.nextJoin.join = 'cross'
     }
   },
-  {
-    name: 'inner',
+  inner: {
     getter: true,
     updateContext: ctx => {
       ctx.nextJoin.join = 'inner'
     }
   },
-  {
-    name: 'on',
+  on: {
     updateContext: (ctx, args) => {
       const { join } = ctx
       if (join.on) {
@@ -250,8 +231,7 @@ const methods = [
       }
     }
   },
-  {
-    name: 'using',
+  using: {
     updateContext: (ctx, args) => {
       const { join } = ctx
       if (join.using) {
@@ -261,41 +241,36 @@ const methods = [
       }
     }
   },
-  {
-    name: 'delete',
+  delete: {
     getter: true,
     updateContext: ctx => {
       ctx.type = 'delete'
     }
   },
-  {
-    name: 'insert',
+  insert: {
     updateContext: (ctx, args) => {
       ctx.type = 'insert'
       ctx.ins.push(args)
     }
   },
-  {
-    name: 'value',
+  value: {
     updateContext: (ctx, args) => {
       ctx.type = 'insert'
       ctx.ins.push(args)
     }
   },
-  {
-    name: 'set',
+  set: {
     updateContext: (ctx, args) => {
       ctx.type = 'update'
       ctx.set.push(args)
     }
   },
-  {
-    name: 'express',
+  express: {
     updateContext: (ctx, args) => {
       express[ctx.express](ctx, args)
     }
   }
-]
+}
 
 module.exports = {
   newContextCreator,

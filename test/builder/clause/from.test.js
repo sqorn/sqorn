@@ -118,6 +118,18 @@ describe('from', () => {
       text: 'select * from person as first_name'
     })
   })
+  describe('subquery args', () => {
+    query({
+      name: 'one arg',
+      query: sq.from(sq.l`person p`),
+      text: 'select * from person p'
+    })
+    query({
+      name: 'two args',
+      query: sq.from(sq.l`person p`, sq.l`book b`),
+      text: 'select * from person p, book b'
+    })
+  })
   describe('object array property', () => {
     query({
       name: '1 object, 1 property',
@@ -188,7 +200,7 @@ describe('from', () => {
   describe('object subquery property', () => {
     query({
       name: 'simple',
-      query: sq.from({ n: sq.l`select ${1} as a` }),
+      query: sq.from({ n: sq.l`(select ${1} as a)` }),
       text: 'select * from (select $1 as a) as n',
       args: [1]
     })

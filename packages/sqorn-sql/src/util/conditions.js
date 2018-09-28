@@ -32,11 +32,9 @@ const argsConditions = (ctx, args) => {
 }
 
 const argCondition = (ctx, arg) => {
-  if (typeof arg === 'object') {
-    return objectConditions(ctx, arg)
-  } else {
-    throw Error('unimplemented')
-  }
+  if (typeof arg === 'object') return objectConditions(ctx, arg)
+  else if (typeof arg === 'function') return arg.bld(ctx).text
+  throw Error('unimplemented')
 }
 
 // conditions for each property of an object
@@ -52,9 +50,13 @@ const objectConditions = (ctx, obj) => {
 
 const buildCondition = (ctx, obj, key) => {
   const val = obj[key]
-  return typeof val === 'function'
-    ? val.bld(ctx).text
-    : snakeCase(key) + ' = ' + ctx.parameter(ctx, val)
+  if (typeof val === 'function') {
+    const subquery = val.bld(ctx)
+    return subquery.type === 'arg'
+      ? `${snakeCase(key)} = ${subquery.text}`
+      : subquery.text
+  }
+  return `${snakeCase(key)} = ${ctx.parameter(ctx, val)}`
 }
 
 module.exports = { conditions }

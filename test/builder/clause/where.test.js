@@ -87,6 +87,20 @@ describe('where', () => {
       args: ['Jo']
     })
   })
+  describe('subquery argument', () => {
+    query({
+      name: 'one subquery',
+      query: sq.where(sq.l`first_name = ${'Jo'}`),
+      text: 'select * where (first_name = $1)',
+      args: ['Jo']
+    })
+    query({
+      name: 'two subqueries',
+      query: sq.where(sq.l`first_name = ${'Jo'}`, sq.l`last_name = ${'Schmo'}`),
+      text: 'select * where (first_name = $1 or last_name = $2)',
+      args: ['Jo', 'Schmo']
+    })
+  })
   describe('multiple calls', () => {
     query({
       name: 'template string, 2 args',

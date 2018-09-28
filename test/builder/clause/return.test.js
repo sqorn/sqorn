@@ -1,6 +1,6 @@
 const { sq, query } = require('../tape')
 
-describe('returning', () => {
+describe('return', () => {
   describe('template string', () => {
     query({
       name: '1 column',
@@ -10,6 +10,30 @@ describe('returning', () => {
     query({
       name: '2 columns',
       query: sq.return`id, name`,
+      text: 'select id, name'
+    })
+  })
+  describe('string args', () => {
+    query({
+      name: 'one arg',
+      query: sq.return('name'),
+      text: 'select name'
+    })
+    query({
+      name: 'two args',
+      query: sq.return('id', 'name'),
+      text: 'select id, name'
+    })
+  })
+  describe('subquery args', () => {
+    query({
+      name: 'one arg',
+      query: sq.return(sq.l`name`),
+      text: 'select name'
+    })
+    query({
+      name: 'two args',
+      query: sq.return(sq.l`id`, sq.l`name`),
       text: 'select id, name'
     })
   })
