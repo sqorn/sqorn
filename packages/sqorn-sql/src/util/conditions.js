@@ -52,9 +52,13 @@ const objectConditions = (ctx, obj) => {
 
 const buildCondition = (ctx, obj, key) => {
   const val = obj[key]
-  return typeof val === 'function'
-    ? val.bld(ctx).text
-    : snakeCase(key) + ' = ' + ctx.parameter(ctx, val)
+  if (typeof val === 'function') {
+    const subquery = val.bld(ctx)
+    return subquery.type === 'arg'
+      ? `${snakeCase(key)} = ${subquery.text}`
+      : subquery.text
+  }
+  return `${snakeCase(key)} = ${ctx.parameter(ctx, val)}`
 }
 
 module.exports = { conditions }

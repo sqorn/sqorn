@@ -106,7 +106,7 @@ describe('tutorial', () => {
       query({
         name: '.from object - subquery table source',
         query: sq.from({ countDown: sq.l`unnest(${[3, 2, 1]})` }),
-        text: 'select * from (unnest($1)) as count_down',
+        text: 'select * from unnest($1) as count_down',
         args: [[3, 2, 1]]
       })
       query({

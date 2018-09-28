@@ -12,17 +12,16 @@ const fromItems = (ctx, froms) => {
   let txt = ''
   for (let i = 0; i < froms.length; ++i) {
     const from = froms[i]
-    if (i !== 0) txt += join(from)
+    const isJoin = from.join
+    if (i !== 0) txt += isJoin ? join(from) : ', '
     txt += fromItem(ctx, from)
-    txt += joinConditions(ctx, from)
+    if (isJoin) txt += joinConditions(ctx, from)
   }
   return txt
 }
 
 const join = from =>
-  from.join
-    ? `${from.on || from.using ? '' : ' natural'} ${joins[from.join]} `
-    : ', '
+  `${from.on || from.using ? '' : ' natural'} ${joins[from.join]} `
 
 const joins = {
   inner: 'join',
@@ -51,21 +50,15 @@ const using = (ctx, using) => {
   return txt
 }
 
-const fromItem = (ctx, from) => {
-  const { args } = from
-  if (args === undefined) {
-    // no from clause
-    return ''
-  } else if (typeof args[0] === 'string') {
-    // string table names
-    return args.join(', ')
-  } else if (isTaggedTemplate(args)) {
-    // template string tables
-    return buildTaggedTemplate(ctx, args)
-  } else {
-    return objectTables(ctx, args[0])
-    // object tables
+const fromItem = (ctx, { args }) => {
+  if (isTaggedTemplate(args)) return buildTaggedTemplate(ctx, args)
+  let txt = ''
+  for (let i = 0; i < args.length; ++i) {
+    if (i !== 0) txt += ', '
+    const arg = args[i]
+    txt += typeof arg === 'string' ? arg : objectTables(ctx, arg)
   }
+  return txt
 }
 
 const objectTables = (ctx, object) => {

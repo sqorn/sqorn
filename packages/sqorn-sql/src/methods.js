@@ -2,7 +2,7 @@
 const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => {
   const whr = []
   return {
-    // query type: 'sql' | 'select' | 'delete' | 'insert' | 'update'
+    // query type: 'raw' | sql' | 'select' | 'delete' | 'insert' | 'update'
     type: 'select',
     // express syntax status: 'from' | 'where' | 'return'
     express: 'from',
@@ -71,7 +71,7 @@ const methods = [
   {
     name: 'raw',
     updateContext: (ctx, args) => {
-      ctx.type = 'sql'
+      ctx.type = ctx.type === 'select' ? 'arg' : 'sql'
       ctx.sql.push({ args, raw: true })
     }
   },

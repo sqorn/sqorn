@@ -3,7 +3,8 @@ const sq = sqorn()
 
 const query = ({ name, query, text, args = [] }) =>
   test(name, () => {
-    expect(query.query).toEqual({ text, args })
+    const res = query.query
+    expect({ text: res.text, args: res.args }).toEqual({ text, args })
   })
 
 module.exports = { sq, query }
