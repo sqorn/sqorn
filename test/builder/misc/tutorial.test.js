@@ -80,6 +80,12 @@ describe('tutorial', () => {
         text: 'select * from book, author'
       })
       query({
+        name: '.from(sq.l``)',
+        query: sq.from(sq.l`unnest(array[1, 2, 3])`),
+        text: 'select * from unnest(array[1, 2, 3])',
+        args: []
+      })
+      query({
         name: '.from``.from``',
         query: sq.from`book`.from`person`,
         text: 'select * from book, person'
@@ -111,8 +117,8 @@ describe('tutorial', () => {
       })
       query({
         name: '.from - mix objects and strings',
-        query: sq.from({ b: 'book' }, 'person'),
-        text: 'select * from book as b, person',
+        query: sq.from({ b: 'book' }, 'person', sq.l`author`),
+        text: 'select * from book as b, person, author',
         args: []
       })
       query({
@@ -160,7 +166,7 @@ describe('tutorial', () => {
         query: sq
           .from('book', 'author')
           .where({ 'book.id': sq.raw('author.id') }),
-        text: 'select * from book, author where book.id = author.id',
+        text: 'select * from book, author where (book.id = author.id)',
         args: []
       })
       const condMinYear = sq.l`year >= ${20}`

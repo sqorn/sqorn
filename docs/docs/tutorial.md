@@ -235,6 +235,16 @@ sq.from('book', 'author').query
   args: [] }
 ```
 
+`.from` also accepts *manually constructed* subqueries.
+
+```js
+// Postgres-only query
+sq.from(sq.l`unnest(array[1, 2, 3])`).query
+
+{ text: 'select * from unnest(array[1, 2, 3])',
+  args: [] }
+```
+
 Multiple `.from` calls are joined with `', '`.
 
 ```js
@@ -244,9 +254,9 @@ sq.from`book`.from`person`.query
   args: [] }
 ```
 
-Pass `.from` an object to add an *as* clause. Object Keys are *aliases* and object values are *sources*.
+Pass `.from` an object in the form `{ alias: table }` to construct a *`table as alias`* clause.
 
-Table sources can be strings.
+Tables can be strings.
 
 **To prevent SQL injection, do not pass user-provided table names.**
 
@@ -257,7 +267,7 @@ sq.from({ b: 'book', p: 'person' }).query
   args: [] }
 ```
 
-Table sources can be arrays of row objects.
+Tables can be arrays of row objects.
 
 ```js
 sq.from({ people: [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }] }).query
@@ -266,7 +276,7 @@ sq.from({ people: [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }] }).query
   args: [8, 'Jo', 9, 'Mo'] }
 ```
 
-Table sources can be *SELECT* subqueries.
+Tables can be *select* subqueries.
 
 ```js
 sq.from({ b: sq.from`book` }).query
@@ -275,7 +285,7 @@ sq.from({ b: sq.from`book` }).query
   args: [] }
 ```
 
-Table sources can be manually constructed subqueries. These will *not* be parenthesized automatically.
+Tables can be manually constructed subqueries. These will *not* be parenthesized automatically.
 
 ```js
 // a Postgres-only query
@@ -285,12 +295,12 @@ sq.from({ countDown: sq.l`unnest(${[3, 2, 1]})` }).query
   args: [[3, 2, 1]] }
 ```
 
-`.from` accepts multiple string or object arguments.
+`.from` accepts multiple string object, or subquery arguments.
 
 ```js
-sq.from({ b: 'book' }, 'person').query
+sq.from({ b: 'book' }, 'person', sq.l`author`).query
 
-{ text: 'select * from book as b, person',
+{ text: 'select * from book as b, person, author',
   args: [] }
 ```
 
@@ -314,7 +324,7 @@ sq.from`book`.where`genre = ${'Fantasy'}`.query
   args: ['Fantasy'] }
 ```
 
-Multiple `.where` calls are joined with *and*.
+Multiple `.where` calls are joined with *`and`*.
 
 ```js
 sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`.query
@@ -323,7 +333,7 @@ sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`.query
   args: ['Fantasy', 2000] }
 ```
 
-`.and` and `.or` can be called *after* calling `.where`. They accept the same arguments as `.where`.
+`.and` and `.or` can be called **after** calling `.where`. They accept the same arguments as `.where`.
 
 ```js
 sq.from`person`.where`name = ${'Rob'}`.or`name = ${'Bob'}`.and`age = ${7}`.query

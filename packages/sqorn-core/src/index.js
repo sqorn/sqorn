@@ -17,8 +17,8 @@ module.exports = ({ database, dialect }) => (config = {}) => {
     return ctx
   }
   // setup context update functions
-  for (const method of methods) {
-    const { name, updateContext, properties = {} } = method
+  for (const name in methods) {
+    const { updateContext, properties = {} } = methods[name]
     contextUpdaters[name] = updateContext
     for (const key in properties) {
       contextUpdaters[`${name}.${key}`] = properties[key]
@@ -34,65 +34,79 @@ module.exports = ({ database, dialect }) => (config = {}) => {
   // connect to database
   const client = config.connection && database(config)
 
-  const builder = {
-    // create new query builder
-    create(method) {
-      const fn = (...args) =>
-        fn.create({ name: 'express', args, prev: fn.method })
-      fn.method = method
-      Object.setPrototypeOf(fn, builder)
-      return fn
-    },
+  const builder = {}
+  const createBuilder = method => {
+    const fn = (...args) =>
+      createBuilder({ name: 'express', args, prev: method })
+    fn.method = method
+    Object.setPrototypeOf(fn, builder)
+    return fn
+  }
+  const properties = {
     // close connection
-    async end() {
-      return client.end()
+    end: {
+      value: async function() {
+        return client.end()
+      }
     },
     // compilation methods
-    bld(inheritedContext) {
-      const ctx = context(this.method, newContext(inheritedContext))
-      return queries[ctx.type](ctx)
+    bld: {
+      value: function(inheritedContext) {
+        const ctx = context(this.method, newContext(inheritedContext))
+        return queries[ctx.type](ctx)
+      }
     },
-    get query() {
-      return this.bld()
+    query: {
+      get: function() {
+        return this.bld()
+      }
     },
     // execution methods
-    async one(trx) {
-      const rows = await client.query(this.query, trx)
-      return rows[0]
+    one: {
+      value: async function(trx) {
+        const rows = await client.query(this.query, trx)
+        return rows[0]
+      }
     },
-    async all(trx) {
-      return client.query(this.query, trx)
+    all: {
+      value: async function(trx) {
+        return client.query(this.query, trx)
+      }
     },
-    then(resolve) {
-      resolve(this.all())
+    then: {
+      value: function(resolve) {
+        resolve(this.all())
+      }
     },
-    // transaction execution
-    transaction(fn) {
-      return fn ? client.transactionCallback(fn) : client.transactionObject()
+    transaction: {
+      value: function(fn) {
+        return fn ? client.transactionCallback(fn) : client.transactionObject()
+      }
     },
-    // extends
-    extend(...args) {
-      return this.create({ name: 'extend', args, prev: this.method })
+    extend: {
+      value: function(...args) {
+        return createBuilder({ name: 'extend', args, prev: this.method })
+      }
     }
   }
 
   // add query building methods
-  for (const method of methods) {
-    const { getter, name, properties } = method
+  for (const name in methods) {
+    const { getter, properties: props } = methods[name]
     if (getter) {
       // add getter methods
-      Object.defineProperty(builder, name, {
+      properties[name] = {
         get: function() {
-          return this.create({ name, prev: this.method })
+          return createBuilder({ name, prev: this.method })
         }
-      })
-    } else if (properties) {
+      }
+    } else if (props) {
       // certain builder methods are both callable and have subproperties
       // e.g. .union() and .union.all()
       const subBuilderPrototype = {}
-      for (const key in properties) {
+      for (const key in props) {
         subBuilderPrototype[key] = function(...args) {
-          return builder.create({
+          return createBuilder({
             name: `${name}.${key}`,
             args,
             prev: this.method
@@ -100,21 +114,24 @@ module.exports = ({ database, dialect }) => (config = {}) => {
         }
       }
       const subBuilder = function() {
-        let fn = (...args) => this.create({ name, args, prev: this.method })
+        let fn = (...args) => createBuilder({ name, args, prev: this.method })
         fn.method = this.method
         Object.setPrototypeOf(fn, subBuilderPrototype)
         return fn
       }
-      Object.defineProperty(builder, name, {
+      properties[name] = {
         get: subBuilder
-      })
+      }
     } else {
       // add function call methods
-      builder[name] = function(...args) {
-        return this.create({ name, args, prev: this.method })
+      properties[name] = {
+        value: function(...args) {
+          return createBuilder({ name, args, prev: this.method })
+        }
       }
     }
   }
 
-  return builder.create()
+  Object.defineProperties(builder, properties)
+  return createBuilder()
 }

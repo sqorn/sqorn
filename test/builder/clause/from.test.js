@@ -188,7 +188,7 @@ describe('from', () => {
   describe('object subquery property', () => {
     query({
       name: 'simple',
-      query: sq.from({ n: sq.l`select ${1} as a` }),
+      query: sq.from({ n: sq.l`(select ${1} as a)` }),
       text: 'select * from (select $1 as a) as n',
       args: [1]
     })
