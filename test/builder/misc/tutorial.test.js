@@ -196,20 +196,22 @@ describe('tutorial', () => {
         args: [1, 2, 1, 2]
       })
       query({
-        name: ".return('', '')",
-        query: sq.from`book`.return('title', 'author'),
-        text: 'select title, author from book'
+        name: '.return``.return``',
+        query: sq.from`book`.return`title, author`.return`id`,
+        text: 'select title, author, id from book',
+        args: []
       })
       query({
-        name: '.return(sq.l``, sq.l``)',
-        query: sq.from`book`.return(sq.l`title`, sq.l`author`),
+        name: '.return(string)',
+        query: sq.from`book`.return('title', 'author'),
         text: 'select title, author from book',
         args: []
       })
       query({
-        name: '.return.return',
-        query: sq.from`book`.return('title', 'author').return`id`,
-        text: 'select title, author, id from book'
+        name: '.return(sq.l``)',
+        query: sq.from`book`.return(sq.l`title`, sq.l`author`),
+        text: 'select title, author from book',
+        args: []
       })
       query({
         name: '.return object - string expression',
@@ -266,6 +268,47 @@ describe('tutorial', () => {
         query: sq.from`generate_series(0, 10) as n`.distinct.on(sq.l`n / 3`)
           .return`n`,
         text: 'select distinct on (n / 3) n from generate_series(0, 10) as n',
+        args: []
+      })
+    })
+    describe('Order By', () => {
+      query({
+        name: 'tagged template',
+        query: sq.from`book`.order`title asc nulls last`,
+        text: 'select * from book order by title asc nulls last',
+        args: []
+      })
+      query({
+        name: 'multiple calls',
+        query: sq.from`book`.order`title`.order`year`,
+        text: 'select * from book order by title, year',
+        args: []
+      })
+      query({
+        name: 'object - by',
+        query: sq.from`book`.order(
+          { by: 'title' },
+          { by: sq.l`sales / ${1000}` }
+        ),
+        text: 'select * from book order by title, sales / $1',
+        args: [1000]
+      })
+      query({
+        name: 'object - sort',
+        query: sq.from`book`.order({ by: 'title', sort: 'desc' }),
+        ext: 'select * from book order by title desc',
+        args: []
+      })
+      query({
+        name: 'object - using',
+        query: sq.from`person`.order({ by: 'first_name', sort: '~<~' }),
+        text: 'select * from person order by first_name using ~<~',
+        args: []
+      })
+      query({
+        name: 'object - nulls',
+        query: sq.from`book`.order({ by: 'title', nulls: 'last' }),
+        text: 'select * from book order by title nulls last',
         args: []
       })
     })

@@ -409,9 +409,22 @@ sq.return`${1} as a, ${2} as b, ${1} + ${2} as sum`.query
   args: [1, 2, 1, 2] }
 ```
 
-`.return` accepts column names as strings.
+Multiple `.return` calls are joined with `', '`.
 
-**To prevent SQL injection, do not pass user-provided column names.**
+```js
+sq.from`book`.return`title, author`.return`id`.query
+
+{ text: 'select title, author, id from book',
+  args: [] }
+```
+
+`.return` accepts expressions as arguments.
+
+#### Expressions
+
+Expressions can be strings.
+
+**To prevent SQL injection, never source expressions from user input.**
 
 ```js
 sq.from`book`.return('title', 'author').query
@@ -420,7 +433,7 @@ sq.from`book`.return('title', 'author').query
   args: [] }
 ```
 
-`.return` accepts *manually constructed* subqueries.
+Expressions can be *manually constructed* subqueries.
 
 ```js
 sq.from`book`.return(sq.l`title`, sq.l`author`).query
@@ -429,18 +442,10 @@ sq.from`book`.return(sq.l`title`, sq.l`author`).query
   args: [] }
 ```
 
-Multiple `.return` calls are joined with `', '`.
+#### Aliases
 
-```js
-sq.from`book`.return('title', 'author').return`id`.query
+You can pass `.return` an object whose keys are *aliases* and whose values are *expressions*.
 
-{ text: 'select title, author, id from book',
-  args: [] }
-```
-
-You can pass `.return` an object whose keys are *aliases* and whose values are output *expressions*.
-
-Expressions can be strings.
 
 **To prevent SQL injection, do not pass user-provided expressions.**
 
@@ -459,6 +464,8 @@ sq.return({ sum: sq.l`${2} + ${3}` }).query
 { text: 'select $1 + $2 as sum',
   args: [2, 3] }
 ```
+
+#### Distinct
 
 Call `.distinct` before `.return` to get only one row for each group of duplicates.
 
@@ -523,7 +530,59 @@ TODO, only template string form works
 
 ### Order By
 
-TODO, only template string form works
+Specify row ordering with `.order`.
+
+```js
+sq.from`book`.order`title asc nulls last`.query
+
+{ text: 'select * from book order by title asc nulls last',
+  args: [] }
+```
+
+Multiple calls to `.order` are joined with `', '`.
+
+```js
+sq.from`book`.order`title`.order`year`.query
+
+{ text: 'select * from book order by title, year',
+  args: [] }
+```
+
+`.order` accepts objects. Property `by` is the [expression](#expressions) used for ordering.
+
+```js
+sq.from`book`.order({ by: 'title' }, { by: sq.l`sales / ${1000}` }).query
+
+{ text: 'select * from book order by title, sales / $1',
+  args: [1000] }
+```
+
+Set property `sort` to `'asc'` or `'desc'`. SQL defaults to ascending.
+
+```js
+sq.from`book`.order({ by: 'title', sort: 'desc' }).query
+
+{ text: 'select * from book order by title desc',
+  args: [] }
+```
+
+When using Sqorn Postgres, setting `sort` to a string other than `'asc'` or `'desc'` forms a *using* clause.
+
+```js
+sq.from`person`.order({ by: 'first_name', sort: '~<~' }).query
+
+{ text: 'select * from person order by first_name using ~<~',
+  args: [] }
+```
+
+When using Sqorn Postgres, set property `nulls` to `'first'` or `'last'` to select *null* ordering. SQL defaults to nulls first.
+
+```js
+sq.from`book`.order({ by: 'title', nulls: 'last' }).query
+
+{ text: 'select * from book order by title nulls last',
+  args: [] }
+```
 
 ### Limit
 
