@@ -52,12 +52,11 @@ const objectTables = (ctx, object) => {
 }
 
 const expressionAsAlias = (ctx, alias, source) => {
-  if (typeof source === 'string') {
-    return `${source} as ${snakeCase(alias)}`
-  } else if (typeof source.bld === 'function') {
-    return `(${source.bld(ctx).text}) as ${snakeCase(alias)}`
-  }
-  return `${ctx.parameter(ctx, source)} as ${snakeCase(alias)}`
+  let txt = ''
+  if (typeof source === 'string') txt += source
+  else if (typeof source === 'function') txt += source.bld(ctx).text
+  else txt += ctx.parameter(ctx, source)
+  return `${txt} as ${snakeCase(alias)}`
 }
 
 module.exports = { expressions }

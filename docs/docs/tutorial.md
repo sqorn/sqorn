@@ -176,7 +176,7 @@ console.log((await Person)[0])
 
 Call `.transaction` with an asynchronous callback to begin a transaction. The first callback argument is a transaction object `trx`. Pass `trx` to `.all` or `.one` to execute a query as part of a transaction.
 
-`.transaction` returns the (Promise) value returned by its callback. If a query fails or an error is thrown, all queries will be rolled back and `.transaction` will throw an error.
+`.transaction` returns a Promise for the value returned by its callback. If a query fails or an error is thrown, all queries will be rolled back and `.transaction` will throw an error.
 
 
 ```js
@@ -224,7 +224,7 @@ sq.from`book`.query
   args: [] }
 ```
 
-`.from` also accepts table names as strings.
+`.from` accepts table names as strings.
 
 **To prevent SQL injection, do not pass user-provided table names.**
 
@@ -235,7 +235,7 @@ sq.from('book', 'author').query
   args: [] }
 ```
 
-`.from` also accepts *manually constructed* subqueries.
+`.from` accepts *manually constructed* subqueries.
 
 ```js
 // Postgres-only query
@@ -342,7 +342,16 @@ sq.from`person`.where`name = ${'Rob'}`.or`name = ${'Bob'}`.and`age = ${7}`.query
   args: ['Rob', 'Bob', 7]}
 ```
 
-It is sometimes easier to specify conditions with an object.
+You can specify conditions with a manually constructed subquery.
+
+```js
+sq.from`book`.where(sq.l`genre = ${'Fantasy'}`).query
+
+{ text: 'select * from book where (genre = $12)',
+  args: ['Fantasy'] }
+```
+
+You can specify conditions with an object.
 
 ```js
 sq.from`book`.where({ genre: 'Fantasy', year: 2000 }).query
@@ -380,10 +389,10 @@ sq.from`person`.where({ minYear, maxYear }).query
   args: [20, 30] }
 ```
 
-Multiple objects passed to `.where` are joined with `or`.
+Multiple arguments passed to `.where` are joined with `or`.
 
 ```js
-sq.from`person`.where({ name: 'Rob' }, { name: 'Bob' }).query
+sq.from`person`.where({ name: 'Rob' }, sq.l`name = ${'Bob'}`).query
 
 { text: 'select * from person where (name = $1 or name = $2)',
   args: ['Rob', 'Bob'] }
@@ -400,7 +409,7 @@ sq.return`${1} as a, ${2} as b, ${1} + ${2} as sum`.query
   args: [1, 2, 1, 2] }
 ```
 
-`.return` also accepts column names as strings.
+`.return` accepts column names as strings.
 
 **To prevent SQL injection, do not pass user-provided column names.**
 
@@ -420,7 +429,7 @@ sq.from`book`.return('title', 'author').return`id`.query
   args: [] }
 ```
 
-You can pass `.return` an object whose keys are output names and whose values are expressions.
+You can pass `.return` an object whose keys are *aliases* and whose values are output *expressions*.
 
 Expressions can be strings.
 
@@ -438,7 +447,7 @@ Expressions can be subqueries.
 ```js
 sq.return({ sum: sq.l`${2} + ${3}` }).query
 
-{ text: 'select ($1 + $2) as sum',
+{ text: 'select $1 + $2 as sum',
   args: [2, 3] }
 ```
 
@@ -490,7 +499,7 @@ sq.from('weather')
 sq.from`generate_series(0, 10) as n`
   .distinct.on(sq.l`n / 3`).return`n`.query
 
-{ text: 'select distinct on (n / 3) n from generate_series(0,10) as n',
+{ text: 'select distinct on (n / 3) n from generate_series(0, 10) as n',
   args: [] }
 ```
 
@@ -518,7 +527,7 @@ sq.from`person`.limit(8).query
   args: [8] }
 ```
 
-`.limit` can also be called as a template tag.
+`.limit` can be called as a template tag.
 
 ```js
 sq.from`person`.limit`8`.query
@@ -548,7 +557,7 @@ sq.from`person`.offset(8).query
 ```
 
 
-`.offset` can also be called as a template tag.
+`.offset` can be called as a template tag.
 
 ```js
 sq.from`person`.offset`8`.query
@@ -577,7 +586,7 @@ sq.from`book`.join`author`.query
   args: [] }
 ```
 
-Specify join conditions with `.on`, which accepts the same arguments as `.where`.
+Specify join conditions with `.on`. `.on` accepts the same arguments as `.where`.
 
 ```js
 sq.from({ b: 'book' }).join({ a: 'author'}).on`b.author_id = a.id`.query
@@ -615,7 +624,7 @@ sq.from`book`.join`author`.using`author_id`.query
   args: [] }
 ```
 
-`.using` also accepts column names as string arguments. It can be called multiple times.
+`.using` accepts column names as string arguments. It can be called multiple times.
 
 ```js
 sq.from`a`.join`b`.using('x', 'y').using`z`.query
@@ -820,15 +829,15 @@ Alternatively, multiple objects may be passed to `.insert`
 ```js
 sq.from`book`
   .insert({ title: 'The Way of Kings', year: 2010 },
-       { title: 'Words of Radiance', year: null },
-       { title: 'Oathbringer' })
+          { title: 'Words of Radiance', year: null },
+          { title: 'Oathbringer' })
   .query
 
 { text: 'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
   args: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
 ```
 
-`.return` specifies the returning clause. [Express syntax](#express-syntax) may be used to specify `.from` and `.return`.
+`.return` specifies the *returning* clause. [Express syntax](#express-syntax) may be used to specify `.from` and `.return`.
 
 ```js
 sq.from`book`.insert({ title: 'Squirrels and Acorns' }).return`id`.query
@@ -841,7 +850,7 @@ sq`book`()`id`.insert({ title: 'Squirrels and Acorns' }).query
 
 ### Update
 
-`Update` queries use `.set` to specify values to update. `.set` can be called multiple times.
+*Update* queries use `.set` to specify values to update. `.set` can be called multiple times.
 
 ```js
 sq.from`person`.set`age = age + 1, processed = true`.set`name = ${'Sally'}`.query
@@ -850,7 +859,7 @@ sq.from`person`.set`age = age + 1, processed = true`.set`name = ${'Sally'}`.quer
   args: ['Sally'] }
 ```
 
-`.set` also accepts an update object.
+`.set` accepts an update object.
 
 ```js
 sq.from`person`

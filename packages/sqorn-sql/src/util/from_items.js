@@ -8,12 +8,13 @@ const { conditions } = require('./conditions')
 // utilities for building from_items, see:
 // https://www.postgresql.org/docs/9.5/static/sql-select.html
 
-const fromItems = (ctx, froms) => {
+const fromItems = (ctx, froms, start = 0, end = froms.length) => {
+  if (end > froms.length) end = froms.length
   let txt = ''
-  for (let i = 0; i < froms.length; ++i) {
+  for (let i = start; i < end; ++i) {
     const from = froms[i]
     const isJoin = from.join
-    if (i !== 0) txt += isJoin ? join(from) : ', '
+    if (i !== start) txt += isJoin ? join(from) : ', '
     txt += fromItem(ctx, from.args)
     if (isJoin) txt += joinConditions(ctx, from)
   }

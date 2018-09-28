@@ -32,11 +32,9 @@ const argsConditions = (ctx, args) => {
 }
 
 const argCondition = (ctx, arg) => {
-  if (typeof arg === 'object') {
-    return objectConditions(ctx, arg)
-  } else {
-    throw Error('unimplemented')
-  }
+  if (typeof arg === 'object') return objectConditions(ctx, arg)
+  else if (typeof arg === 'function') return arg.bld(ctx).text
+  throw Error('unimplemented')
 }
 
 // conditions for each property of an object

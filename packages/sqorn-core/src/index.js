@@ -133,5 +133,6 @@ module.exports = ({ database, dialect }) => (config = {}) => {
   }
 
   Object.defineProperties(builder, properties)
+
   return createBuilder()
 }

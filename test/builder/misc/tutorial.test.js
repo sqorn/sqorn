@@ -142,12 +142,16 @@ describe('tutorial', () => {
         args: ['Fantasy', 2000]
       })
       query({
-        name: '.where``.where``',
-        query: sq.from`person`.where`name = ${'Rob'}`.or`name = ${'Bob'}`
-          .and`age = ${7}`,
-        text:
-          'select * from person where (name = $1) or (name = $2) and (age = $3)',
-        args: ['Rob', 'Bob', 7]
+        name: '.where(sq.l``)',
+        query: sq.from`book`.where(sq.l`genre = ${'Fantasy'}`),
+        text: 'select * from book where (genre = $1)',
+        args: ['Fantasy']
+      })
+      query({
+        name: '.where(sq.l``)',
+        query: sq.from`book`.where({ genre: 'Fantasy', year: 2000 }),
+        text: 'select * from book where (genre = $1 and year = $2)',
+        args: ['Fantasy', 2000]
       })
       query({
         name: '.where({})',
@@ -179,7 +183,7 @@ describe('tutorial', () => {
       })
       query({
         name: '.where({}).where({})',
-        query: sq.from`person`.where({ name: 'Rob' }, { name: 'Bob' }),
+        query: sq.from`person`.where({ name: 'Rob' }, sq.l`name = ${'Bob'}`),
         text: 'select * from person where (name = $1 or name = $2)',
         args: ['Rob', 'Bob']
       })
@@ -213,7 +217,7 @@ describe('tutorial', () => {
       query({
         name: '.return object - subquery expression',
         query: sq.return({ sum: sq.l`${2} + ${3}` }),
-        text: 'select ($1 + $2) as sum',
+        text: 'select $1 + $2 as sum',
         args: [2, 3]
       })
       query({
@@ -255,7 +259,7 @@ describe('tutorial', () => {
         name: ".distinct.on('', '').return",
         query: sq.from`generate_series(0, 10) as n`.distinct.on(sq.l`n / 3`)
           .return`n`,
-        text: 'select distinct on (n / 3) n from generate_series(0,10) as n',
+        text: 'select distinct on (n / 3) n from generate_series(0, 10) as n',
         args: []
       })
     })

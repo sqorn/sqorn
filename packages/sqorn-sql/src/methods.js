@@ -125,7 +125,7 @@ const methods = {
   distinct: {
     getter: true,
     updateContext: ctx => {
-      ctx.target = ctx.distinct = []
+      ctx.target = true
     }
   },
   group: {
@@ -223,17 +223,11 @@ const methods = {
   },
   on: {
     updateContext: (ctx, args) => {
-      if (ctx.target === ctx.distinct) {
-        // distinct.on()
-        ctx.distinct.push(args)
+      const { join } = ctx
+      if (join.on) {
+        join.on.push({ type: 'and', args })
       } else {
-        // join.on()
-        const { join } = ctx
-        if (join.on) {
-          join.on.push({ type: 'and', args })
-        } else {
-          ctx.target = join.on = [{ type: 'and', args }]
-        }
+        ctx.target = join.on = [{ type: 'and', args }]
       }
     }
   },
