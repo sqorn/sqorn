@@ -285,7 +285,7 @@ sq.from({ b: sq.from`book` }).query
   args: [] }
 ```
 
-Tables can be manually constructed subqueries. These will *not* be parenthesized automatically.
+Tables can be *manually constructed* subqueries. These will *not* be parenthesized automatically.
 
 ```js
 // a Postgres-only query
@@ -342,7 +342,7 @@ sq.from`person`.where`name = ${'Rob'}`.or`name = ${'Bob'}`.and`age = ${7}`.query
   args: ['Rob', 'Bob', 7]}
 ```
 
-You can specify conditions with a manually constructed subquery.
+You can specify conditions with a *manually constructed* subquery.
 
 ```js
 sq.from`book`.where(sq.l`genre = ${'Fantasy'}`).query
@@ -415,6 +415,15 @@ sq.return`${1} as a, ${2} as b, ${1} + ${2} as sum`.query
 
 ```js
 sq.from`book`.return('title', 'author').query
+
+{ text: 'select title, author from book',
+  args: [] }
+```
+
+`.return` accepts *manually constructed* subqueries.
+
+```js
+sq.from`book`.return(sq.l`title`, sq.l`author`).query
 
 { text: 'select title, author from book',
   args: [] }

@@ -201,6 +201,12 @@ describe('tutorial', () => {
         text: 'select title, author from book'
       })
       query({
+        name: '.return(sq.l``, sq.l``)',
+        query: sq.from`book`.return(sq.l`title`, sq.l`author`),
+        text: 'select title, author from book',
+        args: []
+      })
+      query({
         name: '.return.return',
         query: sq.from`book`.return('title', 'author').return`id`,
         text: 'select title, author, id from book'
