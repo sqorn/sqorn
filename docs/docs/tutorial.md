@@ -779,9 +779,9 @@ sq.from`book`.left.right.join`author`.cross.inner.join`publisher`.query
   query: []}
 ```
 
-### Set Operators
+### Sets
 
-Pass **select** subqueries to `.union`, `.intersect`, and `.except` to perform set operations.
+Pass *select* subqueries to `.union`, `.intersect`, and `.except` to perform set operations.
 
 ```js
 const Person = sq.from`person`
@@ -1060,13 +1060,138 @@ sq.from`book`
 
 TODO
 
-<!-- ## Complex Clauses -->
+## Operators
 
-<!-- ### Where -->
+### Custom
 
-<!-- TODO -->
+TODO
 
-<!-- ### Join -->
+### Logical
 
-<!-- TODO -->
+#### And
+
+TODO
+
+#### Or
+
+TODO
+
+#### Not
+
+TODO
+
+### Comparison
+
+#### <, >, <=, >=, =, != or <>
+
+TODO
+
+#### Between, Not Between
+
+TODO
+
+#### Is Distinct, Is Not Distinct
+
+TODO
+
+#### Is Null, Is Not Null
+
+TODO
+
+#### True, Not True, False, Not False, Unknown, Not Unknown
+
+TODO
+
+### Math
+
+TODO
+
+### String
+
+TODO
+
+#### Like, Not Like
+
+TODO
+
+#### Similar To, Not Similar To
+
+TODO
+
+#### Regex: ~, ~*, !~, !~*
+
+TODO
+
+### Bit
+
+TODO
+
+### Type Conversions
+
+TODO
+
+### Date and Time
+
+TODO
+
+### Functions
+
+TODO
+
+### Casts
+
+TODO
+
+### Conditional
+
+#### Case
+
+TODO
+
+#### Coallesce
+
+TODO
+
+#### Nullif
+
+TODO
+
+#### Greatest
+
+TODO
+
+#### Least
+
+TODO
+
+### Aggregate
+
+#### Avg
+
+TODO
+
+#### Count
+
+TODO
+
+#### Min
+
+TODO
+
+#### Max
+
+TODO
+
+#### Sum
+
+TODO
+
+### Subquery
+
+TODO
+
+### Row and Array
+
+TODO
+
 
