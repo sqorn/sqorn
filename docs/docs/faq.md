@@ -4,7 +4,7 @@ title: FAQ
 sidebar_label: FAQ
 ---
 
-**This document is inaccurate, outdated and incomplete. Please refer to the tutorial.**
+**This document is inaccurate and incomplete. Refer to the tutorial.**
 
 ## How does Sqorn prevent SQL injection?
 
@@ -45,7 +45,7 @@ First, the entries in `methods` are processed sequentially to build a context ob
   ret: [ [ 'name' ] ] }
 ```
 
-Second, a `Query` of type `ctx.type` is constructed. Each `Query` is constructed from a sequence of `clauses`, which are evaluated against `ctx`. Each clause returns an object with properties `txt` for its text component and `arg` for its parameterized arguments.
+Second, a `Query` of type `ctx.type` is constructed. Each `Query` is constructed from a sequence of `clauses`, which are evaluated against `ctx`. Each clause returns an object with properties `text` for its text component and `args` for its parameterized arguments.
 
 ```javascript
 select = Query(
@@ -66,99 +66,4 @@ Finally, the contributions from all clauses are joined together to construct a c
 ```javascript
 { text: 'select age from person where age > $1 and age < $2' 
   args: [7, 13] }
-```
-
-## Are there Complex Example Queries?
-
-This section is still a work in progress
-
-```js
-
-getUser()
-
-const Post = sq.from`post`
-const WhereUser = user => user && sq.where({ user })
-const WhereTopic = topic => topic && sq.where({ topic })
-const getTimeRange = time => {
-    switch (time) {
-      case 'day': return '1 day'
-      case 'week': return '7 days'
-      case 'month': return '30 days'
-      case 'year': return '365 days'
-  }
-}
-const WhereTime = time => {
-  const timeRange = getTimeRange(time)
-  return timeRange && sq.where`create_time >= now() - $${timeRange}`
-}
-const OrderBy = sq.order`score asc`
-const Limit = limit => limit && sq.limit(limit)
-const Return = sq.return`id, title, topic, user`
-
-const getTopPosts = ({ time, topic, user, limit = 25 }) => sq.extend(
-  Post,
-  WhereUser(user),
-  WhereTopic(topic),
-  WhereTime(time),
-  OrderBy,
-  Limit(limit),
-  Return
-)
-
-const getTopPosts2 = ({ time, topic, user, limit = 25 }) => {
-  const mq = sq.mut.from`post`
-  if (user) {
-    mq.where({ user })
-  }
-  if (topic) {
-    mq.where({ topic })
-  }
-  let range
-  if (time === 'day') {
-    range = '1 day'
-  } else if (time === 'week') {
-    range = '7 days'
-  } else if (time === 'month') {
-    range = '30 days'
-  } else if (time === 'year') {
-    range = '365 days'
-  }
-  if (range) {
-    mq.where`create_time >= now() - ${range}`
-  }
-  mq.order`score asc`
-  mq.limit(limit)
-  mq.return`id, title, topic, user`
-  return mq.imm
-}
-
-const minAge = age => sq.where`age >= ${age}`
-const language = language => sq.where({ language })
-const productionTable = production => sq.from(production ? 'book' : 'book_test')
-const columns = sq.return`title, author`
-
-const sq.extend(
-  productionTable(true),
-  columns
-  minAge(8),
-  language('English')
-)
-
-
-
-const Person = sq.from`person`
-const Gender = gender => sq.where`gender = ${gender}`
-const isChild = sq.where`age < 13`
-const Name = name => sq.where`name = ${name}`
-
-const Child = sq.extend(Person, isChild)
-const Girl = sq.extend(Kid, Gender('female'))
-const Boy = sq.extend(Kid, Gender('male'))
-
-const Movie = sq.from`movie`
-const Genre = genre => sq.where`genre = ${genre}`
-const Animation = sq.extend(Movie, Genre('animation'))
-
-const kids = sq.from`person`.where`age < ${age}`
-const boys = kids.where`gender = ${gender}`
 ```

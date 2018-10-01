@@ -331,7 +331,7 @@ describe('tutorial', () => {
       query({
         name: 'object - sort',
         query: sq.from`book`.order({ by: 'title', sort: 'desc' }),
-        ext: 'select * from book order by title desc',
+        text: 'select * from book order by title desc',
         args: []
       })
       query({

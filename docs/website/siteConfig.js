@@ -32,14 +32,12 @@ const siteConfig = {
 
   // For no header links in the top nav bar -> headerLinks: [],
   headerLinks: [
+    { href: 'https://github.com/lusakasa/sqorn', label: 'Github' },
     { doc: 'tutorial', label: 'Tutorial' },
-    { doc: 'api', label: 'API' },
-    // { doc: 'examples', label: 'Examples' },
-    { doc: 'faq', label: 'FAQ' },
+    // { doc: 'api', label: 'API' },
     { page: 'demo', label: 'Demo' },
-    { page: 'benchmarks', label: 'Benchmarks' },
+    { page: 'benchmarks', label: 'Benchmarks' }
     // { doc: 'benchmarks', label: 'Benchmarks' },
-    { href: 'https://github.com/lusakasa/sqorn', label: 'Github' }
     // { blog: true, label: 'Blog' }
   ],
 
