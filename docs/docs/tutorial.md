@@ -554,11 +554,25 @@ sq.from('person').where({ name: 'Jo' }).return('age')
 
 ### Group By
 
-TODO, only template string form works
+Pass `.group` the expressions used to group common rows.
+
+```js
+sq.from`person`.group`age`.query
+
+{ query: 'select * from person group by age',
+  args: [] }
+```
 
 ### Having
 
-TODO, only template string form works
+Filter row groups with `.having`
+
+```js
+sq.from`person`.group`age`.having`age < 20`.query
+
+{ query: 'select * from person group by age having age < 20',
+  args: [] }
+```
 
 ### Order By
 
