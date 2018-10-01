@@ -1,11 +1,11 @@
 const React = require('react')
 
-const source = `const sq = require('sqorn-pg')()
+const source = String.raw`const sq = require('sqorn-pg')()
 
-const kid = sq.from\\\`person\\\`.where\\\`age < ${13}\\\`
-const boy = kid.where\\\`gender = 'male'\\\`
+const kid = sq.from\`person\`.where\`age < \${13}\`
+const boy = kid.where\`gender = \${'male'}\`
 
-boy.return\\\`id, name, age\\\`.query
+boy.return\`id, name, age\`.query
 `
 
 const createRunkitEmbed = `

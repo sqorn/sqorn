@@ -17,7 +17,7 @@ const isTaggedTemplate = args => {
   // the first argument of a tagged template literal is an array
   // of strings with a property raw that is an array of strings
   const [strings] = args
-  return Array.isArray(strings) && Array.isArray(strings.raw)
+  return Array.isArray(strings) && strings.raw
 }
 
 const buildTaggedTemplate = (ctx, [strings, ...args]) => {

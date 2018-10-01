@@ -75,6 +75,11 @@ describe('tutorial', () => {
         text: 'select * from book'
       })
       query({
+        name: '.from``.from``',
+        query: sq.from`book`.from`person`,
+        text: 'select * from book, person'
+      })
+      query({
         name: ".from('', '')",
         query: sq.from('book', 'author'),
         text: 'select * from book, author'
@@ -84,11 +89,6 @@ describe('tutorial', () => {
         query: sq.from(sq.l`unnest(array[1, 2, 3])`),
         text: 'select * from unnest(array[1, 2, 3])',
         args: []
-      })
-      query({
-        name: '.from``.from``',
-        query: sq.from`book`.from`person`,
-        text: 'select * from book, person'
       })
       query({
         name: '.from object - string table source',
@@ -196,20 +196,22 @@ describe('tutorial', () => {
         args: [1, 2, 1, 2]
       })
       query({
-        name: ".return('', '')",
-        query: sq.from`book`.return('title', 'author'),
-        text: 'select title, author from book'
+        name: '.return``.return``',
+        query: sq.from`book`.return`title, author`.return`id`,
+        text: 'select title, author, id from book',
+        args: []
       })
       query({
-        name: '.return(sq.l``, sq.l``)',
-        query: sq.from`book`.return(sq.l`title`, sq.l`author`),
+        name: '.return(string)',
+        query: sq.from`book`.return('title', 'author'),
         text: 'select title, author from book',
         args: []
       })
       query({
-        name: '.return.return',
-        query: sq.from`book`.return('title', 'author').return`id`,
-        text: 'select title, author, id from book'
+        name: '.return(sq.l``)',
+        query: sq.from`book`.return(sq.l`title`, sq.l`author`),
+        text: 'select title, author from book',
+        args: []
       })
       query({
         name: '.return object - string expression',
@@ -233,7 +235,13 @@ describe('tutorial', () => {
         args: []
       })
       query({
-        name: '.distinct.on``.return',
+        name: '.distinct.distinct',
+        query: sq.from`book`.distinct.distinct.return`genre`.return`author`,
+        text: 'select distinct genre, author from book',
+        args: []
+      })
+      query({
+        name: '.distinct.on',
         query: sq.from`weather`.distinct.on`location`
           .return`location, time, report`,
         text:
@@ -241,21 +249,18 @@ describe('tutorial', () => {
         args: []
       })
       query({
-        name: ".distinct.on('', '').return",
-        query: sq
-          .from('weather')
-          .distinct.on('location', 'time')
-          .return('location', 'time', 'report'),
+        name: '.distinct.on.on',
+        query: sq.from`weather`.distinct.on`location`.on`time`
+          .return`location, time, report`,
         text:
           'select distinct on (location, time) location, time, report from weather',
         args: []
       })
       query({
-        name: ".distinct.on('', '').return",
+        name: ".distinct.on('')",
         query: sq
           .from('weather')
-          .distinct.on('location')
-          .on('time')
+          .distinct.on('location', 'time')
           .return('location', 'time', 'report'),
         text:
           'select distinct on (location, time) location, time, report from weather',
@@ -269,7 +274,86 @@ describe('tutorial', () => {
         args: []
       })
     })
+    describe('Select Express', () => {
+      test('Express Syntax', () => {
+        const name = 'Dalinar'
+        // a == b and b ==c --> a == c
+        const a = sq`person`
+        const b = sq('person')
+        const c = sq.from`person`
+        expect(a.query).toEqual(b.query)
+        expect(b.query).toEqual(c.query)
+
+        const d = sq`person``name = ${name}`
+        const e = sq`person`({ name })
+        const f = sq.from`person`.where`name = ${name}`
+        expect(d.query).toEqual(e.query)
+        expect(e.query).toEqual(f.query)
+
+        const g = sq`person``name = ${name}``age`
+        const h = sq.from`person`.where`name = ${name}`.return`age`
+        const i = sq
+          .from('person')
+          .where({ name })
+          .return('age')
+        expect(g.query).toEqual(h.query)
+        expect(h.query).toEqual(i.query)
+      })
+    })
+    describe('Order By', () => {
+      query({
+        name: 'tagged template',
+        query: sq.from`book`.order`title asc nulls last`,
+        text: 'select * from book order by title asc nulls last',
+        args: []
+      })
+      query({
+        name: 'multiple calls',
+        query: sq.from`book`.order`title`.order`year`,
+        text: 'select * from book order by title, year',
+        args: []
+      })
+      query({
+        name: 'expressions',
+        query: sq.from`book`.order('title', sq.l`sales / ${1000}`),
+        text: 'select * from book order by title, sales / $1',
+        args: [1000]
+      })
+      query({
+        name: 'object - by',
+        query: sq.from`book`.order(
+          { by: 'title' },
+          { by: sq.l`sales / ${1000}` }
+        ),
+        text: 'select * from book order by title, sales / $1',
+        args: [1000]
+      })
+      query({
+        name: 'object - sort',
+        query: sq.from`book`.order({ by: 'title', sort: 'desc' }),
+        text: 'select * from book order by title desc',
+        args: []
+      })
+      query({
+        name: 'object - using',
+        query: sq.from`person`.order({ by: 'first_name', sort: '~<~' }),
+        text: 'select * from person order by first_name using ~<~',
+        args: []
+      })
+      query({
+        name: 'object - nulls',
+        query: sq.from`book`.order({ by: 'title', nulls: 'last' }),
+        text: 'select * from book order by title nulls last',
+        args: []
+      })
+    })
     describe('Limit', () => {
+      query({
+        name: 'multiple limit',
+        query: sq.from`person`.limit(7).limit(5),
+        text: 'select * from person limit $1',
+        args: [5]
+      })
       query({
         name: 'limit number',
         query: sq.from`person`.limit(8),
@@ -283,13 +367,19 @@ describe('tutorial', () => {
         args: []
       })
       query({
-        name: 'multiple limit',
-        query: sq.from`person`.limit(7).limit(5),
-        text: 'select * from person limit $1',
-        args: [5]
+        name: 'limit subquery',
+        query: sq.from`person`.limit(sq.l`1 + 7`),
+        text: 'select * from person limit 1 + 7',
+        args: []
       })
     })
     describe('Offset', () => {
+      query({
+        name: 'multiple offset',
+        query: sq.from`person`.offset(7).offset(5),
+        text: 'select * from person offset $1',
+        args: [5]
+      })
       query({
         name: 'offset number',
         query: sq.from`person`.offset(8),
@@ -303,10 +393,10 @@ describe('tutorial', () => {
         args: []
       })
       query({
-        name: 'multiple offset',
-        query: sq.from`person`.offset(7).offset(5),
-        text: 'select * from person offset $1',
-        args: [5]
+        name: 'offset subquery',
+        query: sq.from`person`.offset(sq.l`1 + 7`),
+        text: 'select * from person offset 1 + 7',
+        args: []
       })
     })
     describe('Set Operators', () => {
@@ -406,33 +496,8 @@ describe('tutorial', () => {
         args: []
       })
     })
-    test('Express Syntax', () => {
-      const name = 'Dalinar'
-      // a == b and b ==c --> a == c
-      const a = sq`person`
-      const b = sq('person')
-      const c = sq.from`person`
-      expect(a.query).toEqual(b.query)
-      expect(b.query).toEqual(c.query)
-
-      const d = sq`person``name = ${name}`
-      const e = sq`person`({ name })
-      const f = sq.from`person`.where`name = ${name}`
-      expect(d.query).toEqual(e.query)
-      expect(e.query).toEqual(f.query)
-
-      const g = sq`person``name = ${name}``age`
-      const h = sq.from`person`.where`name = ${name}`.return`age`
-      const i = sq
-        .from('person')
-        .where({ name })
-        .return('age')
-      expect(g.query).toEqual(h.query)
-      expect(h.query).toEqual(i.query)
-    })
   })
-
-  describe('Manipulation Queries', () => {
+  describe('Delete Queries', () => {
     describe('Delete', () => {
       expect(sq.delete.from`person`.delete.query).toEqual(
         sq.from`person`.delete.query
@@ -443,27 +508,35 @@ describe('tutorial', () => {
         text: 'delete from person'
       })
       query({
+        name: '.delete.delete',
+        query: sq`book`.delete.delete.delete,
+        text: 'delete from book'
+      })
+    })
+    describe('Where', () => {
+      query({
         name: '.where.delete',
         query: sq.delete.from`person`.where`id = ${723}`,
         text: 'delete from person where (id = $1)',
         args: [723]
       })
+    })
+    describe('Returning', () => {
       query({
         name: '.return.delete',
         query: sq.delete.from`person`.return`name`,
         text: 'delete from person returning name'
       })
+    })
+    describe('Express', () => {
       query({
         name: 'express.delete',
         query: sq`person`({ job: 'student' })`name`.delete,
         text: 'delete from person where (job = $1) returning name',
         args: ['student']
       })
-      query({
-        name: '.delete.delete',
-        query: sq`book`.delete.delete.delete,
-        text: 'delete from book'
-      })
+    })
+    describe('Using', () => {
       query({
         name: 'delete using',
         query: sq.delete.from`book`.from`author`
@@ -472,6 +545,8 @@ describe('tutorial', () => {
           "delete from book using author where (book.author_id = author.id and author.contract = 'terminated')"
       })
     })
+  })
+  describe('Insert Queries', () => {
     describe('Insert', () => {
       query({
         name: '.insert``',
@@ -531,15 +606,27 @@ describe('tutorial', () => {
           'Oathbringer'
         ]
       })
+    })
+    describe('Returning', () => {
       query({
-        name: '',
+        name: '.insert.return',
         query: sq.from`book`.insert({ title: 'Squirrels and Acorns' })
           .return`id`,
         text: 'insert into book (title) values ($1) returning id',
         args: ['Squirrels and Acorns']
       })
     })
-    describe('Update', () => {
+    describe('Express', () => {
+      query({
+        name: '.insert express',
+        query: sq`book`()`id`.insert({ title: 'Squirrels and Acorns' }),
+        text: 'insert into book (title) values ($1) returning id',
+        args: ['Squirrels and Acorns']
+      })
+    })
+  })
+  describe('Update', () => {
+    describe('Set', () => {
       query({
         name: '.set``',
         query: sq.from`person`.set`age = age + 1, processed = true`
@@ -549,6 +636,22 @@ describe('tutorial', () => {
       })
       query({
         name: '.set({})',
+        query: sq.from`person`.set({ firstName: 'Robert', nickname: 'Rob' }),
+        text: 'update person set first_name = $1, nickname = $2',
+        args: ['Robert', 'Rob']
+      })
+      query({
+        name: '.set({}).set({})',
+        query: sq.from`person`
+          .set({ firstName: 'Robert' })
+          .set({ nickname: 'Rob' }),
+        text: 'update person set first_name = $1, nickname = $2',
+        args: ['Robert', 'Rob']
+      })
+    })
+    describe('Where', () => {
+      query({
+        name: '.set({})',
         query: sq.from`person`
           .where({ firstName: 'Matt' })
           .set({ firstName: 'Robert', nickname: 'Rob' }),
@@ -556,6 +659,11 @@ describe('tutorial', () => {
           'update person set first_name = $1, nickname = $2 where (first_name = $3)',
         args: ['Robert', 'Rob', 'Matt']
       })
+    })
+    describe('Returning', () => {
+      // TODO
+    })
+    describe('Express', () => {
       query({
         name: 'express.set({})',
         query: sq`person`({ firstName: 'Rob' })`id`.set({
@@ -565,16 +673,8 @@ describe('tutorial', () => {
           'update person set first_name = $1 where (first_name = $2) returning id',
         args: ['Robert', 'Rob']
       })
-      query({
-        name: '.set({}).set({})',
-        query: sq.from`person`
-          .where({ firstName: 'Matt' })
-          .set({ firstName: 'Robert' })
-          .set({ nickname: 'Rob' }),
-        text:
-          'update person set first_name = $1, nickname = $2 where (first_name = $3)',
-        args: ['Robert', 'Rob', 'Matt']
-      })
+    })
+    describe('From', () => {
       query({
         name: 'insert, from',
         query: sq.from`book`.from`author`.set({ available: false })

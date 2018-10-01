@@ -25,6 +25,8 @@ const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => {
     ret: [],
     // union/intersect/except args
     setop: [],
+    // order by
+    ord: [],
     // insert args
     ins: [],
     // update/set args
@@ -170,7 +172,7 @@ const methods = {
   },
   order: {
     updateContext: (ctx, args) => {
-      ctx.ord = args
+      ctx.ord.push(args)
     }
   },
   limit: {
