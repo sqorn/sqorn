@@ -17,6 +17,7 @@ try {
 }
 
 const database = ({ connection }) => {
+  if (!connection) return undefined
   const pool = new pg.Pool(connection)
   return {
     end: () => pool.end(),

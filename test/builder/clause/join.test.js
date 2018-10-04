@@ -101,6 +101,11 @@ describe('join', () => {
       text:
         'select * from a join b on (a.id = b.id) join c on (a.id = c.id) and (b.id = c.id)'
     })
+    query({
+      name: '.and/.or',
+      query: sq.from`a`.join`b`.on`a.id = b.id`.and`true`.or`false`,
+      text: 'select * from a join b on (a.id = b.id) and (true) or (false)'
+    })
   })
   describe('join using', () => {
     query({

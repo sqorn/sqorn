@@ -30,6 +30,151 @@ sq.from('users')
   .from({ a: join('accounts').left({ 'u.id': 'a.user_id' })})
 ```
 
+## JSON helper
+
+```sql
+
+SELECT json_agg(r.*) FROM (
+  SELECT
+    album.title as title,
+    json_agg(track.*) as tracks
+  FROM
+    album
+  LEFT OUTER JOIN
+    track
+  ON
+    (album.id = track.album_id)
+  WHERE
+    album.year = 2018
+  GROUP BY
+    album.id
+) r
+```
+
+```js
+sq.return({ album: 'json_agg(r.*)' })
+  .from({
+    r: sq.return({ title: 'album.title', tracks: 'json_agg(track.*)' })
+      .from('album')
+      .left.join('track').on('album.id = track.album_id')
+      .where({ 'album.year': 2018 })
+      .group('album.id')
+  })
+
+const { Album, Track } =  require('./models')
+// models define primary keys and relationships
+const res = await Album({ year: 2018 })(
+  title: 'title',
+  tracks: Track
+)
+
+`
+select json_agg(r.*) from (
+  select album.title as title, json_agg(track.*) as tracks
+  from album
+       join track on album.track_id = track.id
+  group by album.id
+) as r`
+               
+const albums await
+
+sq.json(
+  sq.return
+)
+
+```
+
+## table syntax, generate queries from relationships, graphql, json
+
+Basic Idea:
+* User defines table models and relationships
+* user passes 
+```js
+// previously defined model relationships
+const { sq, book, author, publisher, city } = require('./db')
+
+
+
+post.where({ firstName: 'Jo'}).order(post.id).limit(1).return({
+  title: 'title',
+  body: 'body',
+  author: user.where({ status: 'good' }).return({
+    username: 'username'
+  }),
+  comments: comment.return({
+    title: 'title',
+    body: 'body',
+    author: user.return({
+      username: 'username'
+    })
+  })
+}).query
+
+{
+  text: '',
+  args: [],
+  results: [
+    {
+      title: 'Cool Post',
+      body: 'bla bla bla',
+      author
+    }
+  ]
+}
+
+
+author({ id: 7 }).get('first_name', 'last_name')
+  .publisher
+  .city.get('name')
+
+
+sq.return(book.id, book.tile, book.author.firstName, book.author.lastName)
+  .where(e(book.id).eq(7))
+  .query
+
+{ text: `select book.id, book.title, author.first_name, author.last_name
+         from book join author on book.author_id = author.id
+         where book.id = $1`,
+  args: [7] }
+
+sq.json(post.title, post.comments.limit(3).order('create_time asc'))
+  .where(e(post.id).eq(7).and())
+  .query
+
+{ text: 'select post.title, author.first_name, author.last_name, json_agg(comment.*)',
+  args: [] }
+
+// returns json
+sq.return(
+  book(
+    'id',
+    'title',
+    author(
+      'firstName'
+    )
+  )
+).where(
+  and(
+    eq(book.genre, 'Fantasy'),
+    lt(book.id, 100),
+  )
+  e(book.genre).eq('Fantasy').and(book.id).lt(100)
+).query
+
+{ text: 'select book.id, book.title, author.first_name from book',
+  args: [],
+  results: [
+    book: {
+      id: 1,
+      title: 'Meow',
+      author: {
+        firstName: 'Tom'
+      }
+    }
+  ]
+}
+```
+
 
 ## tests
 

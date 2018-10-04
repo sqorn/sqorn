@@ -336,7 +336,7 @@ sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`.query
   args: ['Fantasy', 2000] }
 ```
 
-`.and` and `.or` can be called **after** calling `.where`. They accept the same arguments as `.where`.
+Chain `.and` and `.or` after `.on`. They accept the same arguments as `.where`.
 
 ```js
 sq.from`person`.where`name = ${'Rob'}`.or`name = ${'Bob'}`.and`age = ${7}`.query
@@ -554,11 +554,91 @@ sq.from('person').where({ name: 'Jo' }).return('age')
 
 ### Group By
 
-TODO, only template string form works
+Add a *Group By* clause with `.group` to create one row for all rows matching the given *expressions*.
+
+```js
+sq.from`person`.group`age`.query
+
+{ text: 'select * from person group by age',
+  args: [] }
+```
+
+Multiple `.group` calls are joined with `', '`.
+
+```js
+sq.from`person`.group`age`.group`last_name`.query
+
+{ text: 'select * from person group by age, last_name',
+  args: [] }
+```
+
+`.group` accepts [expressions](#expressions) and arrays of expressions.
+
+```js
+sq.from`person`.group('age', [sq.l`last_name`, 'first_name']).query
+
+{ text: 'select * from person group by age, (last_name, first_name)',
+  args: [] }
+```
+
+**Postgres Only:** `.group` accepts *rollup* arguments. `.rollup` accepts expressions and arrays of expressions.
+
+```js
+sq.from`t`.group(sq.rollup('a', ['b', sq.l`c`], 'd')).query
+
+// postgres
+{ text: 'select * from t group by rollup (a, (b, c)), d',
+  args: [] }
+```
+
+**Postgres Only:** `.group` accepts *cube* arguments. `.cube` accepts expressions and arrays of expressions.
+
+```js
+sq.from`t`.group(sq.cube('a', ['b', sq.l`c`], 'd')).query
+
+// postgres
+{ text: 'select * from t group by cube (a, (b, c)), d',
+  args: [] }
+```
+
+**Postgres Only:** `.group` accepts *grouping sets* arguments. `.groupingSets` accepts the same arguments as `.group`.
+
+```js
+sq.from`t`.group(sq.groupingSets(['a', 'b', 'c'], sq.groupingSets(['a', 'b']), ['a'], [])).query
+
+// postgres
+{ text: 'select * from t group by grouping sets ((a, b, c), grouping sets ((a, b)), (a), ())',
+  args: [] }
+```
 
 ### Having
 
-TODO, only template string form works
+Filter groups with `.having`. `.having` accepts the same arguments as `.where`.
+
+```js
+sq.from`person`.group`age`.having`age < ${20}`.query
+
+{ text: 'select * from person group by age having (age < $1',
+  args: [20] }
+```
+
+`.having` can be called multiple times.
+
+```js
+sq.from`person`.group`age`.having`age >= ${20}`.having`age < ${30}`.query
+
+{ text: 'select * from person group by age having (age >= $1) and (age < $2)',
+  args: [20, 30] }
+```
+
+Chain `.and` and `.or` after `.having`.
+
+```js
+sq.from`person`.group`age`.having({ age: 18, c: sq.l`age < ${19}` }).or({ age: 20 }).and`count(*) > 10`.query
+
+{ text: 'select * from person group by age having (age = $1 and age < $2) or (age = $3) and (count(*) > 10)',
+  args: [18, 19, 20] }
+```
 
 ### Order By
 
@@ -733,7 +813,7 @@ sq.from({ b: 'book' })
   args: ['Fantasy'] }
 ```
 
-`.and` and `.or` can be chained **after** `.on`.
+Chain `.and` and `.or` after `.on`.
 
 ```js
 sq.from({ b: 'book' })
