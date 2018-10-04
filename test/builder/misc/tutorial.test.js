@@ -300,6 +300,58 @@ describe('tutorial', () => {
         expect(h.query).toEqual(i.query)
       })
     })
+    describe('Group By', () => {
+      query({
+        name: 'tagged template',
+        query: sq.from`person`.group`age`,
+        text: 'select * from person group by age',
+        args: []
+      })
+      query({
+        name: 'multiple calls',
+        query: sq.from`person`.group`age`.group`last_name`,
+        text: 'select * from person group by age, last_name',
+        args: []
+      })
+      query({
+        name: 'expression args',
+        query: sq.from`person`.group('age', [sq.l`last_name`, 'first_name']),
+        text: 'select * from person group by age, (last_name, first_name)',
+        args: []
+      })
+      query({
+        name: 'rollup',
+        query: sq.from`t`.group(sq.rollup('a', ['b', sq.l`c`]), 'd'),
+        text: 'select * from t group by rollup (a, (b, c)), d',
+        args: []
+      })
+      query({
+        name: 'cube',
+        query: sq.from`t`.group(sq.cube('a', ['b', sq.l`c`]), 'd'),
+        text: 'select * from t group by cube (a, (b, c)), d',
+        args: []
+      })
+      query({
+        name: 'grouping sets',
+        query: sq.from`t`.group(
+          sq.groupingSets(
+            ['a', 'b', 'c'],
+            sq.groupingSets(['a', 'b']),
+            ['a'],
+            []
+          )
+        ),
+        text:
+          'select * from t group by grouping sets ((a, b, c), grouping sets ((a, b)), (a), ())',
+        args: []
+      })
+      query({
+        name: 'expression args',
+        query: sq.from`person`.group('age', [sq.l`last_name`, 'first_name']),
+        text: 'select * from person group by age, (last_name, first_name)',
+        args: []
+      })
+    })
     describe('Order By', () => {
       query({
         name: 'tagged template',

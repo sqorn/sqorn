@@ -101,5 +101,31 @@ module.exports = {
     ),
     delete: query(wth, del, using, where, returning),
     update: query(wth, update, set, updateFrom, where, returning)
+  },
+  properties: {
+    rollup: {
+      value: (...args) => {
+        return {
+          type: 'rollup',
+          args
+        }
+      }
+    },
+    cube: {
+      value: (...args) => {
+        return {
+          type: 'cube',
+          args
+        }
+      }
+    },
+    groupingSets: {
+      value: (...args) => {
+        return {
+          type: 'grouping sets',
+          args
+        }
+      }
+    }
   }
 }

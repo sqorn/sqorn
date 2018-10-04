@@ -17,12 +17,14 @@ const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => {
     separator: ' ',
     // raw sql args (from .l)
     sql: [],
+    // select/returning clause args
+    ret: [],
     // from clause args
     frm: [],
     // where clause args
     whr,
-    // select/returning clause args
-    ret: [],
+    // group by args
+    grp: [],
     // union/intersect/except args
     setop: [],
     // order by
@@ -132,7 +134,7 @@ const methods = {
   },
   group: {
     updateContext: (ctx, args) => {
-      ctx.grp = args
+      ctx.grp.push(args)
     }
   },
   having: {

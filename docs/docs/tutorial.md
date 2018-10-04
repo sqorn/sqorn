@@ -559,7 +559,7 @@ Add a *Group By* clause with `.group` to create one row for all rows matching th
 ```js
 sq.from`person`.group`age`.query
 
-{ query: 'select * from person group by age',
+{ text: 'select * from person group by age',
   args: [] }
 ```
 
@@ -568,7 +568,7 @@ Multiple `.group` calls are joined with `', '`.
 ```js
 sq.from`person`.group`age`.group`last_name`.query
 
-{ query: 'select * from person group by age, last_name',
+{ text: 'select * from person group by age, last_name',
   args: [] }
 ```
 
@@ -577,27 +577,27 @@ sq.from`person`.group`age`.group`last_name`.query
 ```js
 sq.from`person`.group('age', [sq.l`last_name`, 'first_name']).query
 
-{ query: 'select * from person group by age, (last_name, first_name)',
+{ text: 'select * from person group by age, (last_name, first_name)',
   args: [] }
 ```
 
 **Postgres Only:** `.group` accepts *rollup* arguments. `.rollup` accepts expressions and arrays of expressions.
 
 ```js
-sq.from`t`.group(sq.rollup('a', ['b', sq.l`c`], 'd').query
+sq.from`t`.group(sq.rollup('a', ['b', sq.l`c`], 'd')).query
 
 // postgres
-{ query: 'select * from t group by rollup (a, (b, c)), d',
+{ text: 'select * from t group by rollup (a, (b, c)), d',
   args: [] }
 ```
 
 **Postgres Only:** `.group` accepts *cube* arguments. `.cube` accepts expressions and arrays of expressions.
 
 ```js
-sq.from`t`.group(sq.cube('a', ['b', sq.l`c`], 'd').query
+sq.from`t`.group(sq.cube('a', ['b', sq.l`c`], 'd')).query
 
 // postgres
-{ query: 'select * from t group by cube (a, (b, c)), d',
+{ text: 'select * from t group by cube (a, (b, c)), d',
   args: [] }
 ```
 
@@ -607,7 +607,7 @@ sq.from`t`.group(sq.cube('a', ['b', sq.l`c`], 'd').query
 sq.from`t`.group(sq.groupingSets(['a', 'b', 'c'], sq.groupingSets(['a', 'b']), ['a'], [])).query
 
 // postgres
-{ query: 'select * from t group by grouping sets ((a, b, c), grouping sets ((a, b)), (a), ())',
+{ text: 'select * from t group by grouping sets ((a, b, c), grouping sets ((a, b)), (a), ())',
   args: [] }
 ```
 
@@ -618,7 +618,7 @@ Filter groups with `.having`. `.having` accepts the same arguments as `.where`.
 ```js
 sq.from`person`.group`age`.having`age < ${20}`.query
 
-{ query: 'select * from person group by age having (age < $1'),
+{ text: 'select * from person group by age having (age < $1'),
   args: [20] }
 ```
 
@@ -627,7 +627,7 @@ sq.from`person`.group`age`.having`age < ${20}`.query
 ```js
 sq.from`person`.group`age`.having`age >= ${20}`.having`age < ${30}`.query
 
-{ query: 'select * from person group by age having (age >= $1) and (age < $2)',
+{ text: 'select * from person group by age having (age >= $1) and (age < $2)',
   args: [20, 30] }
 ```
 
@@ -636,7 +636,7 @@ Chain `.and` and `.or` after `.having`.
 ```js
 sq.from`person`.group`age`.having({ age: 18, age: 19 }).or({ age: 20 }).and`count(*) > 10`.query
 
-{ query: 'select * from person group by age having (age = $1 and age < $2) or (age = $3) and (count(*) > 10)',
+{ text: 'select * from person group by age having (age = $1 and age < $2) or (age = $3) and (count(*) > 10)',
   args: [18, 19, 20] }
 ```
 

@@ -88,7 +88,8 @@ describe('Group By', () => {
       query: sq.from`person`.group(
         rollup([], ['age'], ['last_name', 'first_name'])
       ),
-      text: 'select * from person group by rollup (age)',
+      text:
+        'select * from person group by rollup ((), (age), (last_name, first_name))',
       args: []
     })
   })
@@ -117,7 +118,8 @@ describe('Group By', () => {
       query: sq.from`person`.group(
         cube([], ['age'], ['last_name', 'first_name'])
       ),
-      text: 'select * from person group by cube (age)',
+      text:
+        'select * from person group by cube ((), (age), (last_name, first_name))',
       args: []
     })
   })
@@ -155,7 +157,8 @@ describe('Group By', () => {
       query: sq.from`person`.group(
         groupingSets([], ['age'], ['last_name', 'first_name'])
       ),
-      text: 'select * from person group by grouping sets (age)',
+      text:
+        'select * from person group by grouping sets ((), (age), (last_name, first_name))',
       args: []
     })
     query({
@@ -168,7 +171,7 @@ describe('Group By', () => {
         )
       ),
       text:
-        'select * from person group by grouping sets (grouping sets (()), grouping sets ((age)), grouping sets ((first_name, last_name)))',
+        'select * from person group by grouping sets (grouping sets (()), grouping sets ((age)), grouping sets ((last_name, first_name)))',
       args: []
     })
   })
