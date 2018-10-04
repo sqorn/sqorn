@@ -1,6 +1,6 @@
 {
   "name": "sqorn-mysql",
-  "version": "0.0.33",
+  "version": "0.0.34",
   "description": "A Javascript library for building MySQL queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
