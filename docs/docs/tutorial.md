@@ -634,7 +634,7 @@ sq.from`person`.group`age`.having`age >= ${20}`.having`age < ${30}`.query
 Chain `.and` and `.or` after `.having`.
 
 ```js
-sq.from`person`.group`age`.having({ age: 18, age: 19 }).or({ age: 20 }).and`count(*) > 10`.query
+sq.from`person`.group`age`.having({ age: 18, c: sq.l`age < ${19}` }).or({ age: 20 }).and`count(*) > 10`.query
 
 { text: 'select * from person group by age having (age = $1 and age < $2) or (age = $3) and (count(*) > 10)',
   args: [18, 19, 20] }

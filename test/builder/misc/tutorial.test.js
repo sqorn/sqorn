@@ -356,7 +356,7 @@ describe('tutorial', () => {
       query({
         name: 'tagged template',
         query: sq.from`person`.group`age`.having`age < ${20}`,
-        text: 'select * from person group by age having (age < $1',
+        text: 'select * from person group by age having (age < $1)',
         args: [20]
       })
       query({
@@ -370,7 +370,7 @@ describe('tutorial', () => {
       query({
         name: 'chain .on and .or',
         query: sq.from`person`.group`age`
-          .having({ age: 18, age: 19 })
+          .having({ age: 18, c: sq.l`age < ${19}` })
           .or({ age: 20 }).and`count(*) > 10`,
         text:
           'select * from person group by age having (age = $1 and age < $2) or (age = $3) and (count(*) > 10)',
