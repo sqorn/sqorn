@@ -352,6 +352,31 @@ describe('tutorial', () => {
         args: []
       })
     })
+    describe('Having', () => {
+      query({
+        name: 'tagged template',
+        query: sq.from`person`.group`age`.having`age < ${20}`,
+        text: 'select * from person group by age having (age < $1',
+        args: [20]
+      })
+      query({
+        name: 'multiple calls',
+        query: sq.from`person`.group`age`.having`age >= ${20}`
+          .having`age < ${30}`,
+        text:
+          'select * from person group by age having (age >= $1) and (age < $2)',
+        args: [20, 30]
+      })
+      query({
+        name: 'chain .on and .or',
+        query: sq.from`person`.group`age`
+          .having({ age: 18, age: 19 })
+          .or({ age: 20 }).and`count(*) > 10`,
+        text:
+          'select * from person group by age having (age = $1 and age < $2) or (age = $3) and (count(*) > 10)',
+        args: [18, 19, 20]
+      })
+    })
     describe('Order By', () => {
       query({
         name: 'tagged template',

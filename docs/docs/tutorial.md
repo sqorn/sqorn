@@ -618,7 +618,7 @@ Filter groups with `.having`. `.having` accepts the same arguments as `.where`.
 ```js
 sq.from`person`.group`age`.having`age < ${20}`.query
 
-{ text: 'select * from person group by age having (age < $1'),
+{ text: 'select * from person group by age having (age < $1',
   args: [20] }
 ```
 

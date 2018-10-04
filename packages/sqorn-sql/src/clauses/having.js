@@ -1,7 +1,7 @@
-const { buildTaggedTemplate } = require('../util')
+const { conditions } = require('../util')
 
 module.exports = ctx => {
-  if (!ctx.hav) return
-  const txt = buildTaggedTemplate(ctx, ctx.hav)
-  return txt && `having ${txt}`
+  if (ctx.hav.length === 0) return
+  const txt = conditions(ctx, ctx.hav)
+  return txt && 'having ' + txt
 }

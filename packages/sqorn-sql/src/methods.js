@@ -17,14 +17,16 @@ const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => {
     separator: ' ',
     // raw sql args (from .l)
     sql: [],
-    // select/returning clause args
+    // select/returning args
     ret: [],
-    // from clause args
+    // from args
     frm: [],
-    // where clause args
+    // where args
     whr,
     // group by args
     grp: [],
+    // having args
+    hav: [],
     // union/intersect/except args
     setop: [],
     // order by
@@ -116,11 +118,6 @@ const methods = {
       ctx.target.push({ type: 'or', args })
     }
   },
-  wrap: {
-    updateContext: (ctx, args) => {
-      throw Error('Unimplemented')
-    }
-  },
   return: {
     updateContext: (ctx, args) => {
       ctx.ret.push(args)
@@ -129,7 +126,7 @@ const methods = {
   distinct: {
     getter: true,
     updateContext: ctx => {
-      ctx.target = true
+      ctx.target = []
     }
   },
   group: {
@@ -139,7 +136,8 @@ const methods = {
   },
   having: {
     updateContext: (ctx, args) => {
-      ctx.hav = args
+      ctx.hav.push({ type: 'and', args })
+      ctx.target = ctx.hav
     }
   },
   union: {
