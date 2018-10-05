@@ -82,7 +82,89 @@ sq.json(
   sq.return
 )
 
+
+query = offset(limit(order(select(having(group(where(from))))))
+
+const item = select(
+  group(
+    from(
+      where
+    ),
+    having
+  ),
+  order,
+  limit,
+  offset
+)
+
+Topic({
+  subscribers: User({
+    followers: User()
+  })
+})
+
+Topic({
+  subscribers: User({
+    followers: User()
+  })
+})
+
+
+
+query = from(tables)      : type a = union all tables
+     |> where(conds)      : type a
+     |> group(cols, aggs) : type b = subset a union aggs g
+     |> having(conds)     : type b
+     |> select(fn)        : type c = fn(b)
+     |> order             : type c
+     |> limit             : type c
+     |> offset            : type c
+
+From, group, and select are type changing operations
+
+
+ 
+
+const a = Person.a.as('a')
+const b = Person.b.as('b')
+
+Person.group(a, b).return(
+  // aggregate expressions, only these are eligible for relatinoships
+  a,
+  b,
+  // aggregate Function of source table
+  ...x[]: e(agg(e(Person)))
+)
+
+const name = Person.name.as('name')
+Person.group(name).return(
+  name,
+  name: // umm doesn't really work
+)
+
+// relationships don't really work with aggregates
+// limiting grammar to:
+sq[.from(s)][.where(c)].return(
+
+)[.limit(l)][.offset(o)]
+
+Table({ where, order, limit, offset })(
+  ...alias: Expression
+)
+
+Topic({ where: 'genre = fantasy', limit: 1, offset: 7 })({
+  topic: Topic.name
+  posts: Topic.posts(Post)
+})
+
+const Query = {
+  'Fantasy'
+}
+
+
 ```
+
+
 
 ## table syntax, generate queries from relationships, graphql, json
 
@@ -225,6 +307,18 @@ order by c.name, b.release_date desc
 ```js
   const sub = sq`articles a``a.book_id = b.id``count(*)`
 
+```
+
+### JSX SQL
+
+```jsx
+const query = (
+  <Select
+    from={"book"}
+    where={<Eq a="genre" b="Fantasy" />}
+    return={['title']}
+  />
+)
 ```
 
 ### create table

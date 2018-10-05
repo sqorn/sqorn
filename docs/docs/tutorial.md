@@ -270,12 +270,12 @@ sq.from({ b: 'book', p: 'person' }).query
   args: [] }
 ```
 
-Tables can be arrays of row objects.
+Tables can be arrays of row objects. A *values* clause is generated. Column names are inferred from all keys.
 
 ```js
 sq.from({ people: [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }] }).query
 
-{ text: 'select * from (values ($1, $2), ($3, $5) as people(age, name))',
+{ text: 'select * from (values ($1, $2), ($3, $4) as people(age, name))',
   args: [8, 'Jo', 9, 'Mo'] }
 ```
 
@@ -900,9 +900,68 @@ Person.except(Young).intersect(Person.except(Old)).query
 
 ### With
 
-CTEs
+Construct CTEs (Common Table Expressions) with `.with`.
 
-TODO
+```js
+sq.with`n as (select ${20} as age)`.from`n`.return`age`.query
+
+{ text: 'with n as (select $1 as age) select age from n',
+  args: [] }
+```
+
+`.with` can be called multiple times.
+
+```js
+sq.with`width as (select ${10} as n)`
+  .with`height as (select ${20} as n)`
+  .return`width.n * height.n as area`
+  .query
+
+{ text: 'with width as (select $1 as age), height as (select $2 as n) select width.n * height.n as area',
+  args: [10, 20] }
+```
+
+`.with` accepts objects in the form `{ alias: table }`. Tables can be subqueries.
+
+```js
+sq.with({
+    width: sq.return({ n: 10 }),
+    height: sq.l`select ${20} as n`
+  })
+  .return({
+    area: sq.l`width.n * height.n`,
+  })
+  .query
+
+{ text: 'with width as (select $1 as age), height as (select $2 as n) select width.n * height.n as area',
+  args: [10, 20] }
+```
+
+Tables can be arrays of row objects. A *values* clause is generated. Column names are inferred from all keys.
+
+```js
+const people = [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }]
+sq.with({ people }).return`max(age)`.from`people`.query
+
+{ text: 'with people(age, name) as (values ($1, $2), ($3, $4) select max(age) from people',
+  args: [8, 'Jo', 9, 'Mo'] }
+```
+
+Create a *recursive* CTE with `.recursive`.
+
+```js
+const one = sq.values`(1)`
+const next = sq.return`n + 1`.from`t`.where`n < 100`
+sq.recursive
+  .with({ 't(n)': one.union.all(next) })
+  .return`sum(n)`
+  .query
+
+{ text: 'with recursive t(n) as (values (1) union all (select n + 1 from t where n < 100)) select sum(n)',
+  args: [] }
+```
+
+TODO: Add VALUES Query IN ADDITION TO array of objects param
 
 ## Delete Queries
 
