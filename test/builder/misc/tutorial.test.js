@@ -738,7 +738,14 @@ describe('tutorial', () => {
       })
     })
     describe('Returning', () => {
-      // TODO
+      query({
+        name: '.return',
+        query: sq.from`person`.where`age > 60 and old = false`.set`old = true`
+          .return`id, age`,
+        text:
+          'update person set old = true where (age > 60 and old = false) returning id, age',
+        args: []
+      })
     })
     describe('Express', () => {
       query({

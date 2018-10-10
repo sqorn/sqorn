@@ -963,6 +963,22 @@ sq.recursive
 
 TODO: Add VALUES Query IN ADDITION TO array of objects param
 
+## Values Queries
+
+TODO
+
+### Ordery By
+
+TODO
+
+### Limit
+
+TODO
+
+### Offset
+
+TODO
+
 ## Delete Queries
 
 ### Delete
@@ -999,7 +1015,7 @@ sq.delete.from`person`.where`id = ${723}`.query
 
 ### Returning
 
-Return the deleted rows with `.return`.
+**Postgres Only:** Return the deleted rows with [`.return`](#select).
 
 ```js
 sq.delete.from`person`.return`name`.query
@@ -1095,7 +1111,7 @@ sq.from`book`
 
 ### Returning
 
-`.return` specifies the *returning* clause.
+**Postgres Only:** Return the inserted rows with [`.return`](#select).
 
 ```js
 sq.from`book`.insert({ title: 'Squirrels and Acorns' }).return`id`.query
@@ -1167,7 +1183,18 @@ sq.from`person`
 
 ### Returning
 
-TODO
+**Postgres Only:** Return the updated rows with [`.return`](#select).
+
+```js
+sq.from`person`
+  .where`age > 60 and old = false`
+  .set`old = true`
+  .return`id, age`
+  .query
+
+{ text: 'update person set old = true where (age > 60 and old = false) returning id, age',
+  args: [] }
+```
 
 ### Express
 
