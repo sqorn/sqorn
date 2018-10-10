@@ -4,9 +4,7 @@ const {
   snakeCase
 } = require('./helpers')
 const { conditions } = require('./conditions')
-
-// utilities for building from_items, see:
-// https://www.postgresql.org/docs/9.5/static/sql-select.html
+const { uniqueKeys, columns, values } = require('./values_array')
 
 const fromItems = (ctx, froms, start = 0, end = froms.length) => {
   if (end > froms.length) end = froms.length
@@ -64,16 +62,10 @@ const fromArgs = (ctx, args) => {
 }
 
 const fromArg = (ctx, arg) => {
-  switch (typeof arg) {
-    case 'string':
-      return arg
-    case 'object':
-      return objectTables(ctx, arg)
-    case 'function':
-      return arg.bld(ctx).text
-    default:
-      throw Error('Invalid .from argument:', arg)
-  }
+  if (typeof arg === 'string') return arg
+  if (typeof arg === 'object') return objectTables(ctx, arg)
+  if (typeof arg === 'function') return arg.bld(ctx).text
+  throw Error('Invalid .from argument')
 }
 
 const objectTables = (ctx, object) => {
@@ -82,56 +74,25 @@ const objectTables = (ctx, object) => {
   for (let i = 0; i < keys.length; ++i) {
     if (i !== 0) txt += ', '
     const key = keys[i]
-    txt += tableAsAlias(ctx, key, object[key])
+    txt += buildTable(ctx, key, object[key])
   }
   return txt
 }
 
-const tableAsAlias = (ctx, alias, source) => {
-  if (typeof source === 'string') {
-    return `${source} as ${snakeCase(alias)}`
-  } else if (Array.isArray(source)) {
-    return tableFromArray(ctx, alias, source)
-  } else if (typeof source.bld === 'function') {
-    const subquery = source.bld(ctx)
-    return subquery.type === 'select'
-      ? `(${subquery.text}) as ${snakeCase(alias)}`
-      : `${subquery.text} as ${snakeCase(alias)}`
+const buildTable = (ctx, alias, source) => {
+  if (typeof source === 'string') return `${source} as ${snakeCase(alias)}`
+  if (typeof source === 'function') {
+    const query = source.bld(ctx)
+    const table = query.type === 'select' ? `(${query.text})` : query.text
+    return `${table} as ${snakeCase(alias)}`
+  }
+  if (Array.isArray(source)) {
+    const keys = uniqueKeys(source)
+    const alias_ = `${snakeCase(alias)}(${columns(keys)})`
+    const table = values(ctx, source, keys)
+    return `${table} as ${alias_}`
   }
   return `${ctx.parameter(ctx, source)} as ${snakeCase(alias)}`
-}
-
-const tableFromArray = (ctx, alias, source) => {
-  // get unique columns
-  const keys = uniqueKeysFromObjectArray(source)
-  let columns = ''
-  for (let i = 0; i < keys.length; ++i) {
-    if (i !== 0) columns += ', '
-    columns += snakeCase(keys[i])
-  }
-  // get values
-  let values = ''
-  for (let i = 0; i < source.length; ++i) {
-    if (i !== 0) values += ', '
-    values += '('
-    const object = source[i]
-    for (let j = 0; j < keys.length; ++j) {
-      if (j !== 0) values += ', '
-      values += ctx.parameter(ctx, object[keys[j]])
-    }
-    values += ')'
-  }
-  return `(values ${values}) as ${snakeCase(alias)}(${columns})`
-}
-
-const uniqueKeysFromObjectArray = array => {
-  const keys = {}
-  for (const object of array) {
-    for (const key in object) {
-      keys[key] = true
-    }
-  }
-  return Object.keys(keys)
 }
 
 module.exports = { fromItems }

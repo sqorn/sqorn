@@ -906,7 +906,7 @@ Construct CTEs (Common Table Expressions) with `.with`.
 sq.with`n as (select ${20} as age)`.from`n`.return`age`.query
 
 { text: 'with n as (select $1 as age) select age from n',
-  args: [] }
+  args: [20] }
 ```
 
 `.with` can be called multiple times.
@@ -917,7 +917,7 @@ sq.with`width as (select ${10} as n)`
   .return`width.n * height.n as area`
   .query
 
-{ text: 'with width as (select $1 as age), height as (select $2 as n) select width.n * height.n as area',
+{ text: 'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
   args: [10, 20] }
 ```
 
@@ -933,7 +933,7 @@ sq.with({
   })
   .query
 
-{ text: 'with width as (select $1 as age), height as (select $2 as n) select width.n * height.n as area',
+{ text: 'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
   args: [10, 20] }
 ```
 
@@ -943,41 +943,24 @@ Tables can be arrays of row objects. A *values* clause is generated. Column name
 const people = [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }]
 sq.with({ people }).return`max(age)`.from`people`.query
 
-{ text: 'with people(age, name) as (values ($1, $2), ($3, $4) select max(age) from people',
-  args: [8, 'Jo', 9, 'Mo'] }
+{ text: 'with people(age, name) as (values ($1, $2), ($3, $4)) select max(age) from people',
+  args: [7, 'Jo', 9, 'Mo'] }
 ```
 
 Create a *recursive* CTE with `.recursive`.
 
 ```js
-const one = sq.values`(1)`
+const one = sq.return`1`
 const next = sq.return`n + 1`.from`t`.where`n < 100`
 sq.recursive
   .with({ 't(n)': one.union.all(next) })
+  .from`t`
   .return`sum(n)`
   .query
 
-{ text: 'with recursive t(n) as (values (1) union all (select n + 1 from t where n < 100)) select sum(n)',
+{ text: 'with recursive t(n) as (select 1 union all (select n + 1 from t where (n < 100))) select sum(n) from t',
   args: [] }
 ```
-
-TODO: Add VALUES Query IN ADDITION TO array of objects param
-
-## Values Queries
-
-TODO
-
-### Ordery By
-
-TODO
-
-### Limit
-
-TODO
-
-### Offset
-
-TODO
 
 ## Delete Queries
 
@@ -1221,6 +1204,22 @@ sq.from`book`
 { text: "update book set available = $1 from author where (book.author_id = author.id and author.contract = 'terminated')",
   args: [false] }
 ```
+
+## Values Queries
+
+TODO. See [Postgres docs](https://www.postgresql.org/docs/current/static/sql-values.html)
+
+### Ordery By
+
+TODO
+
+### Limit
+
+TODO
+
+### Offset
+
+TODO
 
 ## Upsert Queries
 

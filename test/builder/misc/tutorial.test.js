@@ -476,40 +476,6 @@ describe('tutorial', () => {
         args: []
       })
     })
-    describe('Set Operators', () => {
-      const Person = sq.from`person`
-      const Young = Person.where`age < 30`
-      const Middle = Person.where`age >= 30 and age < 60`
-      const Old = Person.where`age >= 60`
-      query({
-        name: '.except',
-        query: Person.except(Young),
-        text:
-          'select * from person except (select * from person where (age < 30))',
-        args: []
-      })
-      query({
-        name: '.union, multiple args',
-        query: Young.union(Middle, Old),
-        text:
-          'select * from person where (age < 30) union (select * from person where (age >= 30 and age < 60)) union (select * from person where (age >= 60))',
-        args: []
-      })
-      query({
-        name: 'union all',
-        query: Young.union.all(Old),
-        text:
-          'select * from person where (age < 30) union all (select * from person where (age >= 60))',
-        args: []
-      })
-      query({
-        name: 'chain set ops',
-        query: Person.except(Young).intersect(Person.except(Old)),
-        text:
-          'select * from person except (select * from person where (age < 30)) intersect (select * from person except (select * from person where (age >= 60)))',
-        args: []
-      })
-    })
     describe('Join', () => {
       query({
         name: 'natural join',
@@ -570,6 +536,89 @@ describe('tutorial', () => {
           .join`publisher`,
         text:
           'select * from book natural right join author natural join publisher',
+        args: []
+      })
+    })
+    describe('Sets', () => {
+      const Person = sq.from`person`
+      const Young = Person.where`age < 30`
+      const Middle = Person.where`age >= 30 and age < 60`
+      const Old = Person.where`age >= 60`
+      query({
+        name: '.except',
+        query: Person.except(Young),
+        text:
+          'select * from person except (select * from person where (age < 30))',
+        args: []
+      })
+      query({
+        name: '.union, multiple args',
+        query: Young.union(Middle, Old),
+        text:
+          'select * from person where (age < 30) union (select * from person where (age >= 30 and age < 60)) union (select * from person where (age >= 60))',
+        args: []
+      })
+      query({
+        name: 'union all',
+        query: Young.union.all(Old),
+        text:
+          'select * from person where (age < 30) union all (select * from person where (age >= 60))',
+        args: []
+      })
+      query({
+        name: 'chain set ops',
+        query: Person.except(Young).intersect(Person.except(Old)),
+        text:
+          'select * from person except (select * from person where (age < 30)) intersect (select * from person except (select * from person where (age >= 60)))',
+        args: []
+      })
+    })
+    describe('With', () => {
+      query({
+        name: 'template string',
+        query: sq.with`n as (select ${20} as age)`.from`n`.return`age`,
+        text: 'with n as (select $1 as age) select age from n',
+        args: [20]
+      })
+      query({
+        name: 'multiple calls',
+        query: sq.with`width as (select ${10} as n)`
+          .with`height as (select ${20} as n)`
+          .return`width.n * height.n as area`,
+        text:
+          'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
+        args: [10, 20]
+      })
+      query({
+        name: 'subquery args',
+        query: sq
+          .with({
+            width: sq.return({ n: 10 }),
+            height: sq.l`select ${20} as n`
+          })
+          .return({
+            area: sq.l`width.n * height.n`
+          }),
+        text:
+          'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
+        args: [10, 20]
+      })
+      const people = [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }]
+      query({
+        name: 'object array arg',
+        query: sq.with({ people }).return`max(age)`.from`people`,
+        text:
+          'with people(age, name) as (values ($1, $2), ($3, $4)) select max(age) from people',
+        args: [7, 'Jo', 9, 'Mo']
+      })
+      const one = sq.return`1`
+      const next = sq.return`n + 1`.from`t`.where`n < 100`
+      query({
+        name: 'recursive cte',
+        query: sq.recursive.with({ 't(n)': one.union.all(next) }).from`t`
+          .return`sum(n)`,
+        text:
+          'with recursive t(n) as (select 1 union all (select n + 1 from t where (n < 100))) select sum(n) from t',
         args: []
       })
     })
