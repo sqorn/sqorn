@@ -31,6 +31,8 @@ const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => {
     setop: [],
     // order by
     ord: [],
+    // with
+    with: [],
     // insert args
     ins: [],
     // update/set args
@@ -87,14 +89,13 @@ const methods = {
   },
   with: {
     updateContext: (ctx, args) => {
-      throw Error('Unimplemented')
       ctx.with.push(args)
     }
   },
   recursive: {
     getter: true,
     updateContext: ctx => {
-      throw Error('Unimplemented')
+      ctx.recursive = true
     }
   },
   from: {

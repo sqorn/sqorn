@@ -270,12 +270,12 @@ sq.from({ b: 'book', p: 'person' }).query
   args: [] }
 ```
 
-Tables can be arrays of row objects.
+Tables can be arrays of row objects. A *values* clause is generated. Column names are inferred from all keys.
 
 ```js
 sq.from({ people: [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }] }).query
 
-{ text: 'select * from (values ($1, $2), ($3, $5) as people(age, name))',
+{ text: 'select * from (values ($1, $2), ($3, $4) as people(age, name))',
   args: [8, 'Jo', 9, 'Mo'] }
 ```
 
@@ -900,9 +900,67 @@ Person.except(Young).intersect(Person.except(Old)).query
 
 ### With
 
-CTEs
+Construct CTEs (Common Table Expressions) with `.with`.
 
-TODO
+```js
+sq.with`n as (select ${20} as age)`.from`n`.return`age`.query
+
+{ text: 'with n as (select $1 as age) select age from n',
+  args: [20] }
+```
+
+`.with` can be called multiple times.
+
+```js
+sq.with`width as (select ${10} as n)`
+  .with`height as (select ${20} as n)`
+  .return`width.n * height.n as area`
+  .query
+
+{ text: 'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
+  args: [10, 20] }
+```
+
+`.with` accepts objects in the form `{ alias: table }`. Tables can be subqueries.
+
+```js
+sq.with({
+    width: sq.return({ n: 10 }),
+    height: sq.l`select ${20} as n`
+  })
+  .return({
+    area: sq.l`width.n * height.n`,
+  })
+  .query
+
+{ text: 'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
+  args: [10, 20] }
+```
+
+Tables can be arrays of row objects. A *values* clause is generated. Column names are inferred from all keys.
+
+```js
+const people = [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }]
+sq.with({ people }).return`max(age)`.from`people`.query
+
+{ text: 'with people(age, name) as (values ($1, $2), ($3, $4)) select max(age) from people',
+  args: [7, 'Jo', 9, 'Mo'] }
+```
+
+Create a *recursive* CTE with `.recursive`.
+
+```js
+const one = sq.return`1`
+const next = sq.return`n + 1`.from`t`.where`n < 100`
+sq.recursive
+  .with({ 't(n)': one.union.all(next) })
+  .from`t`
+  .return`sum(n)`
+  .query
+
+{ text: 'with recursive t(n) as (select 1 union all (select n + 1 from t where (n < 100))) select sum(n) from t',
+  args: [] }
+```
 
 ## Delete Queries
 
@@ -940,7 +998,7 @@ sq.delete.from`person`.where`id = ${723}`.query
 
 ### Returning
 
-Return the deleted rows with `.return`.
+**Postgres Only:** Return the deleted rows with [`.return`](#select).
 
 ```js
 sq.delete.from`person`.return`name`.query
@@ -1036,7 +1094,7 @@ sq.from`book`
 
 ### Returning
 
-`.return` specifies the *returning* clause.
+**Postgres Only:** Return the inserted rows with [`.return`](#select).
 
 ```js
 sq.from`book`.insert({ title: 'Squirrels and Acorns' }).return`id`.query
@@ -1108,7 +1166,18 @@ sq.from`person`
 
 ### Returning
 
-TODO
+**Postgres Only:** Return the updated rows with [`.return`](#select).
+
+```js
+sq.from`person`
+  .where`age > 60 and old = false`
+  .set`old = true`
+  .return`id, age`
+  .query
+
+{ text: 'update person set old = true where (age > 60 and old = false) returning id, age',
+  args: [] }
+```
 
 ### Express
 
@@ -1135,6 +1204,22 @@ sq.from`book`
 { text: "update book set available = $1 from author where (book.author_id = author.id and author.contract = 'terminated')",
   args: [false] }
 ```
+
+## Values Queries
+
+TODO. See [Postgres docs](https://www.postgresql.org/docs/current/static/sql-values.html)
+
+### Ordery By
+
+TODO
+
+### Limit
+
+TODO
+
+### Offset
+
+TODO
 
 ## Upsert Queries
 

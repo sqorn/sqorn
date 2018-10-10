@@ -7,11 +7,18 @@ const camelCase = str =>
 
 const snakeCaseCache = {}
 const snakeCase = str =>
-  snakeCaseCache[str] ||
-  (snakeCaseCache[str] = str
-    .split('.')
-    .map(s => lodashSnakeCase(s))
-    .join('.'))
+  snakeCaseCache[str] || (snakeCaseCache[str] = toSnakeCase(str))
+
+const toSnakeCase = str => {
+  // HACK: if user enters name with parentheses, return string as is
+  // TODO: intelligently handle snakecasing components
+  return str.indexOf('(') === -1
+    ? str
+        .split('.')
+        .map(s => lodashSnakeCase(s))
+        .join('.')
+    : str
+}
 
 const isTaggedTemplate = args => {
   // the first argument of a tagged template literal is an array
