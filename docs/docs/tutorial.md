@@ -18,20 +18,20 @@ Sqorn is a collection of libraries, one for each SQL dialect. Follow the instruc
 
 ### Postgres
 
-Install `sqorn-pg`.
+Install [Node Postgres](https://www.npmjs.com/package/pg) and [Sqorn Postgres](https://www.npmjs.com/package/sqorn-pg).
 
 ```sh
-npm install --save sqorn-pg
+npm install --save pg sqorn-pg
 ```
 
-Create a query building instance connected to your database. Here, we connect to a local Postgres server using a [connection string](https://node-postgres.com/features/connecting#connection-uri):
+Create a [Node Postgres connection pool](https://node-postgres.com/features/connecting). Then pass `pg` and `pool` as arguments to `sqorn()` to create a query builder `sq`.
 
 ```javascript
-const sq = require('sqorn-pg')({
-  connection: {
-    connectionString: 'postgresql://postgres@localhost:5432/postgres'
-  }
-})
+const pg = require('pg')
+const sqorn = require('sqorn-pg')
+
+const pool = new pg.Pool()
+const sq = sqorn({ pg, pool })
 ```
 
 ### MySQL

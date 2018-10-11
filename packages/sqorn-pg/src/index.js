@@ -1,5 +1,5 @@
 const builder = require('sqorn-core')
-const database = require('./database')
-const dialect = require('./dialect')
+const adapter = require('sqorn-adapter-pg')
+const dialect = require('sqorn-dialect-postgres')
 
-module.exports = builder({ database, dialect })
+module.exports = builder({ adapter, dialect })
