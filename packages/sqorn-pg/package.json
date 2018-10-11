@@ -1,7 +1,7 @@
 {
   "name": "sqorn-pg",
   "version": "0.0.35",
-  "description": "A Javascript library for building Postgres SQL queries",
+  "description": "A Javascript library for building and executing Postgres queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
   "engines": {
@@ -17,11 +17,11 @@
     "query",
     "builder",
     "postgres",
-    "postgresql"
+    "postgresql",
+    "pg",
+    "node-postgres"
   ],
   "dependencies": {
-    "pg": "^7.4.3",
-    "sqorn-core": "^0.0.35",
-    "sqorn-sql": "^0.0.35"
+    "sqorn-core": "^0.0.35"
   }
 }

@@ -1,7 +1,7 @@
 /** Returns a new Sqorn SQL query builder */
-module.exports = ({ database, dialect }) => (config = {}) => {
+module.exports = ({ adapter, dialect }) => (config = {}) => {
   const { newContext, queries, methods } = dialect
-  const client = database(config)
+  const client = adapter(config)
   const reducers = createReducers(methods)
   const updateContext = applyReducers(reducers)
   reducers.extend = (ctx, args) => {
@@ -11,7 +11,7 @@ module.exports = ({ database, dialect }) => (config = {}) => {
   const chain = createBuilder(builder)
   Object.defineProperties(builder, {
     ...builderProperties({ chain, newContext, updateContext, queries }),
-    ...(client && databaseProperties({ client })),
+    ...(client && adapterProperties({ client })),
     ...methodProperties({ methods, chain }),
     ...dialect.properties,
     ...(client && client.properties)
@@ -79,7 +79,7 @@ const builderProperties = ({ chain, newContext, updateContext, queries }) => ({
   }
 })
 
-const databaseProperties = ({ client }) => ({
+const adapterProperties = ({ client }) => ({
   end: {
     value: async function() {
       return client.end()
