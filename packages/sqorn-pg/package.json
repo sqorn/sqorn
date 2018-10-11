@@ -1,6 +1,6 @@
 {
   "name": "sqorn-pg",
-  "version": "0.0.36",
+  "version": "0.0.37",
   "description": "A Javascript library for building and executing Postgres queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -22,8 +22,8 @@
     "node-postgres"
   ],
   "dependencies": {
-    "sqorn-core": "^0.0.36",
-    "sqorn-dialect-postgres": "^0.0.36",
-    "sqorn-adapter-pg": "^0.0.36"
+    "sqorn-adapter-pg": "^0.0.37",
+    "sqorn-core": "^0.0.37",
+    "sqorn-dialect-postgres": "^0.0.37"
   }
 }
