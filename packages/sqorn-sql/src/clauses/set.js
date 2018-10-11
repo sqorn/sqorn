@@ -40,6 +40,6 @@ const buildCondition = (ctx, obj, key) => {
   return (
     snakeCase(key) +
     ' = ' +
-    (typeof val === 'function' ? val.bld(ctx).text : ctx.parameter(ctx, val))
+    (typeof val === 'function' ? val._build(ctx).text : ctx.parameter(ctx, val))
   )
 }

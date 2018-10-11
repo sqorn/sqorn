@@ -6,7 +6,7 @@ module.exports = ctx => {
   if (arg === undefined) return ''
   let txt = 'offset '
   if (typeof arg === 'number') txt += ctx.parameter(ctx, arg)
-  else if (typeof arg === 'function') txt += arg.bld(ctx).text
+  else if (typeof arg === 'function') txt += arg._build(ctx).text
   else txt += buildTaggedTemplate(ctx, offset)
   return txt
 }

@@ -46,7 +46,7 @@ const buildObject = (ctx, object) => {
 
 const buildTable = (ctx, alias, source) => {
   if (typeof source === 'function') {
-    const query = source.bld(ctx)
+    const query = source._build(ctx)
     return `${snakeCase(alias)} as (${query.text})`
   }
   if (Array.isArray(source)) {

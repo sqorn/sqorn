@@ -64,7 +64,7 @@ const fromArgs = (ctx, args) => {
 const fromArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
   if (typeof arg === 'object') return objectTables(ctx, arg)
-  if (typeof arg === 'function') return arg.bld(ctx).text
+  if (typeof arg === 'function') return arg._build(ctx).text
   throw Error('Invalid .from argument')
 }
 
@@ -82,7 +82,7 @@ const objectTables = (ctx, object) => {
 const buildTable = (ctx, alias, source) => {
   if (typeof source === 'string') return `${source} as ${snakeCase(alias)}`
   if (typeof source === 'function') {
-    const query = source.bld(ctx)
+    const query = source._build(ctx)
     const table = query.type === 'select' ? `(${query.text})` : query.text
     return `${table} as ${snakeCase(alias)}`
   }

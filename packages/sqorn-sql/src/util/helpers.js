@@ -37,9 +37,9 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
     if (prevString[lastCharIndex] === '$') {
       // raw arg
       txt += prevString.substr(0, lastCharIndex) + args[i]
-    } else if (arg && typeof arg.bld === 'function') {
+    } else if (typeof arg === 'function') {
       // sql builder arg
-      txt += prevString + arg.bld(ctx).text
+      txt += prevString + arg._build(ctx).text
     } else {
       // parameterized arg
       txt += prevString + ctx.parameter(ctx, arg)

@@ -11,7 +11,7 @@ module.exports = ({ adapter, dialect }) => (config = {}) => {
   const chain = createBuilder(builder)
   Object.defineProperties(builder, {
     ...builderProperties({ chain, newContext, updateContext, queries }),
-    ...(client && adapterProperties({ client })),
+    ...(client && adapterProperties({ client, config })),
     ...methodProperties({ methods, chain }),
     ...dialect.properties,
     ...(client && client.properties)
@@ -61,7 +61,7 @@ const applyReducers = reducers => (method, ctx) => {
 
 /** Default properties of all SQL Query Builders */
 const builderProperties = ({ chain, newContext, updateContext, queries }) => ({
-  bld: {
+  _build: {
     value: function(inheritedContext) {
       const ctx = updateContext(this.method, newContext(inheritedContext))
       return queries[ctx.type](ctx)
@@ -69,7 +69,7 @@ const builderProperties = ({ chain, newContext, updateContext, queries }) => ({
   },
   query: {
     get: function() {
-      return this.bld()
+      return this._build()
     }
   },
   extend: {
@@ -79,7 +79,7 @@ const builderProperties = ({ chain, newContext, updateContext, queries }) => ({
   }
 })
 
-const adapterProperties = ({ client }) => ({
+const adapterProperties = ({ client, config: { thenable = true } }) => ({
   end: {
     value: async function() {
       return client.end()
@@ -96,16 +96,20 @@ const adapterProperties = ({ client }) => ({
       return client.query(this.query, trx)
     }
   },
-  then: {
-    value: function(resolve) {
-      resolve(this.all())
-    }
-  },
   transaction: {
     value: function(fn) {
       return fn ? client.transactionCallback(fn) : client.transactionObject()
     }
-  }
+  },
+  ...(thenable
+    ? {
+        then: {
+          value: function(resolve) {
+            resolve(this.all())
+          }
+        }
+      }
+    : {})
 })
 
 /** Builds object containing a property for every query building method */
