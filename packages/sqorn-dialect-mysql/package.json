@@ -1,6 +1,6 @@
 {
   "name": "sqorn-dialect-mysql",
-  "version": "0.0.37",
+  "version": "0.0.38",
   "description": "Sqorn Dialect MySQL",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -11,6 +11,6 @@
   "repository": "https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-dialect-mysql",
   "homepage": "https://sqorn.org",
   "dependencies": {
-    "sqorn-sql": "^0.0.37"
+    "sqorn-sql": "^0.0.38"
   }
 }

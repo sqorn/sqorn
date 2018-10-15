@@ -1,6 +1,6 @@
 {
   "name": "sqorn-sqlite",
-  "version": "0.0.37",
+  "version": "0.0.38",
   "description": "A Javascript library for building SQLite queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",

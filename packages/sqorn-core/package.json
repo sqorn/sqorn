@@ -1,6 +1,6 @@
 {
   "name": "sqorn-core",
-  "version": "0.0.37",
+  "version": "0.0.38",
   "description": "Sqorn's Core Builder",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -11,6 +11,6 @@
   "repository": "https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-core",
   "homepage": "https://sqorn.org",
   "dependencies": {
-    "sqorn-util": "^0.0.37"
+    "sqorn-util": "^0.0.38"
   }
 }
