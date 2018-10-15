@@ -224,9 +224,9 @@ describe('tutorial', () => {
       })
       query({
         name: '.return object - subquery expression',
-        query: sq.return({ sum: sq.l`${2} + ${3}` }),
-        text: 'select $1 + $2 as sum',
-        args: [2, 3]
+        query: sq.return({ sum: sq.l`${2} + ${3}`, firstName: sq.l('Bob') }),
+        text: 'select $1 + $2 as sum, $3 as first_name',
+        args: [2, 3, 'Bob']
       })
       query({
         name: '.distinct.return',

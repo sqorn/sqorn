@@ -1,8 +1,4 @@
-const {
-  isTaggedTemplate,
-  buildTaggedTemplate,
-  snakeCase
-} = require('./helpers')
+const { isTaggedTemplate, buildTaggedTemplate } = require('./helpers')
 
 const expressions = (ctx, calls) => {
   let txt = ''
@@ -56,7 +52,7 @@ const expressionAsAlias = (ctx, alias, source) => {
   if (typeof source === 'string') txt += source
   else if (typeof source === 'function') txt += source._build(ctx).text
   else txt += ctx.parameter(ctx, source)
-  return `${txt} as ${snakeCase(alias)}`
+  return `${txt} as ${ctx.mapKey(alias)}`
 }
 
 module.exports = { expressions }

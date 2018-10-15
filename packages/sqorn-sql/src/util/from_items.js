@@ -1,8 +1,4 @@
-const {
-  isTaggedTemplate,
-  buildTaggedTemplate,
-  snakeCase
-} = require('./helpers')
+const { isTaggedTemplate, buildTaggedTemplate } = require('./helpers')
 const { conditions } = require('./conditions')
 const { uniqueKeys, columns, values } = require('./values_array')
 
@@ -80,19 +76,19 @@ const objectTables = (ctx, object) => {
 }
 
 const buildTable = (ctx, alias, source) => {
-  if (typeof source === 'string') return `${source} as ${snakeCase(alias)}`
+  if (typeof source === 'string') return `${source} as ${ctx.mapKey(alias)}`
   if (typeof source === 'function') {
     const query = source._build(ctx)
     const table = query.type === 'select' ? `(${query.text})` : query.text
-    return `${table} as ${snakeCase(alias)}`
+    return `${table} as ${ctx.mapKey(alias)}`
   }
   if (Array.isArray(source)) {
     const keys = uniqueKeys(source)
-    const alias_ = `${snakeCase(alias)}(${columns(keys)})`
+    const alias_ = `${ctx.mapKey(alias)}(${columns(ctx, keys)})`
     const table = values(ctx, source, keys)
     return `${table} as ${alias_}`
   }
-  return `${ctx.parameter(ctx, source)} as ${snakeCase(alias)}`
+  return `${ctx.parameter(ctx, source)} as ${ctx.mapKey(alias)}`
 }
 
 module.exports = { fromItems }

@@ -1,5 +1,3 @@
-const { snakeCase } = require('./helpers')
-
 // gets unique keys in object array
 const uniqueKeys = array => {
   const keys = {}
@@ -12,11 +10,11 @@ const uniqueKeys = array => {
 }
 
 // gets column string from unique keys of object array
-const columns = keys => {
+const columns = (ctx, keys) => {
   let txt = ''
   for (let i = 0; i < keys.length; ++i) {
     if (i !== 0) txt += ', '
-    txt += snakeCase(keys[i])
+    txt += ctx.mapKey(keys[i])
   }
   return txt
 }

@@ -21,11 +21,6 @@ const {
 } = clauses
 const { fromItems, expressions } = util
 
-const newContext = newContextCreator({
-  parameter: (ctx, arg) =>
-    arg === undefined ? 'default' : `$${ctx.arg.push(arg)}`
-})
-
 const postgresMethods = {
   distinct: {
     getter: true,
@@ -82,9 +77,12 @@ const updateFrom = ctx => {
   return txt && `from ${txt}`
 }
 
-module.exports = {
+const parameter = (ctx, arg) =>
+  arg === undefined ? 'default' : `$${ctx.arg.push(arg)}`
+
+module.exports = ({ mapInputKeys }) => ({
   methods: { ...methods, ...postgresMethods },
-  newContext,
+  newContext: newContextCreator({ parameter, mapInputKeys }),
   queries: {
     ...queries,
     select: query(
@@ -128,4 +126,4 @@ module.exports = {
       }
     }
   }
-}
+})

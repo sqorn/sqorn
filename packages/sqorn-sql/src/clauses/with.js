@@ -1,4 +1,4 @@
-const { isTaggedTemplate, buildTaggedTemplate, snakeCase } = require('../util')
+const { isTaggedTemplate, buildTaggedTemplate } = require('../util')
 const { uniqueKeys, columns, values } = require('../util/values_array')
 
 module.exports = ctx => {
@@ -47,11 +47,11 @@ const buildObject = (ctx, object) => {
 const buildTable = (ctx, alias, source) => {
   if (typeof source === 'function') {
     const query = source._build(ctx)
-    return `${snakeCase(alias)} as (${query.text})`
+    return `${ctx.mapKey(alias)} as (${query.text})`
   }
   if (Array.isArray(source)) {
     const keys = uniqueKeys(source)
-    const alias_ = `${snakeCase(alias)}(${columns(keys)})`
+    const alias_ = `${ctx.mapKey(alias)}(${columns(ctx, keys)})`
     const table = values(ctx, source, keys)
     return `${alias_} as ${table}`
   }

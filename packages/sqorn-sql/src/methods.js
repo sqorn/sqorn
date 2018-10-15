@@ -1,52 +1,59 @@
+const { snakeCase, memoize } = require('sqorn-util')
+
 /** Initial ctx value */
-const newContextCreator = ({ parameter }) => ({ arg = [] } = {}) => {
-  const whr = []
-  return {
-    // query type: 'raw' | sql' | 'select' | 'delete' | 'insert' | 'update'
-    type: 'select',
-    // express syntax status: 'from' | 'where' | 'return'
-    express: 'from',
-    // saves context needed to interpret proceeding method calls
-    // modified by .where, .join.on, .distinct.on and .having
-    target: whr,
-    // next join target
-    nextJoin: { join: 'inner' },
-    // current join target, set to ctx.nextJoin on call to .join
-    join: undefined,
-    // string used to join clauses
-    separator: ' ',
-    // raw sql args (from .l)
-    sql: [],
-    // select/returning args
-    ret: [],
-    // from args
-    frm: [],
-    // where args
-    whr,
-    // group by args
-    grp: [],
-    // having args
-    hav: [],
-    // union/intersect/except args
-    setop: [],
-    // order by
-    ord: [],
-    // with
-    with: [],
-    // insert args
-    ins: [],
-    // update/set args
-    set: [],
-    // limit
-    limit: [],
-    // offset
-    offset: [],
-    // parameterized query arguments, initialized to [] but subqueries
-    // inherit parent query's arg
-    arg,
-    // function that parameterizes an argument by adding it to ctx.arg then
-    // returning the result text, e.g. '$1', '$2', ..., or '?' for mysql
-    parameter
+const newContextCreator = ({ parameter, mapInputKeys = snakeCase }) => {
+  const mapKey = memoize(mapInputKeys)
+  return ({ arg = [] } = {}) => {
+    const whr = []
+    return {
+      // query type: 'raw' | sql' | 'select' | 'delete' | 'insert' | 'update'
+      type: 'select',
+      // express syntax status: 'from' | 'where' | 'return'
+      express: 'from',
+      // saves context needed to interpret proceeding method calls
+      // modified by .where, .join.on, .distinct.on and .having
+      target: whr,
+      // next join target
+      nextJoin: { join: 'inner' },
+      // current join target, set to ctx.nextJoin on call to .join
+      join: undefined,
+      // string used to join clauses
+      separator: ' ',
+      // raw sql args (from .l)
+      sql: [],
+      // select/returning args
+      ret: [],
+      // from args
+      frm: [],
+      // where args
+      whr,
+      // group by args
+      grp: [],
+      // having args
+      hav: [],
+      // union/intersect/except args
+      setop: [],
+      // order by
+      ord: [],
+      // with
+      with: [],
+      // insert args
+      ins: [],
+      // update/set args
+      set: [],
+      // limit
+      limit: [],
+      // offset
+      offset: [],
+      // parameterized query arguments, initialized to [] but subqueries
+      // inherit parent query's arg
+      arg,
+      // function that parameterizes an argument by adding it to ctx.arg then
+      // returning the result text, e.g. '$1', '$2', ..., or '?' for mysql
+      parameter,
+      // function that maps input keys, e.g. to convert camelCase to snake_case
+      mapKey
+    }
   }
 }
 

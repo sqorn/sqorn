@@ -1,25 +1,3 @@
-const lodashCamelCase = require('lodash.camelcase')
-const lodashSnakeCase = require('lodash.snakecase')
-
-const camelCaseCache = {}
-const camelCase = str =>
-  camelCaseCache[str] || (camelCaseCache[str] = lodashCamelCase(str))
-
-const snakeCaseCache = {}
-const snakeCase = str =>
-  snakeCaseCache[str] || (snakeCaseCache[str] = toSnakeCase(str))
-
-const toSnakeCase = str => {
-  // HACK: if user enters name with parentheses, return string as is
-  // TODO: intelligently handle snakecasing components
-  return str.indexOf('(') === -1
-    ? str
-        .split('.')
-        .map(s => lodashSnakeCase(s))
-        .join('.')
-    : str
-}
-
 const isTaggedTemplate = args => {
   // the first argument of a tagged template literal is an array
   // of strings with a property raw that is an array of strings
@@ -49,8 +27,6 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
 }
 
 module.exports = {
-  camelCase,
-  snakeCase,
   isTaggedTemplate,
   buildTaggedTemplate
 }

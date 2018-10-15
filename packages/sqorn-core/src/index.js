@@ -1,6 +1,8 @@
+const { camelCase, memoize } = require('sqorn-util')
+
 /** Returns a new Sqorn SQL query builder */
 module.exports = ({ adapter, dialect }) => (config = {}) => {
-  const { newContext, queries, methods } = dialect
+  const { newContext, queries, methods, properties } = dialect(config)
   const client = adapter(config)
   const reducers = createReducers(methods)
   const updateContext = applyReducers(reducers)
@@ -13,7 +15,7 @@ module.exports = ({ adapter, dialect }) => (config = {}) => {
     ...builderProperties({ chain, newContext, updateContext, queries }),
     ...(client && adapterProperties({ client, config })),
     ...methodProperties({ methods, chain }),
-    ...dialect.properties,
+    ...properties,
     ...(client && client.properties)
   })
   return chain()
@@ -79,38 +81,75 @@ const builderProperties = ({ chain, newContext, updateContext, queries }) => ({
   }
 })
 
-const adapterProperties = ({ client, config: { thenable = true } }) => ({
-  end: {
-    value: async function() {
-      return client.end()
-    }
-  },
-  one: {
-    value: async function(trx) {
-      const rows = await client.query(this.query, trx)
-      return rows[0]
-    }
-  },
-  all: {
-    value: async function(trx) {
-      return client.query(this.query, trx)
-    }
-  },
-  transaction: {
-    value: function(fn) {
-      return fn ? client.transactionCallback(fn) : client.transactionObject()
-    }
-  },
-  ...(thenable
-    ? {
-        then: {
-          value: function(resolve) {
-            resolve(this.all())
+const adapterProperties = ({
+  client,
+  config: { thenable = true, mapOutputKeys = camelCase }
+}) => {
+  const mapKey = memoize(mapOutputKeys)
+  return {
+    end: {
+      value: async function() {
+        return client.end()
+      }
+    },
+    one: {
+      value: async function(trx) {
+        const rows = await client.query(this.query, trx)
+        return mapRowKeys(rows, mapKey)[0]
+      }
+    },
+    all: {
+      value: async function(trx) {
+        const rows = await client.query(this.query, trx)
+        return mapRowKeys(rows, mapKey)
+      }
+    },
+    transaction: {
+      value: function(fn) {
+        return fn ? client.transactionCallback(fn) : client.transactionObject()
+      }
+    },
+    ...(thenable
+      ? {
+          then: {
+            value: function(resolve) {
+              resolve(this.all())
+            }
           }
         }
-      }
-    : {})
-})
+      : {})
+  }
+}
+
+const mapRowKeys = (rows, fn) =>
+  rows.length === 0
+    ? rows
+    : rows.length === 1
+      ? mapOneRowKeys(rows, fn)
+      : mapMultipleRowsKeys(rows, fn)
+
+const mapOneRowKeys = (rows, fn) => {
+  const [row] = rows
+  const out = {}
+  for (const key in row) {
+    out[fn(key)] = row[key]
+  }
+  return [out]
+}
+
+const mapMultipleRowsKeys = (rows, fn) => {
+  const mapping = {}
+  for (const key in rows[0]) {
+    mapping[key] = fn(key)
+  }
+  return rows.map(row => {
+    const mapped = {}
+    for (const key in mapping) {
+      mapped[mapping[key]] = row[key]
+    }
+    return mapped
+  })
+}
 
 /** Builds object containing a property for every query building method */
 const methodProperties = ({ methods, chain }) => {

@@ -463,10 +463,10 @@ sq.from`person`.return({ firstName: 'person.first_name' , age: 'person.age' }).q
 Expressions can be *manual* subqueries.
 
 ```js
-sq.return({ sum: sq.l`${2} + ${3}` }).query
+sq.return({ sum: sq.l`${2} + ${3}`, firstName: sq.l('Bob') }).query
 
-{ text: 'select $1 + $2 as sum',
-  args: [2, 3] }
+{ text: 'select $1 + $2 as sum, $3 as first_name',
+  args: [2, 3, 'Bob'] }
 ```
 
 #### Distinct
@@ -1256,24 +1256,25 @@ sq.with({ aB: sq.l`select cD`, e_f: sq.l`select g_h` })
   .from({ iJ3: 'kL', mN: [{ oP: 1, q_r: 1 }] })
   .where({ sT: 1, u_v: 1 })
   .return({ wX: 1, y_z: 1 })
-  .link('/n').query.text
+  .link('\n').query.text
 
 `with a_b as (select cD), e_f as (select g_h)
-select $1 as w_x, $2 as y_z,
+select $1 as w_x, $2 as y_z
 from kL as i_j_3, (values ($3, $4)) as m_n(o_p, q_r)
 where (s_t = $5 and u_v = $6)`
 ```
 
-String arguments, template string arguments, object values, and object keys containing parentheses are *not* converted.
+String arguments, template string arguments, and object values are not converted. By default, object keys containing parentheses are returned unmodified.
 
 ```js
 sq.with({ 'aB(cD, e_f)': sq.l`select 1, 2`})
   .from('gH')
   .from`jK`
-  .return({ lM: 'nO' })
+  .return({ lM: 'nO' }, 'pQ')
   .query
 
-{ text: 'with aB(cD, e_f) as (select 1, 2) select nO as l_m from gH, jK' }
+{ text: 'with aB(cD, e_f) as (select 1, 2) select nO as l_m, pQ from gH, jK',
+  args: [] }
 ```
 
 Customize how input object keys are mapped by setting `mapInputKeys` to a function that takes a key and returns its mapping.
@@ -1298,13 +1299,13 @@ const [first] = await sq.from`person`.return`id, first_name, lastName`.limit`1`
 const { id, firstName, lastName } = first
 ```
 
-Customize how input object keys are mapped by setting `mapOutputKeys` to a function that takes a key and returns its mapping.
+Customize how output object keys are mapped by setting `mapOutputKeys` to a function that takes a key and returns its mapping.
 
 ```js
 const sq = sqorn({ mapOutputKeys: key => key.toUpperCase() })
 
-const [first] = await sq.from`person`.return`id, first_name, lastName`.limit`1`
-const { ID, FIRSTNAME, LASTNAME } = first
+const [first] = await sq.from`person`.return`id, first_name, last_name`.limit`1`
+const { ID, FIRST_NAME, LAST_NAME } = first
 ```
 
 Mappings are computed once per key then cached.
