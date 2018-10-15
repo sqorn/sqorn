@@ -1,25 +1,3 @@
-const lodashCamelCase = require('lodash.camelcase')
-const lodashSnakeCase = require('lodash.snakecase')
-
-const camelCaseCache = {}
-const camelCase = str =>
-  camelCaseCache[str] || (camelCaseCache[str] = lodashCamelCase(str))
-
-const snakeCaseCache = {}
-const snakeCase = str =>
-  snakeCaseCache[str] || (snakeCaseCache[str] = toSnakeCase(str))
-
-const toSnakeCase = str => {
-  // HACK: if user enters name with parentheses, return string as is
-  // TODO: intelligently handle snakecasing components
-  return str.indexOf('(') === -1
-    ? str
-        .split('.')
-        .map(s => lodashSnakeCase(s))
-        .join('.')
-    : str
-}
-
 const isTaggedTemplate = args => {
   // the first argument of a tagged template literal is an array
   // of strings with a property raw that is an array of strings
@@ -37,9 +15,9 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
     if (prevString[lastCharIndex] === '$') {
       // raw arg
       txt += prevString.substr(0, lastCharIndex) + args[i]
-    } else if (arg && typeof arg.bld === 'function') {
+    } else if (typeof arg === 'function') {
       // sql builder arg
-      txt += prevString + arg.bld(ctx).text
+      txt += prevString + arg._build(ctx).text
     } else {
       // parameterized arg
       txt += prevString + ctx.parameter(ctx, arg)
@@ -49,8 +27,6 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
 }
 
 module.exports = {
-  camelCase,
-  snakeCase,
   isTaggedTemplate,
   buildTaggedTemplate
 }

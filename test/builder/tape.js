@@ -7,4 +7,4 @@ const query = ({ name, query, text, args = [] }) =>
     expect({ text: res.text, args: res.args }).toEqual({ text, args })
   })
 
-module.exports = { sq, query }
+module.exports = { sq, query, sqorn }

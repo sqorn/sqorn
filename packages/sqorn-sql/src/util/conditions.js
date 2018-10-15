@@ -1,8 +1,4 @@
-const {
-  isTaggedTemplate,
-  buildTaggedTemplate,
-  snakeCase
-} = require('./helpers')
+const { isTaggedTemplate, buildTaggedTemplate } = require('./helpers')
 
 const conditions = (ctx, calls) => {
   let txt = ''
@@ -33,7 +29,7 @@ const argsConditions = (ctx, args) => {
 
 const argCondition = (ctx, arg) => {
   if (typeof arg === 'object') return objectConditions(ctx, arg)
-  else if (typeof arg === 'function') return arg.bld(ctx).text
+  else if (typeof arg === 'function') return arg._build(ctx).text
   throw Error('unimplemented')
 }
 
@@ -51,12 +47,12 @@ const objectConditions = (ctx, obj) => {
 const buildCondition = (ctx, obj, key) => {
   const val = obj[key]
   if (typeof val === 'function') {
-    const subquery = val.bld(ctx)
+    const subquery = val._build(ctx)
     return subquery.type === 'arg'
-      ? `${snakeCase(key)} = ${subquery.text}`
+      ? `${ctx.mapKey(key)} = ${subquery.text}`
       : subquery.text
   }
-  return `${snakeCase(key)} = ${ctx.parameter(ctx, val)}`
+  return `${ctx.mapKey(key)} = ${ctx.parameter(ctx, val)}`
 }
 
 module.exports = { conditions }

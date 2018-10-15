@@ -22,7 +22,6 @@
     "literals"
   ],
   "dependencies": {
-    "lodash.camelcase": "^4.3.0",
-    "lodash.snakecase": "^4.1.1"
+    "sqorn-util": "^0.0.37"
   }
 }

@@ -1,4 +1,4 @@
-const { isTaggedTemplate, buildTaggedTemplate, snakeCase } = require('../util')
+const { isTaggedTemplate, buildTaggedTemplate } = require('../util')
 
 module.exports = ctx => {
   if (!ctx.set) return
@@ -38,8 +38,8 @@ const objectChange = (ctx, obj) => {
 const buildCondition = (ctx, obj, key) => {
   const val = obj[key]
   return (
-    snakeCase(key) +
+    ctx.mapKey(key) +
     ' = ' +
-    (typeof val === 'function' ? val.bld(ctx).text : ctx.parameter(ctx, val))
+    (typeof val === 'function' ? val._build(ctx).text : ctx.parameter(ctx, val))
   )
 }

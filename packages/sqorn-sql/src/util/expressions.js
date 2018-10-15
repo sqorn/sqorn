@@ -1,8 +1,4 @@
-const {
-  isTaggedTemplate,
-  buildTaggedTemplate,
-  snakeCase
-} = require('./helpers')
+const { isTaggedTemplate, buildTaggedTemplate } = require('./helpers')
 
 const expressions = (ctx, calls) => {
   let txt = ''
@@ -34,7 +30,7 @@ const expressionArg = (ctx, arg) => {
     case 'object':
       return objectTables(ctx, arg)
     case 'function':
-      return arg.bld(ctx).text
+      return arg._build(ctx).text
     default:
       throw Error('Invalid expression:', arg)
   }
@@ -54,9 +50,9 @@ const objectTables = (ctx, object) => {
 const expressionAsAlias = (ctx, alias, source) => {
   let txt = ''
   if (typeof source === 'string') txt += source
-  else if (typeof source === 'function') txt += source.bld(ctx).text
+  else if (typeof source === 'function') txt += source._build(ctx).text
   else txt += ctx.parameter(ctx, source)
-  return `${txt} as ${snakeCase(alias)}`
+  return `${txt} as ${ctx.mapKey(alias)}`
 }
 
 module.exports = { expressions }

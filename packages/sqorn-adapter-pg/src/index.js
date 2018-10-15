@@ -1,11 +1,6 @@
-const {
-  util: { camelCase }
-} = require('sqorn-sql')
-
 module.exports = ({ pg, pool }) => {
   if (!pool) return undefined
   if (!pg) throw Error('Sqorn missing argument "pg"')
-  monkeyPatchCamelCase(pg)
   return {
     end: () => pool.end(),
     query: async ({ text, args }, trx) => {
@@ -48,24 +43,6 @@ module.exports = ({ pg, pool }) => {
           }
         }
       }
-    }
-  }
-}
-
-const monkeyPatchCamelCase = pg => {
-  if (!pg.__monkeyPatchCamelCase) {
-    pg.__monkeyPatchCamelCase = true
-    try {
-      const { prototype } = pg.Query
-      const { handleRowDescription } = prototype
-      prototype.handleRowDescription = function(msg) {
-        for (const field of msg.fields) {
-          field.name = camelCase(field.name)
-        }
-        return handleRowDescription.call(this, msg)
-      }
-    } catch (error) {
-      throw Error('Failed to monkey patch pg camelCase results')
     }
   }
 }

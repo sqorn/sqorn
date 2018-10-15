@@ -1,4 +1,4 @@
-const { isTaggedTemplate, buildTaggedTemplate, snakeCase } = require('../util')
+const { isTaggedTemplate, buildTaggedTemplate } = require('../util')
 
 module.exports = ctx => {
   const { columns, values } = inserts(ctx)
@@ -49,7 +49,7 @@ const columnNamesFromObjects = ctx => {
       const arg = insert[j]
       insert[j] = normalized = {}
       for (const key in arg) {
-        const normalizedKey = snakeCase(key)
+        const normalizedKey = ctx.mapKey(key)
         columns[normalizedKey] = true
         normalized[normalizedKey] = arg[key]
       }
