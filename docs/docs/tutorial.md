@@ -1295,7 +1295,7 @@ Mappings are computed once per key then cached.
 By default, Sqorn converts output object keys to *camelCase*.
 
 ```js
-const [first] = await sq.from`person`.return`id, first_name, lastName`.limit`1`
+const [first] = await sq.from`person`.return`id, first_name, last_name`.limit`1`
 const { id, firstName, lastName } = first
 ```
 
