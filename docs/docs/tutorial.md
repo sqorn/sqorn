@@ -195,12 +195,13 @@ Sqorn transactions are *lazy*. They don't begin until the first query is execute
 
 A transaction is commited when the callback returns. A transaction is rolled back when an uncaught error is thrown within the callback.
 
-
 ```js
 // creates an account, returning a promise for the created user's id
 const createAccount = (email, password) => 
   sq.transaction(async trx => {
+    // trx.status === 'none'
     const { id } = await sq.l`insert into account(email) values (${email}) returning id`.one(trx) 
+    // trx.status === 'begin'
     await sq`insert into auth(account_id, password) values (${id}, ${password})`.all(trx)
     return id
   })
@@ -210,25 +211,33 @@ const createAccount = (email, password) =>
 
 If you need more flexibility, call `.transaction` without any arguments and it will return a transaction object `trx`.
 
-Pass `trx` to a query to add it to a transaction. To commit the transaction, run ` await trx.commit()`. To rollback the transaction, run `await trx.rollback()`. Every transaction MUST be committed or rolled back to prevent a resource leak. `trx.commit` and `trx.rollback` may be called more than once, but only the first call takes effect.
+Pass `trx` to a query to add it to a transaction. To commit the transaction, run ` await trx.commit()`. To rollback the transaction, run `await trx.rollback()`. Every transaction MUST be committed or rolled back to prevent a resource leak.
+
+`trx.status` contains the status of a transaction. Its value will be one of `'none'`, `'begin'`, `'commit'`, or `'rollback'`.
 
 ```js
 // creates an account, returning a promise for the created user's id
 const createAccount = async (email, password) =>  {
   const trx = sq.transaction() // never throws, always succeeds
+  // trx.status === 'none'
   try {
     const { id } = await sq.l`insert into account(email) values (${email}) returning id`.one(trx) 
+    // trx.status === 'begin'
     await sq`insert into authorization(account_id, password) values (${id}, ${password})`.all(trx)
     await trx.commit()
+    // trx.status === 'commit'
     return id
   } catch (error) {
     await trx.rollback()
+    // trx.status === 'rollback'
     throw error
   }
 }
 ```
 
-Sqorn transactions are *lazy*. `sq.transaction` always succeeds because it does not actually begin a transaction. Transactions begin when the first query is executed, and if no query is executed, no transaction is created. `trx.commit` and `trx.rollback` do nothing if no transaction was created.
+Sqorn transactions are *lazy*. `sq.transaction` always succeeds because it does not actually begin a transaction. Transactions begin when the first query is executed, and if no query is executed, no transaction is created.
+
+`trx.commit` and `trx.rollback` do nothing if no transaction was created. `trx.commit` and `trx.rollback` may be called more than once, but only the first call takes effect. Executing  a query using a transaction object that has been committed or rolled back will throw an error.
 
 ### Savepoints
 
