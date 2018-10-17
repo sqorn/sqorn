@@ -196,48 +196,100 @@ Sqorn transactions are *lazy*. They don't begin until the first query is execute
 A transaction is commited when the callback returns. A transaction is rolled back when an uncaught error is thrown within the callback.
 
 ```js
-// creates an account, returning a promise for the created user's id
-const createAccount = (email, password) => 
-  sq.transaction(async trx => {
-    // trx.status === 'none'
-    const { id } = await sq.l`insert into account(email) values (${email}) returning id`.one(trx) 
-    // trx.status === 'begin'
-    await sq`insert into auth(account_id, password) values (${id}, ${password})`.all(trx)
-    return id
-  })
+const id = await sq.transaction(async trx => {
+  // Executing 'begin;' is delayed until the first query
+  // trx.status === 'none'
+
+  // Query encountered:
+  // 1. begin;
+  // 2. insert into account(email) values ($1) returning id;
+  // 3. trx.status === 'begin'
+  const { id } = await sq.l`insert into account(email) values (${email}) returning id`.one(trx) 
+  await sq`insert into auth(account_id, password) values (${id}, ${password})`.all(trx)
+  return id
+})
+// 'commit;' issued after callback returns
 ```
 
 ### Object
 
-If you need more flexibility, call `.transaction` without any arguments and it will return a transaction object `trx`.
+If you need more flexibility, call `.transaction` without any arguments and it will return a transaction object `trx`. Pass `trx` to a query to add it to a transaction.
 
-Pass `trx` to a query to add it to a transaction. To commit the transaction, run ` await trx.commit()`. To rollback the transaction, run `await trx.rollback()`. Every transaction MUST be committed or rolled back to prevent a resource leak.
+Call `trx.commit` or `trx.rollback` to mark a transaction for commit or rollback. Once marked, using `trx` will throw an error.
 
-`trx.status` contains the status of a transaction. Its value will be one of `'none'`, `'begin'`, `'commit'`, or `'rollback'`.
+**Always** run `await trx.end()`. It issues either a `commit` or a `rollback` query and releases the transaction resources. If neither `trx.commit` nor `trx.rollback` was called, `commit` will be issued.
 
 ```js
 // creates an account, returning a promise for the created user's id
 const createAccount = async (email, password) =>  {
   const trx = sq.transaction() // never throws, always succeeds
-  // trx.status === 'none'
   try {
     const { id } = await sq.l`insert into account(email) values (${email}) returning id`.one(trx) 
-    // trx.status === 'begin'
-    await sq`insert into authorization(account_id, password) values (${id}, ${password})`.all(trx)
-    await trx.commit()
-    // trx.status === 'commit'
+    await sq`insert into auth(account_id, password) values (${id}, ${password})`.all(trx)
+    trx.commit() // trx.commit() is optional here
     return id
   } catch (error) {
-    await trx.rollback()
-    // trx.status === 'rollback'
+    trx.rollback() // trx.rollback() is optional here
     throw error
+  } finally {
+    await trx.end()
   }
 }
 ```
 
-Sqorn transactions are *lazy*. `sq.transaction` always succeeds because it does not actually begin a transaction. Transactions begin when the first query is executed, and if no query is executed, no transaction is created.
+You can check the status of a transaction using `trx.status`. It will be one of the following:
 
-`trx.commit` and `trx.rollback` do nothing if no transaction was created. `trx.commit` and `trx.rollback` may be called more than once, but only the first call takes effect. Executing  a query using a transaction object that has been committed or rolled back will throw an error.
+* `'none'` - initialial state
+* `'begin'` - at least one successful query
+* `'error'` - a query threw an error
+* `'commit'` - the previous status was 
+* `'rollback'`
+* `'end'`
+
+| status   | query success  | query failure  | commit()       | rollback()     | end()          |
+|----------|----------------|----------------|----------------|----------------|----------------|
+| none     | begin          | error / throws | commit         | rollback       | end            |
+| begin    | begin          | error          | commit         | rollback       | end            |
+| error    | error          | error          | error          | error          | end            |
+| commit   | error          | error          | error          | error          | end            |
+| rollback | error          | error          | error          | error          | end            |
+| end      | error / throws | error / throws | error / throws | error / throws | error / throws |
+
+Sqorn transactions are *lazy*. `sq.transaction`, `sq.commit` and `sq.rollback` are synchronous and always succeed because none issues queries or acquires resources. Instead they create or modify the internal state of `trx`. Resource acquisition and transaction execution is delayed until a query is encountered.
+
+```js
+const trx = sq.transaction()
+// trx.status === 'none'
+
+try {
+  // Query Encountered:
+  // 1. begin;
+  // 2. insert into account(email) values ($1) returning id;
+  const { id } = await sq.l`insert into account(email) values (${email}) returning id`.one(trx) 
+  // trx.status === 'begin';
+  
+  // Query Encountered:
+  // 1. insert into auth(account_id, password) values ($1, $2);
+  await sq`insert into auth(account_id, password) values (${id}, ${password})`.all(trx)
+
+  trx.commit()
+  // trx.status === 'commit'
+
+  return id
+} catch (error) {
+
+  trx.rollback()
+  // trx.status === 'rollback'
+
+  throw error
+} finally {
+
+  // 1. commit; or rollback; based on trx status
+  await trx.end()
+  // trx.status === 'end'
+
+}
+```
 
 ### Savepoints
 
@@ -255,6 +307,7 @@ await sq.transaction(async trx => {
     await query(4).all(trx)
   })
   await trx.transaction(query(5).all)
+  await query(6).all(trx)
 })
 ```
 
@@ -263,16 +316,17 @@ It generates the following SQL if all queries are successful.
 ```sql
 begin;
   insert into t(n) values (1);
-  savepoint sqorn_sp_1;
+  savepoint sp1;
     insert into t(n) values (2);
-    savepoint sqorn_sp_2;
+    savepoint sp2;
       insert into t(n) values (3);
-    release savepoint sqorn_sp_2;
+    release savepoint sp2;
     insert into t(n) values (4);
-  release savepoint sqorn_sp_1;
-  savepoint sqorn_sp_3;
+  release savepoint sp1;
+  savepoint sp3;
     insert into t(n) values (5);
-  release savepoint sqorn_sp_3;
+  release savepoint sp3;
+  insert into t(n) values (6);
 commit;
 ```
 
@@ -299,14 +353,16 @@ The generated SQL shows query 1 is executed, query 2 is rolled back, and query 3
 ```sql
 begin;
   insert into t(n) values (1);
-  savepoint sqorn_sp_1;
+  savepoint sp1;
     insert into t(n) values (2);
-  rollback to savepoint sqorn_sp_1;
-  insert into t(n) values (5);
+  rollback to savepoint sp1;
+  insert into t(n) values (3);
 commit;
 ```
 
-Like transactions, savepoints are lazy. No transaction or savepoint will be created unless a SQL statement in their scope or a nested scope is executed.
+Like transactions, savepoints are lazy. No transaction or savepoint is created until a query in its scope or one of its nested scopes is executed.
+
+Similarly, no savepoint is released until its scope has ended and another query is executed or an error is thrown.
 
 ```js
 await sq.transaction(async trx => {
@@ -319,28 +375,66 @@ await sq.transaction(async trx => {
   await trx.transaction(async trx => {
     await trx.transaction(async trx => {
       // Query encountered:
-      // 1. begin transaction
-      // 2. create outer savepoint
-      // 3. create inner savepoint
-      // 4. execute query
+      // 1. begin;
+      // 2. savepoint sp1;
+      // 3. savepoint sp2;
+      // 4. insert into t(n) values (1);
       await sq.l`insert into t(n) values (1)`.all(trx)
     })
   })
+
+  // Query encountered:
+  // 1. release savepoint sp2;
+  // 2. release savepoint sp1;
+  // 3. insert into t(n) values (2);
+  await sq.l`insert into t(n) values (2)`.all(trx)
+
+  // End of transaction:
+  // commit;
 })
 ```
 
-Like `sq.transaction`, `trx.transaction` can be called without arguments to return a transaction object. Every savepoint must be committed or rolled back, savepoints can be nested, and the usual laziness behavior applies.
+Releasing and rolling back savepoints is also lazy.
+
+```js
+await sq.transaction(async trx => {
+  try {
+    await trx.transaction(async trx => {
+      await trx.transaction(async trx => {
+        // Query encountered:
+        // begin;
+        // 1. savepoint sp1;
+        // 2. savepoint sp2;
+        // 3. insert into t(n) values (1);
+        await sq.l`insert into t(n) values (1)`.all(trx)
+      })
+      // Query encountered:
+      // 1. release savepoint sp2;
+      // 2. insert into t(n) values (2);
+      await sq.l`insert into t(n) values (2)`.all(trx)
+      throw Error('oops')
+    })
+    // Outer trx.transaction catches error:
+    // 1. rollback to savepoint sp1;
+    // 2. rethrows error
+  } catch (error) { // handle error }
+})
+```
+
+Object savepoints work just like object transaction. Create them with `trx.transaction()`. `trx.commit` and `trx.rollback` mark a savepoint for release or rollback. `trx.status` work as usual. `trx.end()` has no effect but is included for composability.
+
+Once 
 
 ```js
   const trx = sq.transaction()
-  const trx1 = trx.transaction()
-  await sq.l`insert into t(n) values (1)`.all(trx1) // begins transaction and savepoint
-  const trx2 = trx.transaction()
-  await sq.l`insert into t(n) values (2)`.all(trx2)
-  await trx2.rollback()
-  await trx1.commit()
+  const sp1 = trx.transaction()
+  await sq.l`insert into t(n) values (1)`.all(sp1)
+  const sp2 = trx.transaction()
+  await sq.l`insert into t(n) values (2)`.all(sp2)
+  sp2.rollback()
+  sp1.commit()
   await sq.l`insert into t(n) values (3)`.all(trx)
-  await trx.commit()
+  await trx.end()
 })
 ```
 
@@ -348,12 +442,45 @@ The following SQL is generated:
 
 ```sql
 begin;
-  savepoint sqorn_sp_1;
+  savepoint sp1;
     insert into t(n) values (1);
-    savepoint sqorn_sp_2:
+    savepoint sp2:
       insert into t(n) values (2);
-    rollback to savepoint sqorn_sp_2;
-  release savepoint sqorn_sp_1;
+    rollback to savepoint sp2;
+  release savepoint sp1;
+  insert into t(n) values (3);
+commit;
+```
+
+Concurrent savepoints are executed serially. Descendent savepoints are executed before sibling savepoints.
+
+```js
+await sq.transaction(async trx => {
+  await Promise.all([
+    trx.transaction(sq.l`insert into t values (1))`.all),
+    sq.l`insert into t values (2))`.all(trx),
+    trx.transaction(async trx => {
+      await sq.l`insert into t values (3))`.all(trx)
+      await sq.l`insert into t values (4))`.all(trx)
+    }),
+    sq.l`insert into t values (5))`.all(trx),
+    async () => {
+      const trx = trx.transaction()
+      await sq.l`insert into t values (6))`.all(trx),
+      trx.commit()
+    },
+  ])
+})
+```
+
+```sql
+begin;
+  savepoint sp1;
+    insert into t(n) values (1);
+    savepoint sp2:
+      insert into t(n) values (2);
+    rollback to savepoint sp2;
+  release savepoint sp1;
   insert into t(n) values (3);
 commit;
 ```
