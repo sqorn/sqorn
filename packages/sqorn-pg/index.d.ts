@@ -1,5 +1,8 @@
 declare namespace sqorn {
 
+  type Row = { [column: string]: any }
+  type Query = { text: string, args: any[] }
+
   interface Transaction {
 
     /**
@@ -15,70 +18,12 @@ declare namespace sqorn {
     rollback(): Promise<void>
   }
 
-  /**
-   * sqorn query builder
-   */
-  interface sq extends Promise<{ [column: string]: any }[]> {
-
-    /**
-     * EXPRESS query builder - shorthand query syntax
-     * 
-     * First call is `.from`. Second call is `.where`. Third call is `.return`.
-     * Subsequent calls ignore.
-     * 
-     * @example
-     * sq`book`
-     * // select * from book
-     * sq`book``pages > 7`
-     * // select * from book where pages > 7
-     * sq`book``pages > 7``title`
-     * // select title from book where pages > 7
-     * sq`book`({ pages: 70  })
-     * // select * from book where pages = 70
-     * sq`book`()`title`
-     * // select title from book
-     */
-    (strings: TemplateStringsArray, ...args: any[]): sq
-
-    /**
-     * EXPRESS query builder - shorthand query syntax
-     * 
-     * First call is `.from`. Second call is `.where`. Third call is `.return`.
-     * Subsequent calls ignore.
-     * 
-     * @example
-     * sq('book')
-     * // select * from book
-     * sq('book')({ pages: 7 })
-     * // select * from book where pages = 7
-     * sq('book')({ pages: 7 })('title')
-     * // select title from book where pages = 7
-     * sq`book`({ pages: 70  })
-     * // select * from book where pages = 70
-     * sq`book`()`title`
-     * // select title from book
-     */
-    (...args: any[]): sq
-
+  interface Executor extends Promise<Row[]> {
     /**
      * Closes database connection
      */
     end(): Promise<void>
-
-    /**
-     * Compiles the query builder state to return the equivalent parameterized query
-     * 
-     * @returns {{ text: string, args: any[] }} parameterized query text and arguments
-     * 
-     * @example
-     * sq`book`({ id: 7 })`title`.query
-     * { text: 'select title from book where id = $1', args: [7] }
-     * 
-     * sq`book`.delete({ id: 7 })`title`.query
-     * { text: 'delete from book where id = $1 returning title', args: [7] }
-     */
-    readonly query: { text: string, args: any[] }
-
+   
     /**
      * Executes query and returns a Promise for all result rows
      * 
@@ -93,7 +38,7 @@ declare namespace sqorn {
      * const trx = await sq.transaction()
      * await sq`person`.insert({ name: 'Jo' }).all(trx)
      */
-    all(trx?: Transaction): Promise<{ [column: string]: any }[]>
+    all(trx?: Transaction): Promise<Row[]>
 
     /**
      * Executes query and returns a Promise for first result row
@@ -112,7 +57,7 @@ declare namespace sqorn {
      *  return id
      * })
      */
-    one(trx?: Transaction): Promise<{ [column: string]: any } | void>
+    one(trx?: Transaction): Promise<Row | void>
 
     /**
      * Creates a transaction
@@ -155,7 +100,9 @@ declare namespace sqorn {
      * }
      */
     transaction(): Promise<Transaction>
+  }
 
+  interface ManualQuery {
     /**
      * Raw SQL - build raw SQL query
      * 
@@ -198,6 +145,47 @@ declare namespace sqorn {
      * // select * from person where age = 8
      */
     l(sql: string): sq
+  }
+
+  interface SharedQuery {    /**
+    * EXPRESS query builder - shorthand query syntax
+    * 
+    * First call is `.from`. Second call is `.where`. Third call is `.return`.
+    * Subsequent calls ignore.
+    * 
+    * @example
+    * sq`book`
+    * // select * from book
+    * sq`book``pages > 7`
+    * // select * from book where pages > 7
+    * sq`book``pages > 7``title`
+    * // select title from book where pages > 7
+    * sq`book`({ pages: 70  })
+    * // select * from book where pages = 70
+    * sq`book`()`title`
+    * // select title from book
+    */
+   (strings: TemplateStringsArray, ...args: any[]): sq
+
+   /**
+    * EXPRESS query builder - shorthand query syntax
+    * 
+    * First call is `.from`. Second call is `.where`. Third call is `.return`.
+    * Subsequent calls ignore.
+    * 
+    * @example
+    * sq('book')
+    * // select * from book
+    * sq('book')({ pages: 7 })
+    * // select * from book where pages = 7
+    * sq('book')({ pages: 7 })('title')
+    * // select title from book where pages = 7
+    * sq`book`({ pages: 70  })
+    * // select * from book where pages = 70
+    * sq`book`()`title`
+    * // select title from book
+    */
+   (...args: any[]): sq
 
     /**
      * WITH clause
@@ -206,7 +194,7 @@ declare namespace sqorn {
      */
     with(strings: TemplateStringsArray, ...args: any[]): sq
 
-    /**
+       /**
      * FROM clause - specify query table
      * 
      * Accepts table as template string
@@ -247,7 +235,7 @@ declare namespace sqorn {
      */
     from(...tables: string[]): sq
 
-    /**
+        /**
      * WHERE clause - specify query filters
      * 
      * Accepts WHERE conditions as template string. Multiple calls to `.where`
@@ -329,7 +317,9 @@ declare namespace sqorn {
      * // select id, age from person where age > 7
      */
     return(...columns: string[]): sq
+  }
 
+  interface SelectQuery {
     /**
      * GROUP BY clause
      * 
@@ -364,7 +354,9 @@ declare namespace sqorn {
      * TODO
      */
     offset(strings: TemplateStringsArray, ...args: any[]): sq
+  }
 
+  interface InsertQuery {
     /**
      * INSERT column - specify columns to insert using tagged template literal
      * 
@@ -445,28 +437,25 @@ declare namespace sqorn {
      * // insert into person (age) values (23), (40) returning id
      */
     value(...args: any[]): sq
+  }
 
-    /**
-     * SET clause
-     * 
-     * TODO
-     */
-    set(strings: TemplateStringsArray, ...args: any[]): sq
+  interface UpdateQuery {
+   /**
+    * SET clause
+    * 
+    * TODO
+    */
+   set(strings: TemplateStringsArray, ...args: any[]): sq
 
-    /**
-     * SET clause
-     * 
-     * TODO
-     */
-    set(value: { [column: string]: any }): sq
+   /**
+    * SET clause
+    * 
+    * TODO
+    */
+   set(value: { [column: string]: any }): sq
+  }
 
-    /**
-     * Extend existing queries
-     * 
-     * TODO
-     */
-    extend(...builders: sq[]): sq
-
+  interface DeleteQuery {
     /**
      * DELETE - marks the query as a delete query
      * 
@@ -479,17 +468,98 @@ declare namespace sqorn {
      * // delete from person where age < 7 returning id
      */
     readonly delete: sq
+  }
 
-    // TODO: Typescript Promise/Thenable interface
+  /**
+   * sqorn query builder
+   */
+  interface sq extends Executor, ManualQuery, SharedQuery, SelectQuery, InsertQuery, UpdateQuery, DeleteQuery {
+
+    /**
+     * Compiles the query builder state to return the equivalent parameterized query
+     * 
+     * @example
+     * sq`book`({ id: 7 })`title`.query
+     * { text: 'select title from book where id = $1', args: [7] }
+     * 
+     * sq`book`.delete({ id: 7 })`title`.query
+     * { text: 'delete from book where id = $1 returning title', args: [7] }
+     */
+    readonly query: Query
+
+
+    /**
+     * Extend existing queries
+     * 
+     * TODO
+     */
+    extend(...builders: sq[]): sq
+
+  }
+  interface Config {
+    /**
+     * pg module - See [Node Postgres](https://node-postgres.com).
+     * This argument is required to execute queries,
+     * but can be skipped if you only want to build queries.
+     * 
+     * @example
+     * const pg = require('pg')
+     * const sqorn = require('sqorn-pg')
+     * const pool = new pg.Pool()
+     * const sq = sqorn({ pg, pool })
+     */
+    pg?: any
+    /**
+     * pg.Pool instance - See [Node Posgres](https://node-postgres.com/features/connecting).
+     * This argument is required to execute queries,
+     * but can be skipped if you only want to build queries.
+     * If provided, you MUST also provide argument `pg`.
+     * 
+     * @example
+     * const pg = require('pg')
+     * const sqorn = require('sqorn-pg')
+     * const pool = new pg.Pool()
+     * const sq = sqorn({ pg, pool })
+     */
+    pool?: any
+    /**
+     * Function that maps input object keys.
+     * If unspecified, the default mapping function converts keys to `snake_case`.
+     * 
+     * @example
+     * const sq = sqorn({ mapInputKeys: key => key.toUpperCase() })
+     * 
+     * sq.from({ p: 'person' }).return({ name: 'first_name' }).query
+     * 
+     * { text: 'select first_name as NAME from person as P',
+     *   args: [] }
+     * */
+    mapInputKeys?: (key: string) => string
+    /**
+     * Function that maps output object keys.
+     * If unspecified, the default mapping function converts keys to `camelCase`.
+     * 
+     * @example
+     * const sq = sqorn({ mapOutputKeys: key => key.toUpperCase() })
+     * 
+     * await sq.from('person').return('first_name')
+     * 
+     * [{ FIRST_NAME: 'Jo'}, { FIRST_NAME: 'Mo' }]
+     * */
+    mapOutputKeys?: (key: string) => string
   }
 }
+
 
 /**
  * Creates and returns a query builder with the given configuration
  * 
- * @param [config.pg] - pg module
- * @param [config.pool] - pg.Pool instance
+ * @example
+ * const pg = require('pg')
+ * const sqorn = require('sqorn-pg')
+ * const pool = new pg.Pool()
+ * const sq = sqorn({ pg, pool })
  */
-declare function sqorn({ pg, pool }: { pg: any, pool: any }): sqorn.sq
+declare function sqorn(config: sqorn.Config): sqorn.sq
 
 export = sqorn
