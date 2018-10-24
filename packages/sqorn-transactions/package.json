@@ -1,0 +1,14 @@
+{
+  "name": "sqorn-transactions",
+  "version": "0.0.38",
+  "description": "A library for lazy SQL transactions and savepoints",
+  "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "main": "./src/index.js",
+  "repository": "https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-transactions",
+  "homepage": "https://sqorn.org",
+  "dependencies": {}
+}

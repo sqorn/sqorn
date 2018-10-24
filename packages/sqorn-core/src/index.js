@@ -82,43 +82,34 @@ const builderProperties = ({ chain, newContext, updateContext, queries }) => ({
 })
 
 const adapterProperties = ({
-  client,
+  client: { query, end, transaction },
   config: { thenable = true, mapOutputKeys = camelCase }
 }) => {
   const mapKey = memoize(mapOutputKeys)
-  return {
-    end: {
-      value: async function() {
-        return client.end()
-      }
-    },
+  const properties = {
+    end: { value: end },
     one: {
       value: async function(trx) {
-        const rows = await client.query(this.query, trx)
+        const rows = await query(this.query, trx)
         return mapRowKeys(rows, mapKey)[0]
       }
     },
     all: {
       value: async function(trx) {
-        const rows = await client.query(this.query, trx)
+        const rows = await query(this.query, trx)
         return mapRowKeys(rows, mapKey)
       }
     },
-    transaction: {
-      value: function(fn) {
-        return fn ? client.transactionCallback(fn) : client.transactionObject()
-      }
-    },
-    ...(thenable
-      ? {
-          then: {
-            value: function(resolve) {
-              resolve(this.all())
-            }
-          }
-        }
-      : {})
+    transaction: { value: transaction }
   }
+  if (thenable) {
+    properties.then = {
+      value: function(resolve) {
+        resolve(this.all())
+      }
+    }
+  }
+  return properties
 }
 
 const mapRowKeys = (rows, fn) =>
