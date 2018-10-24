@@ -1,4 +1,4 @@
-declare module 'sqorn' {
+declare namespace sqorn {
 
   interface Transaction {
 
@@ -18,7 +18,7 @@ declare module 'sqorn' {
   /**
    * sqorn query builder
    */
-  interface sq {
+  interface sq extends Promise<{ [column: string]: any }[]> {
 
     /**
      * EXPRESS query builder - shorthand query syntax
@@ -226,6 +226,17 @@ declare module 'sqorn' {
     /**
      * FROM clause - specify query table
      * 
+     * Accepts subquery
+     * 
+     * @example
+     * sq.from(sq.l`unnest(array[1, 2, 3])`)
+     * // select * from unnest(array[1, 2, 3])
+     */
+    from(builder: sq): sq
+
+    /**
+     * FROM clause - specify query table
+     * 
      * Accepts array of tables names
      * 
      * @example
@@ -403,7 +414,7 @@ declare module 'sqorn' {
      * sq`person`()`id`.insert({ firstName: 'Bob' }
      * // insert into person (first_name) values ('Bob') returning id
      */
-    insert(...values: { [string]: any }[]): sq
+    insert(...values: { [column: string]: any }[]): sq
 
     /**
      * VALUE - specify values to insert as tagged template literals
@@ -443,6 +454,13 @@ declare module 'sqorn' {
     set(strings: TemplateStringsArray, ...args: any[]): sq
 
     /**
+     * SET clause
+     * 
+     * TODO
+     */
+    set(value: { [column: string]: any }): sq
+
+    /**
      * Extend existing queries
      * 
      * TODO
@@ -464,18 +482,14 @@ declare module 'sqorn' {
 
     // TODO: Typescript Promise/Thenable interface
   }
-
-  /**
-   * Creates and returns a query builder with the given configuration
-   * 
-   * @param [config.client] - sqorn client library (sqorn-pg)
-   * @param [config.connection] - connection configuration
-   */
-  function sqorn({
-    client: any,
-    connection: any
-  }): sq
-
-  export = sqorn
 }
 
+/**
+ * Creates and returns a query builder with the given configuration
+ * 
+ * @param [config.pg] - pg module
+ * @param [config.pool] - pg.Pool instance
+ */
+declare function sqorn({ pg, pool }: { pg: any, pool: any }): sqorn.sq
+
+export = sqorn
