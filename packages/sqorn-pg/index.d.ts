@@ -1,10 +1,10 @@
 declare namespace sqorn {
 
   type Row = { [column: string]: any }
-  type Query = { text: string, args: any[] }
+  type ParameterizedQuery = { text: string, args: any[] }
+  type Expression = string | Buildable
 
   interface Transaction {
-
     /**
      * Commits the transaction
      * 
@@ -18,46 +18,20 @@ declare namespace sqorn {
     rollback(): Promise<void>
   }
 
-  interface Executor extends Promise<Row[]> {
+  interface Extendable<BuilderType> {
+    /**
+     * Extend existing queries
+     * 
+     * TODO
+     */
+    extend(...builders: Partial<BuilderType>[]): BuilderType
+  }
+
+  interface Util {
     /**
      * Closes database connection
      */
     end(): Promise<void>
-   
-    /**
-     * Executes query and returns a Promise for all result rows
-     * 
-     * To execute the query in the context of a transaction, pass
-     * the transaction object `trx` as an argument.
-     * 
-     * @example
-     * const children = await sq`person`.all()
-     * // .all() is optional
-     * const children = await sq`person`
-     * // unless the query is part of a transaction
-     * const trx = await sq.transaction()
-     * await sq`person`.insert({ name: 'Jo' }).all(trx)
-     */
-    all(trx?: Transaction): Promise<Row[]>
-
-    /**
-     * Executes query and returns a Promise for first result row
-     * 
-     * If there are no result rows, the Promise resolves to `undefined`.
-     * Like `.all`, execute the query within a transaction by
-     * passing the transaction object `trx`.
-     * 
-     * @example
-     * const bob = await sq`person`.where`name = 'Bob'`.return`id`.one()
-     * if (bob) console.log(bob.id)
-     * // transaction example
-     * const id = await sq.transaction(async trx => {
-     * 	const { id } = await Account.insert({ username: 'jo' }).one(trx)
-     * 	await Auth.insert({ accountId: id, password: 'secret' }).all(trx)
-     *  return id
-     * })
-     */
-    one(trx?: Transaction): Promise<Row | void>
 
     /**
      * Creates a transaction
@@ -102,7 +76,58 @@ declare namespace sqorn {
     transaction(): Promise<Transaction>
   }
 
-  interface ManualQuery {
+  interface Buildable extends Promise<Row[]> {
+    /**
+     * Compiles the query builder state to return the equivalent parameterized query
+     * 
+     * @example
+     * sq`book`({ id: 7 })`title`.query
+     * { text: 'select title from book where id = $1', args: [7] }
+     * 
+     * sq`book`.delete({ id: 7 })`title`.query
+     * { text: 'delete from book where id = $1 returning title', args: [7] }
+     */
+    readonly query: ParameterizedQuery
+  }
+
+  interface Executable extends Buildable {
+    /**
+     * Executes query and returns a Promise for all result rows
+     * 
+     * To execute the query in the context of a transaction, pass
+     * the transaction object `trx` as an argument.
+     * 
+     * @example
+     * const children = await sq`person`.all()
+     * // .all() is optional
+     * const children = await sq`person`
+     * // unless the query is part of a transaction
+     * const trx = await sq.transaction()
+     * await sq`person`.insert({ name: 'Jo' }).all(trx)
+     */
+    all(trx?: Transaction): Promise<Row[]>
+
+    /**
+     * Buildables query and returns a Promise for first result row
+     * 
+     * If there are no result rows, the Promise resolves to `undefined`.
+     * Like `.all`, execute the query within a transaction by
+     * passing the transaction object `trx`.
+     * 
+     * @example
+     * const bob = await sq`person`.where`name = 'Bob'`.return`id`.one()
+     * if (bob) console.log(bob.id)
+     * // transaction example
+     * const id = await sq.transaction(async trx => {
+     * 	const { id } = await Account.insert({ username: 'jo' }).one(trx)
+     * 	await Auth.insert({ accountId: id, password: 'secret' }).all(trx)
+     *  return id
+     * })
+     */
+    one(trx?: Transaction): Promise<Row | void>
+  }
+
+  interface Manual {
     /**
      * Raw SQL - build raw SQL query
      * 
@@ -126,7 +151,7 @@ declare namespace sqorn {
      * // select now() today, (select now() + '1 day') tomorrow
      * 
      */
-    l(strings: TemplateStringsArray, ...args: any[]): sq
+    l(strings: TemplateStringsArray, ...args: any[]): ManualBuilder
 
     /**
      * Raw SQL - build raw SQL query
@@ -144,57 +169,131 @@ declare namespace sqorn {
      * sq.l('select * from person').l`where age = ${8}`
      * // select * from person where age = 8
      */
-    l(sql: string): sq
+    l(sql: string): ManualBuilder
   }
 
-  interface SharedQuery {    /**
-    * EXPRESS query builder - shorthand query syntax
-    * 
-    * First call is `.from`. Second call is `.where`. Third call is `.return`.
-    * Subsequent calls ignore.
-    * 
-    * @example
-    * sq`book`
-    * // select * from book
-    * sq`book``pages > 7`
-    * // select * from book where pages > 7
-    * sq`book``pages > 7``title`
-    * // select title from book where pages > 7
-    * sq`book`({ pages: 70  })
-    * // select * from book where pages = 70
-    * sq`book`()`title`
-    * // select title from book
-    */
-   (strings: TemplateStringsArray, ...args: any[]): sq
-
-   /**
-    * EXPRESS query builder - shorthand query syntax
-    * 
-    * First call is `.from`. Second call is `.where`. Third call is `.return`.
-    * Subsequent calls ignore.
-    * 
-    * @example
-    * sq('book')
-    * // select * from book
-    * sq('book')({ pages: 7 })
-    * // select * from book where pages = 7
-    * sq('book')({ pages: 7 })('title')
-    * // select title from book where pages = 7
-    * sq`book`({ pages: 70  })
-    * // select * from book where pages = 70
-    * sq`book`()`title`
-    * // select title from book
-    */
-   (...args: any[]): sq
+  interface ExpressFrom<BuilderType> {
 
     /**
-     * WITH clause
+     * Express From
      * 
-     * TODO
+     * @example
+     * sq`book`
+     * // select * from book
+     * sq`book``pages > 7`
+     * // select * from book where pages > 7
+     * sq`book``pages > 7``title`
+     * // select title from book where pages > 7
+     * sq`book`({ pages: 70  })
+     * // select * from book where pages = 70
+     * sq`book`()`title`
+     * // select title from book
      */
-    with(strings: TemplateStringsArray, ...args: any[]): sq
+    (strings: TemplateStringsArray, ...args: any[]): BuilderType
 
-       /**
+    /**
+     * Express From
+     * 
+     * @example
+     * sq('book')
+     * // select * from book
+     * sq('book')({ pages: 7 })
+     * // select * from book where pages = 7
+     * sq('book')({ pages: 7 })('title')
+     * // select title from book where pages = 7
+     * sq`book`({ pages: 70  })
+     * // select * from book where pages = 70
+     * sq`book`()`title`
+     * // select title from book
+     */
+    (...args: any[]): BuilderType
+  }
+
+  interface ExpressWhere<BuilderType> {
+
+    /**
+     * Express Where
+     * 
+     * @example
+     * sq`book`
+     * // select * from book
+     * sq`book``pages > 7`
+     * // select * from book where pages > 7
+     * sq`book``pages > 7``title`
+     * // select title from book where pages > 7
+     * sq`book`({ pages: 70  })
+     * // select * from book where pages = 70
+     * sq`book`()`title`
+     * // select title from book
+     */
+    (strings: TemplateStringsArray, ...args: any[]): BuilderType
+
+    /**
+     * EXPRESS Where
+     * 
+     * @example
+     * sq('book')
+     * // select * from book
+     * sq('book')({ pages: 7 })
+     * // select * from book where pages = 7
+     * sq('book')({ pages: 7 })('title')
+     * // select title from book where pages = 7
+     * sq`book`({ pages: 70  })
+     * // select * from book where pages = 70
+     * sq`book`()`title`
+     * // select title from book
+     */
+    (...args: any[]): BuilderType
+  }
+
+  interface ExpressReturn<BuilderType> {
+
+    /**
+     * Express Return
+     * 
+     * @example
+     * sq`book`
+     * // select * from book
+     * sq`book``pages > 7`
+     * // select * from book where pages > 7
+     * sq`book``pages > 7``title`
+     * // select title from book where pages > 7
+     * sq`book`({ pages: 70  })
+     * // select * from book where pages = 70
+     * sq`book`()`title`
+     * // select title from book
+     */
+    (strings: TemplateStringsArray, ...args: any[]): BuilderType
+
+    /**
+     * ExpressReturn
+     * 
+     * @example
+     * sq('book')
+     * // select * from book
+     * sq('book')({ pages: 7 })
+     * // select * from book where pages = 7
+     * sq('book')({ pages: 7 })('title')
+     * // select title from book where pages = 7
+     * sq`book`({ pages: 70  })
+     * // select * from book where pages = 70
+     * sq`book`()`title`
+     * // select title from book
+     */
+    (...args: any[]): BuilderType
+  }
+
+  interface With<BuilderType> {
+   /**
+    * WITH clause
+    * 
+    * TODO
+    */
+   with(strings: TemplateStringsArray, ...args: any[]): BuilderType
+  }
+
+  interface From<BuilderType> {
+    /**
      * FROM clause - specify query table
      * 
      * Accepts table as template string
@@ -209,7 +308,7 @@ declare namespace sqorn {
      * sq`book`
      * // select * from book
      */
-    from(strings: TemplateStringsArray, ...args: any[]): sq
+    from(strings: TemplateStringsArray, ...args: any[]): BuilderType
 
     /**
      * FROM clause - specify query table
@@ -220,7 +319,7 @@ declare namespace sqorn {
      * sq.from(sq.l`unnest(array[1, 2, 3])`)
      * // select * from unnest(array[1, 2, 3])
      */
-    from(builder: sq): sq
+    from(builder: Expression): BuilderType
 
     /**
      * FROM clause - specify query table
@@ -233,9 +332,11 @@ declare namespace sqorn {
      * sq.from('book', 'author', 'vote')
      * // select * from book, author, vote
      */
-    from(...tables: string[]): sq
+    from(...tables: string[]): BuilderType
+  }
 
-        /**
+  interface Where<BuilderType> {
+    /**
      * WHERE clause - specify query filters
      * 
      * Accepts WHERE conditions as template string. Multiple calls to `.where`
@@ -253,7 +354,7 @@ declare namespace sqorn {
      * sq`person``age < ${18}`
      * // select * from person where age < 18
      */
-    where(strings: TemplateStringsArray, ...args: any[]): sq
+    where(strings: TemplateStringsArray, ...args: any[]): BuilderType
 
     /**
      * WHERE clause - specify query filters
@@ -274,8 +375,10 @@ declare namespace sqorn {
      * sq.from`person`.where({ age: 7 }).where({ name: 'Joe' })
      * // select * from person where age = 7 and name = 'Joe'
      */
-    where(...conditions: { [column: string]: any }[]): sq
+    where(...conditions: { [column: string]: any }[]): BuilderType
+  }
 
+  interface Return<BuilderType> {
     /**
      * SELECT or RETURNING clause - specify columns query returns
      * 
@@ -295,7 +398,7 @@ declare namespace sqorn {
      * sq`person``age > ${7}``id, age`
      * // select id, age from person where age > 7
      */
-    return(strings: TemplateStringsArray, ...args: any[]): sq
+    return(strings: TemplateStringsArray, ...args: any[]): BuilderType
 
     /**
      * SELECT or RETURNING clause - specify columns query returns
@@ -316,47 +419,66 @@ declare namespace sqorn {
      * sq`person``age > ${7}`('id', 'age')
      * // select id, age from person where age > 7
      */
-    return(...columns: string[]): sq
+    return(...columns: string[]): BuilderType
   }
 
-  interface SelectQuery {
-    /**
-     * GROUP BY clause
-     * 
-     * TODO
-     */
-    group(strings: TemplateStringsArray, ...args: any[]): sq
+  interface WithFromReturn<BuilderType> extends
+    With<BuilderType>,
+    From<BuilderType>,
+    Return<BuilderType> {}
 
-    /**
-     * HAVING clause
-     * 
-     * TODO
-     */
-    having(strings: TemplateStringsArray, ...args: any[]): sq
+  interface WithFromWhereReturn<BuilderType> extends
+    With<BuilderType>,
+    From<BuilderType>,
+    Where<BuilderType>,
+    Return<BuilderType> {}
 
+  interface OrderLimitOffset<BuilderType> {
     /**
      * ORDER BY clause
      * 
      * TODO
      */
-    order(strings: TemplateStringsArray, ...args: any[]): sq
+    order(strings: TemplateStringsArray, ...args: any[]): BuilderType
 
     /**
      * LIMIT clause
      * 
      * TODO
      */
-    limit(strings: TemplateStringsArray, ...args: any[]): sq
+    limit(strings: TemplateStringsArray, ...args: any[]): BuilderType
 
     /**
      * OFFSET clause
      * 
      * TODO
      */
-    offset(strings: TemplateStringsArray, ...args: any[]): sq
+    offset(strings: TemplateStringsArray, ...args: any[]): BuilderType
   }
 
-  interface InsertQuery {
+  interface Select {
+    /**
+     * GROUP BY clause
+     * 
+     * TODO
+     */
+    group(strings: TemplateStringsArray, ...args: any[]): SelectBuilder
+
+    /**
+     * HAVING clause
+     * 
+     * TODO
+     */
+    having(strings: TemplateStringsArray, ...args: any[]): SelectBuilder
+  }
+
+  interface Values {
+    /** TODO */
+    // values()
+    // columns()
+  }
+
+  interface Insert {
     /**
      * INSERT column - specify columns to insert using tagged template literal
      * 
@@ -371,7 +493,7 @@ declare namespace sqorn {
      * sq`person````id`.insert`age`.value`23`.value`40`
      * // insert into person (age) values (23), (40) returning id
      */
-    insert(strings: TemplateStringsArray, ...args: any[]): sq
+    insert(strings: TemplateStringsArray, ...args: any[]): InsertBuilder
 
     /**
      * INSERT column - specify columns to insert as strings
@@ -387,7 +509,7 @@ declare namespace sqorn {
      * sq`person`()`id`.insert('age').value('23')
      * // insert into person (age) values (23), (40) returning id
      */
-    insert(...columns: string[]): sq
+    insert(...columns: string[]): InsertBuilder
 
     /**
      * INSERT value - specify rows to insert as objects
@@ -406,7 +528,7 @@ declare namespace sqorn {
      * sq`person`()`id`.insert({ firstName: 'Bob' }
      * // insert into person (first_name) values ('Bob') returning id
      */
-    insert(...values: { [column: string]: any }[]): sq
+    insert(...values: { [column: string]: any }[]): InsertBuilder
 
     /**
      * VALUE - specify values to insert as tagged template literals
@@ -421,7 +543,7 @@ declare namespace sqorn {
      * sq`person````id`.insert`age`.value`23`.value`40`
      * // insert into person (age) values (23), (40) returning id
      */
-    value(strings: TemplateStringsArray, ...args: any[]): sq
+    value(strings: TemplateStringsArray, ...args: any[]): InsertBuilder
 
     /**
      * VALUE - specify values to insert as function arguments
@@ -436,26 +558,26 @@ declare namespace sqorn {
      * sq`person`()`id`.insert('age').value('23')
      * // insert into person (age) values (23), (40) returning id
      */
-    value(...args: any[]): sq
+    value(...args: any[]): InsertBuilder
   }
 
-  interface UpdateQuery {
-   /**
-    * SET clause
-    * 
-    * TODO
-    */
-   set(strings: TemplateStringsArray, ...args: any[]): sq
+  interface Update {
+    /**
+     * SET clause
+     * 
+     * TODO
+     */
+    set(strings: TemplateStringsArray, ...args: any[]): UpdateBuilder
 
-   /**
-    * SET clause
-    * 
-    * TODO
-    */
-   set(value: { [column: string]: any }): sq
+    /**
+     * SET clause
+     * 
+     * TODO
+     */
+    set(value: { [column: string]: any }): UpdateBuilder
   }
 
-  interface DeleteQuery {
+  interface Delete {
     /**
      * DELETE - marks the query as a delete query
      * 
@@ -467,36 +589,151 @@ declare namespace sqorn {
      * sq`person``age < 7``id`.delete
      * // delete from person where age < 7 returning id
      */
-    readonly delete: sq
+    readonly delete: DeleteBuilder
   }
 
   /**
-   * sqorn query builder
+   * Root builder returned by initial call to `sqorn()`.
+   * The root builder has all methods except those that compile queries.
+   * Use the root builder to access utility functions like `.transaction()` and `.end()`
    */
-  interface sq extends Executor, ManualQuery, SharedQuery, SelectQuery, InsertQuery, UpdateQuery, DeleteQuery {
+  interface RootBuilder extends
+    ExpressFrom<ExpressWhereSelectInsertUpdateDeleteBuilder>,
+    Util,
+    Extendable<GenericBuilder>,
+    Manual,
+    WithFromReturn<SelectInsertUpdateDeleteBuilder>,
+    Where<SelectUpdateDeleteBuilder>,
+    OrderLimitOffset<SelectValuesBuilder>,
+    Select,
+    Values,
+    Insert,
+    Update,
+    Delete {}
+  
+  /**
+   * `Manual`, `Select`, `Insert`, `Update`, or `Delete` Query Builder
+   */
+  interface GenericBuilder extends
+    Extendable<GenericBuilder>,
+    Executable,
+    Manual,
+    WithFromReturn<SelectInsertUpdateDeleteBuilder>,
+    Where<SelectUpdateDeleteBuilder>,
+    OrderLimitOffset<SelectValuesBuilder>,
+    Select,
+    Insert,
+    Update,
+    Delete {}
+  
+  /**
+   * `Manual` Query Builder
+   */
+  interface ManualBuilder extends
+    Extendable<ManualBuilder>,
+    Executable,
+    Manual {}
+  
+  /**
+   * `Select`, `Insert`, `Update`, or `Delete` Query Builder
+   */
+  interface SelectInsertUpdateDeleteBuilder extends
+    Extendable<SelectInsertUpdateDeleteBuilder>,
+    Executable,
+    WithFromReturn<SelectInsertUpdateDeleteBuilder>,
+    Where<SelectUpdateDeleteBuilder>,
+    OrderLimitOffset<SelectValuesBuilder>,
+    Select,
+    Insert,
+    Update,
+    Delete {}
+  
+  /**
+   * `Select`, `Insert`, `Update`, or `Delete` Query Builder with `Express Where`
+   */
+  interface ExpressWhereSelectInsertUpdateDeleteBuilder extends
+    ExpressWhere<ExpressReturnSelectUpdateDeleteBuilder>,
+    SelectInsertUpdateDeleteBuilder {}
 
-    /**
-     * Compiles the query builder state to return the equivalent parameterized query
-     * 
-     * @example
-     * sq`book`({ id: 7 })`title`.query
-     * { text: 'select title from book where id = $1', args: [7] }
-     * 
-     * sq`book`.delete({ id: 7 })`title`.query
-     * { text: 'delete from book where id = $1 returning title', args: [7] }
-     */
-    readonly query: Query
+  /**
+   * `Select`, `Update`, or `Delete` Query Builder
+   */
+  interface SelectUpdateDeleteBuilder extends
+    Extendable<SelectUpdateDeleteBuilder>,
+    Executable,
+    WithFromWhereReturn<SelectUpdateDeleteBuilder>,
+    OrderLimitOffset<SelectValuesBuilder>,
+    Select,
+    Insert,
+    Update,
+    Delete {}
+  
+  /**
+   * `Select`, `Update`, or `Delete` Query Builder with `Express Return`
+   */
+  interface ExpressReturnSelectUpdateDeleteBuilder extends
+    ExpressReturn<SelectUpdateDeleteBuilder>,
+    SelectUpdateDeleteBuilder {}
+  
+  /**
+   * `Select` or `Values` Query Builder
+   */
+  interface SelectValuesBuilder extends
+    Extendable<SelectValuesBuilder>,
+    Executable,
+    WithFromWhereReturn<SelectBuilder>,
+    OrderLimitOffset<SelectValuesBuilder>,
+    Values,
+    Select {}
+  
+  /**
+   * `Select` Query Builder
+   */
+  interface SelectBuilder extends
+    Extendable<SelectBuilder>,
+    Executable,
+    WithFromWhereReturn<SelectBuilder>,
+    OrderLimitOffset<SelectBuilder>,
+    Select {}
+  
+  /**
+   * `Values` Query Builder
+   */
+  interface ValuesBuilder extends
+    Extendable<ValuesBuilder>,
+    Executable,
+    OrderLimitOffset<ValuesBuilder>,
+    Values {}
+  
+  /**
+   * `Insert` Query Builder
+   */
+  interface InsertBuilder extends
+    Extendable<InsertBuilder>,
+    Executable,
+    WithFromReturn<InsertBuilder>,
+    Insert {}
+  
+  /**
+   * `Update` Query Builder
+   */
+  interface UpdateBuilder extends
+    Extendable<UpdateBuilder>,
+    Executable,
+    WithFromWhereReturn<UpdateBuilder>,
+    Update {}
+  
+  /**
+   * `Delete` Query Builder
+   */
+  interface DeleteBuilder extends
+    Extendable<DeleteBuilder>,
+    Executable,
+    WithFromWhereReturn<DeleteBuilder>,
+    Where<DeleteBuilder>,
+    Delete {}
 
-
-    /**
-     * Extend existing queries
-     * 
-     * TODO
-     */
-    extend(...builders: sq[]): sq
-
-  }
-  interface Config {
+  interface Configuration {
     /**
      * pg module - See [Node Postgres](https://node-postgres.com).
      * This argument is required to execute queries,
@@ -560,6 +797,6 @@ declare namespace sqorn {
  * const pool = new pg.Pool()
  * const sq = sqorn({ pg, pool })
  */
-declare function sqorn(config: sqorn.Config): sqorn.sq
+declare function sqorn(config: sqorn.Configuration): sqorn.RootBuilder
 
 export = sqorn
