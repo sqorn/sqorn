@@ -1,6 +1,7 @@
 import * as M from "./methods"
 import { Extend } from './extend'
 
+export type A = 'A' // Any
 export type S = 'S' // Select
 export type U = 'U' // Update
 export type D = 'D' // Delete
@@ -19,6 +20,7 @@ type UnionToIntersection<U> =
 type Except<T, U> = T extends U ? never : T
 
 type MethodMap<T extends Keys> = {
+  A: Any<T>
   S: Select<T>
   U: Update<T>
   D: Delete<T>
@@ -29,6 +31,7 @@ type MethodMap<T extends Keys> = {
   X: Execute<T>
 };
 export type Keys = keyof MethodMap<any>
+export type RequiredKeys = A | S | U | D | I | V | M
 
 export type Root = Query<Except<Keys, X>>
 
@@ -43,12 +46,13 @@ export type States<T> =
   (T extends Insert<any> ? I : never) |
   (T extends Values<any> ? V : never) |
   (T extends Manual<any> ? M : never) |
-  (T extends Helper<any> ? H : never)
+  (T extends Helper<any> ? H : never) |
+  (T extends Execute<any> ? X : never)
 
 interface SQ<T> { status: string }
 
 interface Select<T extends Keys>
-  extends AllQueries<T>,
+  extends
     M.With<T>,
     M.From<T>,
     M.Return<T>,
@@ -60,7 +64,7 @@ interface Select<T extends Keys>
     M.Having<T> {}
 
 interface Update<T extends Keys>
-  extends AllQueries<T>,
+  extends
     M.With<T>,
     M.From<T>,
     M.Return<T>,
@@ -68,7 +72,7 @@ interface Update<T extends Keys>
     M.Set<T> {}
   
 interface Delete<T extends Keys>
-  extends AllQueries<T>,
+  extends
     M.With<T>,
     M.From<T>,
     M.Return<T>,
@@ -76,21 +80,21 @@ interface Delete<T extends Keys>
     M.Delete<T> {}
 
 interface Insert<T extends Keys>
-  extends AllQueries<T>,
+  extends
     M.With<T>,
     M.From<T>,
     M.Return<T>,
     M.Insert<T> {}
 
 interface Values<T extends Keys>
-  extends AllQueries<T>,
+  extends
     M.Order<T>,
     M.Limit<T>,
     M.Offset<T>,
     M.Values<T> {}
 
 interface Manual<T extends Keys>
-  extends AllQueries<T>,
+  extends
     M.SQL<T>,
     M.Raw<T> {}
 
@@ -99,9 +103,11 @@ interface Helper<T extends Keys>
     M.Transaction<T> {}
 
 interface Execute<T extends Keys>
-  extends M.Buildable<T>,
+  extends
+    M.Buildable<T>,
     M.Executable<T> {}
 
-interface AllQueries<T extends Keys>
-  extends M.Link<T>,
+interface Any<T extends Keys>
+  extends
+    M.Link<T>,
     Extend<T> {}
