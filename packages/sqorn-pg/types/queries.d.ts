@@ -1,7 +1,7 @@
 import * as M from "./methods"
 import { Extend } from './extend'
 
-export type A = 'A' // Any
+export type A = 'A' // All
 export type S = 'S' // Select
 export type U = 'U' // Update
 export type D = 'D' // Delete
@@ -12,7 +12,7 @@ export type H = 'H' // Helper
 export type X = 'X' // Execute
 
 /** UnionToIntersection<A | B | C> = A & B & C */
-type UnionToIntersection<U> = 
+type UnionToIntersection<U> =
   (U extends any ? (k: U) => void : never
   ) extends ((k: infer I) => void) ? I : never
 
@@ -20,7 +20,7 @@ type UnionToIntersection<U> =
 type Except<T, U> = T extends U ? never : T
 
 type MethodMap<T extends Keys> = {
-  A: Any<T>
+  A: All<T>
   S: Select<T>
   U: Update<T>
   D: Delete<T>
@@ -31,7 +31,7 @@ type MethodMap<T extends Keys> = {
   X: Execute<T>
 };
 export type Keys = keyof MethodMap<any>
-export type RequiredKeys = A | S | U | D | I | V | M
+export type RequiredKeys = S | U | D | I | V | M
 
 export type Root = Query<Except<Keys, X>>
 
@@ -53,61 +53,71 @@ interface SQ<T> { status: string }
 
 interface Select<T extends Keys>
   extends
-    M.With<T>,
-    M.From<T>,
-    M.Return<T>,
-    M.Where<T>,
-    M.Order<T>,
-    M.Limit<T>,
-    M.Offset<T>,
-    M.Group<T>,
-    M.Having<T> {}
+  M.With<T>,
+  M.From<T>,
+  M.Return<T>,
+  M.Where<T>,
+  M.Order<T>,
+  M.Limit<T>,
+  M.Offset<T>,
+  M.Group<T>,
+  M.Having<T> { }
 
 interface Update<T extends Keys>
   extends
-    M.With<T>,
-    M.From<T>,
-    M.Return<T>,
-    M.Where<T>,
-    M.Set<T> {}
-  
+  M.With<T>,
+  M.From<T>,
+  M.Return<T>,
+  M.Where<T>,
+  M.Set<T> { }
+
 interface Delete<T extends Keys>
   extends
-    M.With<T>,
-    M.From<T>,
-    M.Return<T>,
-    M.Where<T>,
-    M.Delete<T> {}
+  M.With<T>,
+  M.From<T>,
+  M.Return<T>,
+  M.Where<T>,
+  M.Delete<T> { }
 
 interface Insert<T extends Keys>
   extends
-    M.With<T>,
-    M.From<T>,
-    M.Return<T>,
-    M.Insert<T> {}
+  M.With<T>,
+  M.From<T>,
+  M.Return<T>,
+  M.Insert<T> { }
 
 interface Values<T extends Keys>
   extends
-    M.Order<T>,
-    M.Limit<T>,
-    M.Offset<T>,
-    M.Values<T> {}
+  M.Order<T>,
+  M.Limit<T>,
+  M.Offset<T>,
+  M.Values<T> { }
 
 interface Manual<T extends Keys>
   extends
-    M.SQL<T>,
-    M.Raw<T> {}
+  M.SQL<T>,
+  M.Raw<T> { }
 
 interface Helper<T extends Keys>
   extends M.End<T>,
-    M.Transaction<T> {}
+  M.Transaction<T> { }
 
 interface Execute<T extends Keys>
   extends
-    M.Buildable<T>,
-    M.Executable<T> {}
+  M.Buildable<T>,
+  M.Executable<T> { }
 
-interface Any<T extends Keys>
+interface All<T extends Keys>
   extends
-    M.Link<T>,
-    Extend<T> {}
+  M.Link<T>,
+  Extend<T>,
+  Guard { }
+
+interface Guard {
+  isExecutable<
+    U extends States<this> | X,
+    >(): this is Query<U> & Execute<U> & this
+}
+
+declare function isExecutable<T, U extends States<T> | X>
+  (a: T): a is Query<U> & Execute<U> & T;

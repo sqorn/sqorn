@@ -9,24 +9,18 @@ type Expression = string | any; // TODO
 type Conditions = { [column: string]: any };
 type NEArray<T> = T[] & { 0: T };
 
-type NextState<
-  Base extends Keys,
-  Constraints extends Keys,
-  Additions extends Keys
-> = (Base & Constraints) | Additions | (X extends Base ? X : never);
-
 export type Next<
   Base extends Keys,
   Constraints extends Keys,
   Additions extends Keys
-> = Query< // Resulting query type the union of:
+  > = Query< // Resulting query type the union of:
   A | // always preserve the Any query type
   (Base & Constraints) | // intersection of source types
   Additions | // newly introduced types
   (X extends Base ? X : never) // Always preserved types (only X)
->;
+  >;
 
-type Combine<A,B> = (A & B & RequiredKeys extends never ? never : (A & B))
+type Combine<A, B> = (A & B & RequiredKeys extends never ? never : (A & B))
 
 type WithD = S | U | D | I;
 type WithA = never
@@ -133,7 +127,7 @@ export interface Return<T extends Keys> {
   return(...columns: string[]): Next<T, ReturnD, ReturnA>;
 }
 
-type WhereD = S | U | D; 
+type WhereD = S | U | D;
 type WhereA = never;
 
 export interface Where<T extends Keys> {
@@ -424,7 +418,7 @@ export interface Buildable<T> {
   readonly query: { text: string; args: any[] };
 }
 
-interface Executable<T extends Keys> extends Promise<Row[]>{
+interface Executable<T extends Keys> extends Promise<Row[]> {
   /**
    * Executes query and returns a Promise for all result rows
    * 
