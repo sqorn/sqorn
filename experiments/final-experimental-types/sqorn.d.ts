@@ -1,4 +1,4 @@
-import { SQF } from './sq'
+import { Root } from './QUeries'
 
 interface Configuration {
   /**
@@ -63,4 +63,4 @@ interface Configuration {
 * const pool = new pg.Pool()
 * const sq = sqorn({ pg, pool })
 */
-export declare function sqorn(config?: Configuration): SQF
+export declare function sqorn(config?: Configuration): Root
