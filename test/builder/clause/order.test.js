@@ -65,7 +65,7 @@ describe('order', () => {
   })
   query({
     name: 'object arg - sort using',
-    query: sq.from`book`.order({ by: 'title', sort: '~<~' }),
+    query: sq.from`book`.order({ by: 'title', using: '~<~' }),
     text: 'select * from book order by title using ~<~',
     args: []
   })
@@ -95,13 +95,13 @@ describe('order', () => {
   })
   query({
     name: 'object arg - sort using nulls first',
-    query: sq.from`book`.order({ by: 'title', sort: '<', nulls: 'first' }),
+    query: sq.from`book`.order({ by: 'title', using: '<', nulls: 'first' }),
     text: 'select * from book order by title using < nulls first',
     args: []
   })
   query({
     name: 'object arg - sort using nulls last',
-    query: sq.from`book`.order({ by: 'title', sort: '<', nulls: 'last' }),
+    query: sq.from`book`.order({ by: 'title', using: '<', nulls: 'last' }),
     text: 'select * from book order by title using < nulls last',
     args: []
   })

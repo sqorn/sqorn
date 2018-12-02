@@ -22,22 +22,22 @@ describe('Set Operators', () => {
     })
     query({
       name: 'union all',
-      query: A.union.all(B),
+      query: A.unionAll(B),
       text: 'select * from a union all (select * from b)'
     })
     query({
       name: 'intersect all',
-      query: A.intersect.all(B),
+      query: A.intersectAll(B),
       text: 'select * from a intersect all (select * from b)'
     })
     query({
       name: 'except all',
-      query: A.except.all(B),
+      query: A.exceptAll(B),
       text: 'select * from a except all (select * from b)'
     })
     query({
       name: 'two args',
-      query: A.except.all(B, C),
+      query: A.exceptAll(B, C),
       text:
         'select * from a except all (select * from b) except all (select * from c)'
     })
@@ -49,7 +49,7 @@ describe('Set Operators', () => {
     })
     query({
       name: 'chained',
-      query: A.union(B).except.all(C),
+      query: A.union(B).exceptAll(C),
       text:
         'select * from a union (select * from b) except all (select * from c)'
     })
@@ -61,13 +61,13 @@ describe('Set Operators', () => {
     })
     query({
       name: 'complex',
-      query: A.union.all(B).except(C.intersect.all(B)),
+      query: A.unionAll(B).except(C.intersectAll(B)),
       text:
         'select * from a union all (select * from b) except (select * from c intersect all (select * from b))'
     })
     query({
       name: 'complex 2',
-      query: A.union.all(B, C).except(A, B),
+      query: A.unionAll(B, C).except(A, B),
       text:
         'select * from a union all (select * from b) union all (select * from c) except (select * from a) except (select * from b)'
     })

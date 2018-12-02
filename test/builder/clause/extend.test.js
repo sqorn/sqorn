@@ -1,7 +1,7 @@
 const { sq, query } = require('../tape')
 
-describe('ext', () => {
-  describe('template string', () => {
+describe('extend', () => {
+  describe('basic', () => {
     query({
       name: 'frm',
       query: sq.extend(sq.from`book`),
@@ -67,6 +67,17 @@ describe('ext', () => {
       text:
         'select title from book where (year > $1) and (genre = $2 or genre = $3)',
       args: [2000, 'fantasy', 'history']
+    })
+  })
+  describe('express', () => {
+    query({
+      name: 'frm',
+      query: sq`book`({ genre: 'fantasy' }).extend(
+        sq`author`({ name: 'Jordan' })
+      ).where`book.author_id = author.id``title`,
+      text:
+        'select title from book, author where (genre = $1) and (name = $2) and (book.author_id = author.id)',
+      args: ['fantasy', 'Jordan']
     })
   })
 })

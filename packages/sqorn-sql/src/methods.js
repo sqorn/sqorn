@@ -8,10 +8,8 @@ const newContextCreator = ({ parameter, mapInputKeys = snakeCase }) => {
     return {
       // query type: 'raw' | sql' | 'select' | 'delete' | 'insert' | 'update'
       type: 'select',
-      // express syntax status: 'from' | 'where' | 'return'
-      express: 'from',
       // saves context needed to interpret proceeding method calls
-      // modified by .where, .join.on, .distinct.on and .having
+      // modified by .where, .join.on, and .having
       target: whr,
       // next join target
       nextJoin: { join: 'inner' },
@@ -37,14 +35,8 @@ const newContextCreator = ({ parameter, mapInputKeys = snakeCase }) => {
       ord: [],
       // with
       with: [],
-      // insert args
-      ins: [],
       // update/set args
       set: [],
-      // limit
-      limit: [],
-      // offset
-      offset: [],
       // parameterized query arguments, initialized to [] but subqueries
       // inherit parent query's arg
       arg,
@@ -57,35 +49,17 @@ const newContextCreator = ({ parameter, mapInputKeys = snakeCase }) => {
   }
 }
 
-const express = {
-  from: (ctx, args) => {
-    ctx.frm.push({ type: 'from', args })
-    ctx.express = 'where'
-  },
-  where: (ctx, args) => {
-    ctx.whr.push({ type: 'and', args })
-    ctx.express = 'return'
-  },
-  return: (ctx, args) => {
-    ctx.ret.push(args)
-    ctx.express = 'done'
-  },
-  done: () => {
-    // noop
-  }
-}
-
 /** Query building methods */
 const methods = {
   l: {
     updateContext: (ctx, args) => {
-      ctx.type = 'sql'
+      ctx.type = 'manual'
       ctx.sql.push({ args, raw: false })
     }
   },
   raw: {
     updateContext: (ctx, args) => {
-      ctx.type = ctx.type === 'select' ? 'arg' : 'sql'
+      ctx.type = ctx.type === 'select' ? 'arg' : 'manual'
       ctx.sql.push({ args, raw: true })
     }
   },
@@ -134,7 +108,7 @@ const methods = {
   distinct: {
     getter: true,
     updateContext: ctx => {
-      ctx.target = []
+      ctx.distinct = []
     }
   },
   group: {
@@ -151,31 +125,31 @@ const methods = {
   union: {
     updateContext: (ctx, args) => {
       ctx.setop.push({ type: 'union', args })
-    },
-    properties: {
-      all: (ctx, args) => {
-        ctx.setop.push({ type: 'union all', args })
-      }
+    }
+  },
+  unionAll: {
+    updateContext: (ctx, args) => {
+      ctx.setop.push({ type: 'union all', args })
     }
   },
   intersect: {
     updateContext: (ctx, args) => {
       ctx.setop.push({ type: 'intersect', args })
-    },
-    properties: {
-      all: (ctx, args) => {
-        ctx.setop.push({ type: 'intersect all', args })
-      }
+    }
+  },
+  intersectAll: {
+    updateContext: (ctx, args) => {
+      ctx.setop.push({ type: 'intersect all', args })
     }
   },
   except: {
     updateContext: (ctx, args) => {
       ctx.setop.push({ type: 'except', args })
-    },
-    properties: {
-      all: (ctx, args) => {
-        ctx.setop.push({ type: 'except all', args })
-      }
+    }
+  },
+  exceptAll: {
+    updateContext: (ctx, args) => {
+      ctx.setop.push({ type: 'except all', args })
     }
   },
   order: {
@@ -260,13 +234,7 @@ const methods = {
   insert: {
     updateContext: (ctx, args) => {
       ctx.type = 'insert'
-      ctx.ins.push(args)
-    }
-  },
-  value: {
-    updateContext: (ctx, args) => {
-      ctx.type = 'insert'
-      ctx.ins.push(args)
+      ctx.insert = args
     }
   },
   set: {
@@ -276,8 +244,17 @@ const methods = {
     }
   },
   express: {
-    updateContext: (ctx, args) => {
-      express[ctx.express](ctx, args)
+    updateContext: (ctx, args, count) => {
+      if (count.id === 0) {
+        count.id++
+        ctx.frm.push({ type: 'from', args })
+      } else if (count.id === 1) {
+        count.id++
+        ctx.whr.push({ type: 'and', args })
+      } else if (count.id === 2) {
+        count.id++
+        ctx.ret.push(args)
+      } else throw Error('Invalid express call')
     }
   }
 }

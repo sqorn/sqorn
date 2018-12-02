@@ -1,34 +1,40 @@
 const { sq, query } = require('../tape')
 
-describe('Limit', () => {
+describe('Offset', () => {
   query({
-    name: 'limit number',
-    query: sq.from`person`.limit(8),
-    text: 'select * from person limit $1',
+    name: 'number',
+    query: sq.from`person`.offset(8),
+    text: 'select * from person offset $1',
     args: [8]
   })
   query({
-    name: 'limit template string',
-    query: sq.from`person`.limit`8`,
-    text: 'select * from person limit 8',
+    name: 'template string',
+    query: sq.from`person`.offset`8`,
+    text: 'select * from person offset 8',
     args: []
   })
   query({
-    name: 'limit template string parameterized arg',
-    query: sq.from`person`.limit`${8}`,
-    text: 'select * from person limit $1',
+    name: 'template string parameterized arg',
+    query: sq.from`person`.offset`${8}`,
+    text: 'select * from person offset $1',
     args: [8]
   })
   query({
-    name: 'limit subquery arg',
-    query: sq.from`person`.limit(sq.l`1 + 7`),
-    text: 'select * from person limit 1 + 7',
+    name: 'manual subquery',
+    query: sq.from`person`.offset(sq.l`1 + 7`),
+    text: 'select * from person offset 1 + 7',
     args: []
   })
   query({
-    name: 'multiple limit',
-    query: sq.from`person`.limit(7).limit(5),
-    text: 'select * from person limit $1',
+    name: 'select subquery',
+    query: sq.from`person`.offset(sq.return(10)),
+    text: 'select * from person offset (select $1)',
+    args: [10]
+  })
+  query({
+    name: 'multiple offset',
+    query: sq.from`person`.offset(7).offset(5),
+    text: 'select * from person offset $1',
     args: [5]
   })
 })

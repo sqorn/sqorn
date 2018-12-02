@@ -36,17 +36,21 @@ const buildArg = (ctx, arg) => {
 
 const buildObject = (ctx, obj) => {
   let txt = ''
-  const { by, sort, nulls } = obj
+  const { by, sort, using, nulls } = obj
   // by
   if (typeof by === 'string') txt += by
   else if (typeof by === 'function') txt += by._build(ctx).text
   else throw Error('Invalid order by property "by"')
   // sort
-  if (sort === undefined);
-  else if (sort === 'desc') txt += ' desc'
-  else if (sort === 'asc') txt += ' asc'
-  else if (typeof sort === 'string') txt += ` using ${sort}`
-  else throw Error('Invalid order by property "sort"')
+  if (sort) {
+    if (sort === 'desc') txt += ' desc'
+    else if (sort === 'asc') txt += ' asc'
+    else if (typeof sort === 'string') txt += ` using ${sort}`
+    else throw Error('Invalid order by property "sort"')
+  } else if (using) {
+    if (typeof using === 'string') txt += ` using ${using}`
+    else throw Error('Invalid order by property "using"')
+  }
   // nulls
   if (nulls === undefined);
   else if (nulls === 'last') txt += ' nulls last'

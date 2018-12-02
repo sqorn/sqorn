@@ -22,39 +22,28 @@ const {
 const { fromItems, expressions } = util
 
 const postgresMethods = {
-  distinct: {
-    getter: true,
-    updateContext: ctx => {
-      ctx.target = ctx.distinct = []
-    }
-  },
-  on: {
+  distinctOn: {
     updateContext: (ctx, args) => {
-      if (ctx.target === ctx.distinct) {
-        // distinct.on()
+      if (ctx.distinct) {
         ctx.distinct.push(args)
       } else {
-        // join.on()
-        const { join } = ctx
-        if (join.on) {
-          join.on.push({ type: 'and', args })
-        } else {
-          ctx.target = join.on = [{ type: 'and', args }]
-        }
+        ctx.distinct = [args]
       }
     }
   }
 }
 
-// SELECT supports .distinct.on(...expressions)
+// SELECT supports .distinctOn(...expressions)
 const select = ctx => {
-  const { distinct } = ctx
-  let txt = 'select'
-  if (distinct) {
-    txt += ' distinct'
-    if (distinct.length) txt += ` on (${expressions(ctx, ctx.distinct)})`
+  let txt = 'select '
+  if (ctx.distinct) {
+    txt += 'distinct '
+    if (ctx.distinct.length) {
+      txt += `on (${expressions(ctx, ctx.distinct)}) `
+    }
   }
-  return `${txt} ${expressions(ctx, ctx.ret) || '*'}`
+  txt += expressions(ctx, ctx.ret) || '*'
+  return txt
 }
 // DELETE: first .from call is used in the DELETE clause
 // subsequent .from calls are used in the USING clause

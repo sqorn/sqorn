@@ -3,120 +3,192 @@ const { sq, query } = require('../tape')
 describe('insert', () => {
   describe('template string', () => {
     query({
-      name: '1 column',
-      query: sq.insert`age`.value`200`,
-      text: '(age) values (200)'
+      name: 'basic',
+      query: sq.from`person(name, age)`.insert`values ('bo', 22)`,
+      text: "insert into person(name, age) values ('bo', 22)"
     })
     query({
-      name: '2 column',
-      query: sq.insert`age, name`.value`200, 'Jo'`,
-      text: `(age, name) values (200, 'Jo')`
-    })
-  })
-  describe('template string column names', () => {
-    query({
-      name: '1 raw column name',
-      query: sq.insert`$${'first_name'}`.value`'Bob'`,
-      text: `(first_name) values ('Bob')`
-    })
-    query({
-      name: '2 raw column names',
-      query: sq.insert`$${'first_name'}, $${'last_name'}`
-        .value`'Rand', 'AlThor'`,
-      text: `(first_name, last_name) values ('Rand', 'AlThor')`
+      name: 'args',
+      query: sq.from`person(name, age)`.insert`values (${'bo'}, ${22})`,
+      text: 'insert into person(name, age) values ($1, $2)',
+      args: ['bo', 22]
     })
   })
-  describe('template string values', () => {
+  describe('misc', () => {
     query({
-      name: '1 raw arg',
-      query: sq.insert`age, name`.value`$${200}, 'Jo'`,
-      text: `(age, name) values (200, 'Jo')`
+      name: 'default values',
+      query: sq.from('person').insert(),
+      text: 'insert into person default values'
     })
     query({
-      name: '2 raw args',
-      query: sq.insert`age, name`.value`$${200}, $${"'Jo'"}`,
-      text: `(age, name) values (200, 'Jo')`
-    })
-    query({
-      name: '1 parameterized arg',
-      query: sq.insert`age, name`.value`${200}, 'Jo'`,
-      text: `(age, name) values ($1, 'Jo')`,
-      args: [200]
-    })
-    query({
-      name: '2 paramterized args',
-      query: sq.insert`age, name`.value`${200}, ${'Jo'}`,
-      text: `(age, name) values ($1, $2)`,
-      args: [200, 'Jo']
-    })
-    query({
-      name: 'multiple raw and parameterized args',
-      query: sq.insert`age, name, name2, age2`
-        .value`$${200}, ${'Jo'}, $${"'Bo'"}, ${7}`,
-      text: `(age, name, name2, age2) values (200, $1, 'Bo', $2)`,
-      args: ['Jo', 7]
+      name: 'multiple calls',
+      query: sq
+        .from('person')
+        .insert({ a: 1 })
+        .insert({ b: 2 }),
+      text: 'insert into person(b) values ($1)',
+      args: [2]
     })
   })
-  describe('template string multiple calls', () => {
+  describe('objects', () => {
     query({
-      name: '2 calls',
-      query: sq.insert`age`.value`200`.value`300`,
-      text: '(age) values (200), (300)'
-    })
-    query({
-      name: '3 calls',
-      query: sq.insert`age`.value`200`.value`300`.value`700`,
-      text: '(age) values (200), (300), (700)'
-    })
-    query({
-      name: '2 calls and args',
-      query: sq.insert`age, name, age2, name2`.value`${200}, ${'Jo'}`
-        .value`${100}, ${'Bob'}`,
-      text: `(age, name, age2, name2) values ($1, $2), ($3, $4)`,
-      args: [200, 'Jo', 100, 'Bob']
-    })
-  })
-  describe('object', () => {
-    query({
-      name: '1 call, 1 arg, 1 property',
-      query: sq.insert({ name: 'Jo' }),
-      text: '(name) values ($1)',
+      name: '1 arg, 1 prop',
+      query: sq.from('person').insert({ name: 'Jo' }),
+      text: `insert into person(name) values ($1)`,
       args: ['Jo']
     })
     query({
-      name: '1 call, 1 arg, 2 properties',
-      query: sq.insert({ name: 'Jo', age: 7 }),
-      text: '(name, age) values ($1, $2)',
-      args: ['Jo', 7]
+      name: '1 arg, 2 props',
+      query: sq.from('person').insert({ name: 'Jo', age: 17 }),
+      text: `insert into person(name, age) values ($1, $2)`,
+      args: ['Jo', 17]
     })
     query({
-      name: '1 call, 2 args, same properties',
-      query: sq.insert({ name: 'Jo', age: 7 }, { name: 'Bo', age: 8 }),
-      text: '(name, age) values ($1, $2), ($3, $4)',
-      args: ['Jo', 7, 'Bo', 8]
+      name: '1 arg, 3 props',
+      query: sq.from('person').insert({ id: 23, name: 'Jo', age: 17 }),
+      text: `insert into person(id, name, age) values ($1, $2, $3)`,
+      args: [23, 'Jo', 17]
     })
     query({
-      name: '1 call, multiple differing args',
-      query: sq.insert({ a: 1, b: 2 }, { a: 3 }, { b: 4, c: 5 }),
-      text:
-        '(a, b, c) values ($1, $2, default), ($3, default, default), (default, $4, $5)',
-      args: [1, 2, 3, 4, 5]
+      name: '2 args, same props',
+      query: sq
+        .from('person')
+        .insert({ name: 'Jo', age: 17 }, { name: 'Mo', age: 18 }),
+      text: `insert into person(name, age) values ($1, $2), ($3, $4)`,
+      args: ['Jo', 17, 'Mo', 18]
+    })
+    query({
+      name: '3 args, same props',
+      query: sq
+        .from('person')
+        .insert(
+          { name: 'Jo', age: 17 },
+          { name: 'Mo', age: 18 },
+          { name: 'Bo', age: 19 }
+        ),
+      text: `insert into person(name, age) values ($1, $2), ($3, $4), ($5, $6)`,
+      args: ['Jo', 17, 'Mo', 18, 'Bo', 19]
+    })
+    query({
+      name: '2 args, different prop order',
+      query: sq
+        .from('person')
+        .insert({ name: 'Jo', age: 17 }, { age: 18, name: 'Mo' }),
+      text: `insert into person(name, age) values ($1, $2), ($3, $4)`,
+      args: ['Jo', 17, 'Mo', 18]
+    })
+    query({
+      name: '2 args, different props',
+      query: sq
+        .from('person')
+        .insert({ name: 'Jo', age: 17 }, { id: 23, age: 18 }),
+      text: `insert into person(name, age, id) values ($1, $2, default), (default, $3, $4)`,
+      args: ['Jo', 17, 18, 23]
+    })
+    query({
+      name: '3 args, different props',
+      query: sq
+        .from('person')
+        .insert({ name: 'Jo', age: 17 }, { id: 23, age: 18 }, { height: 60 }),
+      text: `insert into person(name, age, id, height) values ($1, $2, default, default), (default, $3, $4, default), (default, default, default, $5)`,
+      args: ['Jo', 17, 18, 23, 60]
     })
     query({
       name: 'null, undefined, and absent properties',
-      query: sq.insert({ a: 1, b: 2, c: 3 }, { a: null, b: undefined }),
-      text: '(a, b, c) values ($1, $2, $3), ($4, default, default)',
+      query: sq
+        .from('x')
+        .insert({ a: 1, b: 2, c: 3 }, { a: null, b: undefined }),
+      text:
+        'insert into x(a, b, c) values ($1, $2, $3), ($4, default, default)',
       args: [1, 2, 3, null]
     })
     query({
       name: 'multiple calls, multiple differing args',
-      query: sq
-        .insert({ a: 1, b: 2 })
-        .insert({ a: 3 })
-        .insert({ b: 4, c: 5 }),
+      query: sq.from('x').insert({ a: 1, b: 2 }, { a: 3 }, { b: 4, c: 5 }),
       text:
-        '(a, b, c) values ($1, $2, default), ($3, default, default), (default, $4, $5)',
+        'insert into x(a, b, c) values ($1, $2, default), ($3, default, default), (default, $4, $5)',
       args: [1, 2, 3, 4, 5]
+    })
+    query({
+      name: 'snake_case keys',
+      query: sq.from('person').insert({ firstName: 'Jo', lastName: 'Schmo' }),
+      text: `insert into person(first_name, last_name) values ($1, $2)`,
+      args: ['Jo', 'Schmo']
+    })
+    query({
+      name: 'subquery value',
+      query: sq.from('person').insert({
+        firstName: sq.return`${'Shallan'}`,
+        lastName: sq.l('Davar')
+      }),
+      text:
+        'insert into person(first_name, last_name) values ((select $1), $2)',
+      args: ['Shallan', 'Davar']
+    })
+  })
+  describe('array', () => {
+    query({
+      name: '3 args, same props',
+      query: sq
+        .from('person')
+        .insert([
+          { name: 'Jo', age: 17 },
+          { name: 'Mo', age: 18 },
+          { name: 'Bo', age: 19 }
+        ]),
+      text: `insert into person(name, age) values ($1, $2), ($3, $4), ($5, $6)`,
+      args: ['Jo', 17, 'Mo', 18, 'Bo', 19]
+    })
+    query({
+      name: '3 args, different props',
+      query: sq
+        .from('person')
+        .insert([{ name: 'Jo', age: 17 }, { id: 23, age: 18 }, { height: 60 }]),
+      text: `insert into person(name, age, id, height) values ($1, $2, default, default), (default, $3, $4, default), (default, default, default, $5)`,
+      args: ['Jo', 17, 18, 23, 60]
+    })
+    query({
+      name: 'snake_case keys',
+      query: sq.from('person').insert([{ firstName: 'Jo', lastName: 'Schmo' }]),
+      text: `insert into person(first_name, last_name) values ($1, $2)`,
+      args: ['Jo', 'Schmo']
+    })
+    query({
+      name: '1 call, multiple differing args',
+      query: sq.from('x').insert([{ a: 1, b: 2 }, { a: 3 }, { b: 4, c: 5 }]),
+      text:
+        'insert into x(a, b, c) values ($1, $2, default), ($3, default, default), (default, $4, $5)',
+      args: [1, 2, 3, 4, 5]
+    })
+    query({
+      name: 'null, undefined, and absent properties',
+      query: sq
+        .from('x')
+        .insert([{ a: 1, b: 2, c: 3 }, { a: null, b: undefined }]),
+      text:
+        'insert into x(a, b, c) values ($1, $2, $3), ($4, default, default)',
+      args: [1, 2, 3, null]
+    })
+    query({
+      name: 'multiple calls, multiple differing args',
+      query: sq.from('x').insert([{ a: 1, b: 2 }, { a: 3 }, { b: 4, c: 5 }]),
+      text:
+        'insert into x(a, b, c) values ($1, $2, default), ($3, default, default), (default, $4, $5)',
+      args: [1, 2, 3, 4, 5]
+    })
+  })
+  describe('subquery', () => {
+    query({
+      name: 'manual',
+      query: sq.from('person(name)').insert(sq.l`values (${'Jo'})`),
+      text: `insert into person(name) values ($1)`,
+      args: ['Jo']
+    })
+    query({
+      name: 'select',
+      query: sq.from('person(name, age)').insert(sq.return(sq.l('Jo'), 23)),
+      text: `insert into person(name, age) select $1, $2`,
+      args: ['Jo', 23]
     })
   })
 })

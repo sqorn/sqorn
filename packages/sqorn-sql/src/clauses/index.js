@@ -12,7 +12,6 @@ module.exports = {
   del: require('./delete'),
   returning: require('./returning'),
   insert: require('./insert'),
-  value: require('./value'),
   update: require('./update'),
   set: require('./set'),
   sql: require('./sql')

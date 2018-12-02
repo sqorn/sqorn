@@ -1,6 +1,6 @@
 const { isTaggedTemplate, buildTaggedTemplate } = require('./helpers')
 const { conditions } = require('./conditions')
-const { uniqueKeys, columns, values } = require('./values_array')
+const valuesArray = require('./values_array')
 
 const fromItems = (ctx, froms, start = 0, end = froms.length) => {
   if (end > froms.length) end = froms.length
@@ -83,10 +83,8 @@ const buildTable = (ctx, alias, source) => {
     return `${table} as ${ctx.mapKey(alias)}`
   }
   if (Array.isArray(source)) {
-    const keys = uniqueKeys(source)
-    const alias_ = `${ctx.mapKey(alias)}(${columns(ctx, keys)})`
-    const table = values(ctx, source, keys)
-    return `${table} as ${alias_}`
+    const { columns, values } = valuesArray(ctx, source)
+    return `(${values}) as ${ctx.mapKey(alias)}(${columns})`
   }
   return `${ctx.parameter(ctx, source)} as ${ctx.mapKey(alias)}`
 }

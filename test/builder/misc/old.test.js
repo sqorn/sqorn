@@ -59,26 +59,6 @@ describe('delete query - tagged template', () => {
   })
 })
 
-describe('insert query - tagged template', () => {
-  query({
-    name: 'insert - .from``.insert``.value``',
-    query: sq.from`person`.insert`first_name, last_name`.value`'John', 'Doe'`,
-    text: `insert into person (first_name, last_name) values ('John', 'Doe')`
-  })
-  query({
-    name: 'insert - .from``.insert``.value``.value``',
-    query: sq.from`person`.insert`first_name, last_name`.value`'John', 'Doe'`
-      .value`'Carmen', 'San Diego'`,
-    text: `insert into person (first_name, last_name) values ('John', 'Doe'), ('Carmen', 'San Diego')`
-  })
-  query({
-    name: 'insert - .from``.insert``.value``.return``',
-    query: sq.from`person`.insert`first_name, last_name`.value`'John', 'Doe'`
-      .return`age`,
-    text: `insert into person (first_name, last_name) values ('John', 'Doe') returning age`
-  })
-})
-
 describe('update query - tagged template', () => {
   query({
     name: 'update - .from``.set``',
@@ -120,7 +100,7 @@ describe('express query - tagged template', () => {
   })
   query({
     name: 'select - `frm``whr``ret`',
-    query: sq`person``age > 7``age``age`,
+    query: sq`person``age > 7``age`,
     text: 'select age from person where (age > 7)'
   })
   query({

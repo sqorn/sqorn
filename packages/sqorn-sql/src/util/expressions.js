@@ -24,16 +24,10 @@ const expressionArgs = (ctx, args) => {
 }
 
 const expressionArg = (ctx, arg) => {
-  switch (typeof arg) {
-    case 'string':
-      return arg
-    case 'object':
-      return objectTables(ctx, arg)
-    case 'function':
-      return arg._build(ctx).text
-    default:
-      throw Error('Invalid expression:', arg)
-  }
+  if (typeof arg === 'string') return arg
+  if (typeof arg === 'object') return objectTables(ctx, arg)
+  if (typeof arg === 'function') return arg._build(ctx).text
+  return ctx.parameter(ctx, arg)
 }
 
 const objectTables = (ctx, object) => {

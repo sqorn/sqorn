@@ -44,7 +44,7 @@ describe('with', () => {
       name: 'insert subquery arg',
       query: sq.with({ a: sq.from`b`.insert({ x: 1 }).return`*` }).from`a`,
       text:
-        'with a as (insert into b (x) values ($1) returning *) select * from a',
+        'with a as (insert into b(x) values ($1) returning *) select * from a',
       args: [1]
     })
     query({
@@ -71,7 +71,7 @@ describe('with', () => {
       query: sq.with({
         a: sq.return({ x: 1, y: 2 }),
         b: sq.return({ x: 3, y: 4 })
-      }).from`a`.union.all(sq.from`b`),
+      }).from`a`.unionAll(sq.from`b`),
       text:
         'with a as (select $1 as x, $2 as y), b as (select $3 as x, $4 as y) select * from a union all (select * from b)',
       args: [1, 2, 3, 4]
@@ -84,7 +84,7 @@ describe('with', () => {
         })
         .with({
           b: sq.return({ x: 3, y: 4 })
-        }).from`a`.union.all(sq.from`b`),
+        }).from`a`.unionAll(sq.from`b`),
       text:
         'with a as (select $1 as x, $2 as y), b as (select $3 as x, $4 as y) select * from a union all (select * from b)',
       args: [1, 2, 3, 4]
@@ -94,7 +94,7 @@ describe('with', () => {
     query({
       name: 'one',
       query: sq.recursive.with({
-        't(n)': sq.return`1`.union.all(sq.l`select n + 1 from t where n < 100`)
+        't(n)': sq.return`1`.unionAll(sq.l`select n + 1 from t where n < 100`)
       }).return`sum(n)`,
       text:
         'with recursive t(n) as (select 1 union all (select n + 1 from t where n < 100)) select sum(n)'
