@@ -1,4 +1,4 @@
-# [<img src="https://raw.githubusercontent.com/lusakasa/sqorn/master/docs/website/static/img/logo_blue.svg?sanitize=true" height="38px"/> <span style="color: #2979f">Sqorn</span>](https://sqorn.org) &middot; [![License](https://img.shields.io/github/license/lusakasa/sqorn.svg)](https://github.com/lusakasa/sqorn/blob/master/LICENSE) [![npm](https://img.shields.io/npm/v/sqorn.svg)](https://www.npmjs.com/package/sqorn) ![Supports Node 8+](https://img.shields.io/node/v/sqorn.svg) [![npm](https://img.shields.io/travis/lusakasa/sqorn.svg)](https://travis-ci.org/lusakasa/sqorn) ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg) [![Coverage Status](https://coveralls.io/repos/github/lusakasa/sqorn/badge.svg)](https://coveralls.io/github/lusakasa/sqorn)
+# [<img src="https://raw.githubusercontent.com/sqorn/sqorn/master/docs/website/static/img/logo_blue.svg?sanitize=true" height="38px"/> <span style="color: #2979f">Sqorn</span>](https://sqorn.org) &middot; [![License](https://img.shields.io/github/license/sqorn/sqorn.svg)](https://github.com/sqorn/sqorn/blob/master/LICENSE) [![npm](https://img.shields.io/npm/v/sqorn.svg)](https://www.npmjs.com/package/sqorn) ![Supports Node 8+](https://img.shields.io/node/v/sqorn.svg) [![npm](https://img.shields.io/travis/sqorn/sqorn.svg)](https://travis-ci.org/sqorn/sqorn) ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg) [![Coverage Status](https://coveralls.io/repos/github/sqorn/sqorn/badge.svg)](https://coveralls.io/github/sqorn/sqorn)
 
 Sqorn is a Javascript library for building SQL queries.
 
@@ -81,11 +81,11 @@ Learn more in the [tutorial](https://sqorn.org/docs/tutorial.html).
 
 Sqorn is a monorepo managed with Lerna. It contains the following packages:
 
-* [**Sqorn Core:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-core) A Javascript library for building query builders
-* [**Sqorn SQL:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-sql) Utilities for making SQL query builders
-* [**Sqorn Postgres:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-pg) A Javascript library for building Postgres queries
-* [**Sqorn SQLite:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-sqlite) A Javascript library for building SQLite queries
-* [**Sqorn MySQL:**](https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-mysql) A Javascript library for building MySQL queries
+* [**Sqorn Core:**](https://github.com/sqorn/sqorn/tree/master/packages/sqorn-core) A Javascript library for building query builders
+* [**Sqorn SQL:**](https://github.com/sqorn/sqorn/tree/master/packages/sqorn-sql) Utilities for making SQL query builders
+* [**Sqorn Postgres:**](https://github.com/sqorn/sqorn/tree/master/packages/sqorn-pg) A Javascript library for building Postgres queries
+* [**Sqorn SQLite:**](https://github.com/sqorn/sqorn/tree/master/packages/sqorn-sqlite) A Javascript library for building SQLite queries
+* [**Sqorn MySQL:**](https://github.com/sqorn/sqorn/tree/master/packages/sqorn-mysql) A Javascript library for building MySQL queries
 
 Clone the repo then run the following commands to install all dependencies:
 

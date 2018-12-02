@@ -8,6 +8,6 @@
     "node": ">=8.0.0"
   },
   "main": "./src/index.js",
-  "repository": "https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-adapter-sqlite3",
+  "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-adapter-sqlite3",
   "homepage": "https://sqorn.org"
 }

@@ -1,6 +1,6 @@
 const { sq, query } = require('../tape')
 
-describe('https://github.com/lusakasa/sqorn/issues/9', () => {
+describe('https://github.com/sqorn/sqorn/issues/9', () => {
   const bcas = [
     {
       quantity: 1,
@@ -57,7 +57,7 @@ describe('https://github.com/lusakasa/sqorn/issues/9', () => {
   })
 })
 
-describe('https://github.com/lusakasa/sqorn/issues/46', () => {
+describe('https://github.com/sqorn/sqorn/issues/46', () => {
   query({
     name: 'distinct on bug 1',
     query: sq.return`t.id`.distinctOn`t.id`.from`test t`.join`foo f`
