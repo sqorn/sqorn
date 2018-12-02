@@ -2,44 +2,48 @@ const { isTaggedTemplate, buildTaggedTemplate } = require('../util')
 
 module.exports = ctx => {
   if (!ctx.set) return
-  const txt = set(ctx, ctx.set)
+  const txt = buildCalls(ctx, ctx.set)
   return txt && 'set ' + txt
 }
 
-const set = ctx => {
+const buildCalls = ctx => {
   const updates = ctx.set
   let txt = ''
   for (let i = 0; i < updates.length; ++i) {
     if (i !== 0) txt += ', '
-    txt += change(ctx, updates[i])
+    txt += buildCall(ctx, updates[i])
   }
   return txt
 }
 
-const change = (ctx, args) => {
-  if (isTaggedTemplate(args)) {
-    return buildTaggedTemplate(ctx, args)
-  } else if (typeof args[0] === 'object') {
-    return objectChange(ctx, args[0])
+const buildCall = (ctx, args) =>
+  isTaggedTemplate(args) ? buildTaggedTemplate(ctx, args) : buildArgs(ctx, args)
+
+const buildArgs = (ctx, args) => {
+  let txt = ''
+  for (let i = 0; i < args.length; ++i) {
+    if (i !== 0) txt += ', '
+    txt += buildArg(ctx, args[i])
   }
-  throw Error('Invalid args:', args)
+  return txt
 }
 
-const objectChange = (ctx, obj) => {
-  const keys = Object.keys(obj)
+const buildArg = (ctx, obj) => {
   let txt = ''
+  const keys = Object.keys(obj)
   for (let i = 0; i < keys.length; ++i) {
     if (i !== 0) txt += ', '
-    txt += buildCondition(ctx, obj, keys[i])
+    const column = keys[i]
+    const value = obj[column]
+    txt += `${ctx.mapKey(column)} = ${buildColumn(ctx, value)}`
   }
   return txt
 }
 
-const buildCondition = (ctx, obj, key) => {
-  const val = obj[key]
-  return (
-    ctx.mapKey(key) +
-    ' = ' +
-    (typeof val === 'function' ? val._build(ctx).text : ctx.parameter(ctx, val))
-  )
+const buildColumn = (ctx, arg) => {
+  if (typeof arg === 'function') {
+    const { type, text } = arg._build(ctx)
+    return type === 'manual' ? text : `(${text})`
+  }
+  return ctx.parameter(ctx, arg)
 }

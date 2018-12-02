@@ -79,4 +79,18 @@ describe('set', () => {
       args: ['Jo']
     })
   })
+  describe('subquery', () => {
+    query({
+      name: 'manual',
+      query: sq.from('person').set({ firstName: sq.l`${'Bob'}` }),
+      text: `update person set first_name = $1`,
+      args: ['Bob']
+    })
+    query({
+      name: 'select',
+      query: sq.from('person').set({ firstName: sq.return`${'Bob'}` }),
+      text: `update person set first_name = (select $1)`,
+      args: ['Bob']
+    })
+  })
 })

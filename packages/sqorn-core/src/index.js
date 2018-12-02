@@ -38,7 +38,7 @@ const createReducers = methods => {
   for (const name in methods) {
     const { updateContext, properties = {} } = methods[name]
     reducers[name] = updateContext
-    // some methods have subproperties, e.g. .union.all
+    // some methods have subproperties, e.g. .unionAll
     for (const key in properties) {
       reducers[`${name}.${key}`] = properties[key]
     }
@@ -54,9 +54,10 @@ const applyReducers = reducers => (method, ctx) => {
     methods.push(method)
   }
   // build methods object by processing methods in call order
+  const express = { id: 0 }
   for (let i = methods.length - 1; i >= 0; --i) {
     const method = methods[i]
-    reducers[method.name](ctx, method.args)
+    reducers[method.name](ctx, method.args, express)
   }
   return ctx
 }
@@ -155,35 +156,13 @@ const mapMultipleRowsKeys = (rows, fn) => {
 const methodProperties = ({ methods, chain }) => {
   const properties = {}
   for (const name in methods) {
-    const { getter, properties: props } = methods[name]
+    const { getter } = methods[name]
     if (getter) {
       // add getter methods
       properties[name] = {
         get: function() {
           return chain({ name, prev: this.method })
         }
-      }
-    } else if (props) {
-      // certain builder methods are both callable and have subproperties
-      // e.g. .union() and .union.all()
-      const subBuilderPrototype = {}
-      for (const key in props) {
-        subBuilderPrototype[key] = function(...args) {
-          return chain({
-            name: `${name}.${key}`,
-            args,
-            prev: this.method
-          })
-        }
-      }
-      const subBuilder = function() {
-        let fn = (...args) => chain({ name, args, prev: this.method })
-        fn.method = this.method
-        Object.setPrototypeOf(fn, subBuilderPrototype)
-        return fn
-      }
-      properties[name] = {
-        get: subBuilder
       }
     } else {
       // add function call methods

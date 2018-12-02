@@ -1,6 +1,25 @@
-const { fromItems } = require('../util')
+const {
+  fromItems,
+  valuesArray,
+  isTaggedTemplate,
+  buildTaggedTemplate
+} = require('../util')
 
 module.exports = ctx => {
-  const txt = fromItems(ctx, ctx.frm)
-  return txt && `insert into ${txt}`
+  const table = fromItems(ctx, ctx.frm)
+  const values = buildCall(ctx, ctx.insert)
+  return `insert into ${table}${values}`
+}
+
+const buildCall = (ctx, args) => {
+  if (isTaggedTemplate(args)) return ' ' + buildTaggedTemplate(ctx, args)
+  if (args.length === 0) return ' default values'
+  if (Array.isArray(args[0])) return buildValuesArray(ctx, args[0])
+  if (typeof args[0] === 'function') return ' ' + args[0]._build(ctx).text
+  return buildValuesArray(ctx, args)
+}
+
+const buildValuesArray = (ctx, array) => {
+  const { values, columns } = valuesArray(ctx, array)
+  return `(${columns}) ${values}`
 }

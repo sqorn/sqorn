@@ -7,10 +7,12 @@ interface Configuration {
    * but can be skipped if you only want to build queries.
    * 
    * @example
-   * const pg = require('pg')
-   * const sqorn = require('sqorn-pg')
-   * const pool = new pg.Pool()
-   * const sq = sqorn({ pg, pool })
+```js
+const pg = require('pg')
+const sqorn = require('sqorn-pg')
+const pool = new pg.Pool()
+const sq = sqorn({ pg, pool })
+```
    */
   pg?: any
   /**
@@ -20,35 +22,46 @@ interface Configuration {
    * If provided, you MUST also provide argument `pg`.
    * 
    * @example
-   * const pg = require('pg')
-   * const sqorn = require('sqorn-pg')
-   * const pool = new pg.Pool()
-   * const sq = sqorn({ pg, pool })
+```js
+const pg = require('pg')
+const sqorn = require('sqorn-pg')
+const pool = new pg.Pool()
+const sq = sqorn({ pg, pool })
+```
    */
   pool?: any
   /**
-   * Function that maps input object keys.
+   * Specifies how input object keys should be transformed.
+   * 
    * If unspecified, the default mapping function converts keys to `snake_case`.
    * 
    * @example
-   * const sq = sqorn({ mapInputKeys: key => key.toUpperCase() })
-   * 
-   * sq.from({ p: 'person' }).return({ name: 'first_name' }).query
-   * 
-   * { text: 'select first_name as NAME from person as P',
-   *   args: [] }
+```js
+const sq = sqorn({ mapInputKeys: key => key.toUpperCase() })
+
+sq.from({ p: 'person' }).return({ name: 'first_name' }).query.text
+// 'select first_name as NAME from person as P'
+```
    * */
   mapInputKeys?: (key: string) => string
   /**
-   * Function that maps output object keys.
+   * Specifies how output object keys should be transformed.
+   * 
    * If unspecified, the default mapping function converts keys to `camelCase`.
    * 
+   * This function does NOT modify the generated query. It transforms result object keys.
+   * 
    * @example
-   * const sq = sqorn({ mapOutputKeys: key => key.toUpperCase() })
-   * 
-   * await sq.from('person').return('first_name')
-   * 
-   * [{ FIRST_NAME: 'Jo'}, { FIRST_NAME: 'Mo' }]
+```js
+const sq = sqorn({ mapOutputKeys: key => key.toUpperCase() })
+const names = sq.from('person').return('first_name')
+
+names.query.text
+// 'select first_name from person'
+
+await names.all()
+// [{ FIRST_NAME: 'Jo'}, { FIRST_NAME: 'Mo' }]
+```
    * */
   mapOutputKeys?: (key: string) => string
 }

@@ -1,3 +1,11 @@
+module.exports = (ctx, array) => {
+  const keys = uniqueKeys(array)
+  return {
+    columns: columns(ctx, keys),
+    values: values(ctx, array, keys)
+  }
+}
+
 // gets unique keys in object array
 const uniqueKeys = array => {
   const keys = {}
@@ -21,22 +29,24 @@ const columns = (ctx, keys) => {
 
 // gets values string of object array
 const values = (ctx, source, keys) => {
-  let txt = '(values '
+  let txt = 'values '
   for (let i = 0; i < source.length; ++i) {
     if (i !== 0) txt += ', '
     txt += '('
     const object = source[i]
     for (let j = 0; j < keys.length; ++j) {
       if (j !== 0) txt += ', '
-      txt += ctx.parameter(ctx, object[keys[j]])
+      txt += value(ctx, object[keys[j]])
     }
     txt += ')'
   }
-  return txt + ')'
+  return txt
 }
 
-module.exports = {
-  uniqueKeys,
-  columns,
-  values
+const value = (ctx, arg) => {
+  if (typeof arg === 'function') {
+    const subquery = arg._build(ctx)
+    return subquery.type === 'manual' ? subquery.text : `(${subquery.text})`
+  }
+  return ctx.parameter(ctx, arg)
 }

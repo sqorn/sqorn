@@ -12,7 +12,6 @@ const {
   del,
   returning,
   insert,
-  value,
   update,
   set,
   sql
@@ -32,8 +31,6 @@ const query = (...clauses) => ctx => {
 
 const sqlQuery = query(sql)
 const queries = {
-  sql: sqlQuery,
-  arg: sqlQuery,
   select: query(
     wth,
     select,
@@ -46,9 +43,11 @@ const queries = {
     limit,
     offset
   ),
+  update: query(wth, update, set, where, returning),
   delete: query(wth, del, where, returning),
-  insert: query(wth, insert, value, returning),
-  update: query(wth, update, set, where, returning)
+  insert: query(wth, insert, returning),
+  manual: sqlQuery,
+  arg: sqlQuery
 }
 
 module.exports = { query, queries }

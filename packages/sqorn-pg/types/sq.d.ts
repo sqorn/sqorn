@@ -8,7 +8,7 @@ export interface SQW extends SQ, M.ExpressWhere {}
 export interface SQR extends SQ, M.ExpressReturn {}
 
 interface Select
-  extends M.With, M.From, M.Join, M.Return, M.Where, M.Order, M.Limit, M.Offset, M.Group, M.Having, M.Logic {}
+  extends M.With, M.From, M.Join, M.Return, M.Where, M.Group, M.Having, M.SetOperators, M.Order, M.Limit, M.Offset, M.Logic {}
 
 interface Update
   extends M.With, M.From, M.Join, M.Return, M.Where, M.Set, M.Logic {}
@@ -22,7 +22,7 @@ interface Values extends M.Order, M.Limit, M.Offset, M.Values {}
 
 interface Manual extends M.SQL, M.Raw {}
 
-interface Helper extends M.End, M.Transaction {}
+interface Helper extends M.End, M.TransactionMethods, M.GroupHelpers {}
 
 interface Execute extends M.Buildable, M.Execute {}
 

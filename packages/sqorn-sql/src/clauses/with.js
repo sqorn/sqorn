@@ -1,5 +1,5 @@
 const { isTaggedTemplate, buildTaggedTemplate } = require('../util')
-const { uniqueKeys, columns, values } = require('../util/values_array')
+const valuesArray = require('../util/values_array')
 
 module.exports = ctx => {
   if (ctx.with.length === 0) return
@@ -50,10 +50,8 @@ const buildTable = (ctx, alias, source) => {
     return `${ctx.mapKey(alias)} as (${query.text})`
   }
   if (Array.isArray(source)) {
-    const keys = uniqueKeys(source)
-    const alias_ = `${ctx.mapKey(alias)}(${columns(ctx, keys)})`
-    const table = values(ctx, source, keys)
-    return `${alias_} as ${table}`
+    const { columns, values } = valuesArray(ctx, source)
+    return `${ctx.mapKey(alias)}(${columns}) as (${values})`
   }
   throw Error(`Invalid .with argument`)
 }

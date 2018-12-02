@@ -10,6 +10,8 @@ Sqorn is a Javascript library *engineered* for building SQL queries. Its declara
 
 Sqorn is designed to make it possible to securely construct any valid SQL query. To achieve this, Sqorn lets you securely integrate raw SQL using tagged template literals. All arguments are automatically parameterized, preventing SQL injection. Sqorn also exposes the unique grammar and features of each supported SQL dialect.
 
+Sqorn is not type-safe. You do not define models and relationships. You just write queries. It is your responsibility to ensure the queries are valid.
+
 ## Setup
 
 Sqorn requires Node version 8 or above.
@@ -272,11 +274,14 @@ sq.from({ b: 'book', p: 'person' }).query
 
 Tables can be arrays of row objects. A *values* clause is generated. Column names are inferred from all keys.
 
-```js
-sq.from({ people: [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }] }).query
+By default, Sqorn [converts input object keys](#map-input-keys) to *snake_case*.
 
-{ text: 'select * from (values ($1, $2), ($3, $4) as people(age, name))',
-  args: [8, 'Jo', 9, 'Mo'] }
+```js
+const people = [{ age: 7, firstName: 'Jo' }, { age: 9, firstName: 'Mo' }]
+sq.from({ people }).query
+
+{ text: 'select * from (values ($1, $2), ($3, $4) as people(age, first_name))',
+  args: [7, 'Jo', 9, 'Mo'] }
 ```
 
 Tables can be *select* subqueries.
@@ -363,7 +368,7 @@ sq.from`book`.where({ genre: 'Fantasy', year: 2000 }).query
   args: ['Fantasy', 2000] }
 ```
 
-By default keys are converted from `CamelCase` to `snake_case`.
+By default, Sqorn [converts input object keys](#map-input-keys) to *snake_case*.
 
 ```js
 sq.from`person`.where({ firstName: 'Kaladin' }).query
@@ -489,28 +494,28 @@ sq.from`book`.distinct.distinct.return`genre`.return`author`.query
   args: [] }
 ```
 
-**Postgres only:** Call `.distinct.on` to get only the first row from each group matching provided expressions.
+**Postgres only:** Call `.distinctOn` to get only the first row from each group matching provided expressions.
 
 ```js
 sq.from`weather`
-  .distinct.on`location`.return`location, time, report`.query
+  .distinctOn`location`.return`location, time, report`.query
 
 { text: 'select distinct on (location) location, time, report from weather',
   args: [] }
 ```
 
-`.on` can be called multiple times.
+`.distinctOn` can be called multiple times.
 
 ```js
 sq.from`weather`
-  .distinct.on`location`.on`time`.return`location, time, report`
+  .distinctOn`location`.distinctOn`time`.return`location, time, report`
   .query
 
 { text: 'select distinct on (location, time) location, time, report from weather',
   args: [] }
 ```
 
-`.on` accepts [expressions](#expressions).
+`.distinctOn` accepts [expressions](#expressions).
 
 Expressions can be strings
 
@@ -518,7 +523,7 @@ Expressions can be strings
 
 ```js
 sq.from('weather')
-  .distinct.on('location', 'time').return('location', 'time', 'report').query
+  .distinctOn('location', 'time').return('location', 'time', 'report').query
 
 { text: 'select distinct on (location, time) location, time, report from weather',
   args: [] }
@@ -526,7 +531,7 @@ sq.from('weather')
 Expressions can be *manual* subqueries.
 
 ```js
-sq.from`generate_series(0, 10) as n`.distinct.on(sq.l`n / 3`).return`n`.query
+sq.from`generate_series(0, 10) as n`.distinctOn(sq.l`n / 3`).return`n`.query
 
 { text: 'select distinct on (n / 3) n from generate_series(0, 10) as n',
   args: [] }
@@ -552,32 +557,68 @@ sq.from`person`.where`name = ${'Jo'}`.return`age`
 sq.from('person').where({ name: 'Jo' }).return('age')
 ```
 
+### Extend
+
+`.extend` lets you construct new queries by extending existing queries.
+
+```js
+const FantasyBook = sq.from('book').where({ genre: 'fantasy' })
+const Title = sq.return('title')
+
+sq.extend(FantasyBook, Title).query
+
+{ text: 'select title from book where (genre = $1)',
+  args: ['fantasy'] }
+```
+
+`.extend` can be called in the middle of a query chain.
+
+```js
+sq.from('book').extend(sq.where({ genre: 'fantasy' })).return('title').query
+
+{ text: 'select title from book where (genre = $1)',
+  args: ['fantasy'] }
+```
+
+Every query chain has its own *Express* state.
+
+```js
+sq`author`.extend(
+  sq`book``book.author_id = author.id``title`,
+  sq`publisher``publisher.id = book.publisher_id``publisher`
+)`author.id = 7``first_name`.query
+
+{ text: 'select title, publisher, first_name from author, book, publisher where (book.author_id = author.id) and (publisher.id = book.publisher_id) and (author.id = 7)',
+  args: [] }
+```
+
 ### Group By
 
 Add a *Group By* clause with `.group` to create one row for all rows matching the given *expressions*.
 
 ```js
-sq.from`person`.group`age`.query
+sq.from`person`.return`age, count(*)`.group`age`.query
 
-{ text: 'select * from person group by age',
+{ text: 'select age, count(*) from person group by age',
   args: [] }
 ```
 
 Multiple `.group` calls are joined with `', '`.
 
 ```js
-sq.from`person`.group`age`.group`last_name`.query
+sq.from`person`.return`age, last_name, count(*)`
+  .group`age`.group`last_name`.query
 
-{ text: 'select * from person group by age, last_name',
+{ text: 'select age, last_name, count(*) from person group by age, last_name',
   args: [] }
 ```
 
 `.group` accepts [expressions](#expressions) and arrays of expressions.
 
 ```js
-sq.from`person`.group('age', [sq.l`last_name`, 'first_name']).query
+sq.from('person').return('count(*)').group('age', [sq.l`last_name`, 'first_name']).query
 
-{ text: 'select * from person group by age, (last_name, first_name)',
+{ text: 'select count(*) from person group by age, (last_name, first_name)',
   args: [] }
 ```
 
@@ -689,10 +730,10 @@ sq.from`book`.order({ by: 'title', sort: 'desc' }).query
   args: [] }
 ```
 
-**Postgres Only:** Setting `sort` to a string other than `'asc'` or `'desc'` forms a *using* clause.
+**Postgres Only:** Set property `using` to a comparison operator.
 
 ```js
-sq.from`person`.order({ by: 'first_name', sort: '~<~' }).query
+sq.from`person`.order({ by: 'first_name', using: '~<~' }).query
 
 { text: 'select * from person order by first_name using ~<~',
   args: [] }
@@ -745,6 +786,15 @@ sq.from`person`.limit(sq.l`1 + 7`).query
   args: [] }
 ```
 
+`.limit` accepts a *select* subquery.
+
+```js
+sq.from`person`.limit(sq.return(10)).query
+
+{ text: 'select * from person limit (select $1)',
+  args: [10] }
+```
+
 ### Offset
 
 Pass `.offset` the number of rows to skip before returning rows.
@@ -781,6 +831,15 @@ sq.from`person`.offset(sq.l`1 + 7`).query
 
 { text: 'select * from person offset 1 + 7',
   args: [] }
+```
+
+`.offset` accepts a *select* subquery.
+
+```js
+sq.from`person`.offset(sq.return(10)).query
+
+{ text: 'select * from person offset (select $1)',
+  args: [10] }
 ```
 
 ### Join
@@ -880,10 +939,10 @@ Young.union(Middle, Old).query
   args: [] }
 ```
 
-`.union.all`, `.intersect.all`, and `.except.all` can be used to prevent duplicate elimination.
+`.unionAll`, `.intersectAll`, and `.exceptAll` can be used to prevent duplicate elimination.
 
 ```js
-Young.union.all(Old).query
+Young.unionAll(Old).query
 
 { text: 'select * from person where (age < 30) union all (select * from person where (age >= 60))',
   args: [] }
@@ -928,9 +987,7 @@ sq.with({
     width: sq.return({ n: 10 }),
     height: sq.l`select ${20} as n`
   })
-  .return({
-    area: sq.l`width.n * height.n`,
-  })
+  .return({ area: sq.l`width.n * height.n` })
   .query
 
 { text: 'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
@@ -953,7 +1010,7 @@ Create a *recursive* CTE with `.recursive`.
 const one = sq.return`1`
 const next = sq.return`n + 1`.from`t`.where`n < 100`
 sq.recursive
-  .with({ 't(n)': one.union.all(next) })
+  .with({ 't(n)': one.unionAll(next) })
   .from`t`
   .return`sum(n)`
   .query
@@ -1037,59 +1094,97 @@ sq.delete
 
 ### Insert
 
-`Insert` queries use `.insert` and `.value` to specify the columns and values to insert.
+`Insert` queries use `.insert` to specify the rows to insert.
 
 ```js
-sq.from`person`
-  .insert`first_name, last_name`
-  .value`${'Shallan'}, ${'Davar'}`
-  .value`${'Navani'}, ${'Kholin'}`
+sq.from`person(first_name, last_name)`.insert`values (${'Shallan'}, ${'Davar'})`.query
+
+{ text: 'insert into person(first_name, last_name) values ($1, $2)',
+  args: ['Shallan', 'Davar'] }
+```
+
+To insert one row, pass `.insert` a single object. Column names are inferred from the object's keys.
+
+By default, Sqorn [converts input object keys](#map-input-keys) to *snake_case*.
+
+```js
+sq.from('person').insert({ firstName: 'Shallan', lastName: 'Davar' }).query
+
+{ text: 'insert into person(first_name, last_name) values ($1, $2)',
+  args: ['Shallan', 'Davar'] }
+```
+
+To insert multiple rows, pass multiple objects. Column names are inferred from the keys of all objects.
+
+```js
+sq.from('person')
+  .insert(
+    { firstName: 'Shallan', lastName: 'Davar' },
+    { firstName: 'Navani', lastName: 'Kholin' }
+  )
   .query
 
-{ text: 'insert into person (first_name, last_name) values ($1, $2), ($3, $4)',
+{ text: 'insert into person(first_name, last_name) values ($1, $2), ($3, $4)',
   args: ['Shallan', 'Davar', 'Navani', 'Kholin'] }
 ```
 
-You can pass `.insert` column names as strings. You must then pass`.value` corresponding row values. `undefined` values are inserted as `default`.
+Alternatively, pass `.insert` an array of objects.
 
 ```js
-sq.from`book`
-  .insert('title', 'year')
-  .value('The Way of Kings', 2010)
-  .value('Words of Radiance', null)
-  .value('Oathbringer')
+sq.from('person')
+  .insert([
+    { firstName: 'Shallan', lastName: 'Davar' },
+    { firstName: 'Navani', lastName: 'Kholin' }
+  ])
   .query
 
-{ text: 'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
-  args: ['The Way of Kings', 2010, 'Words of Radiance', null, 'Oathbringer'] }
+{ text: 'insert into person(first_name, last_name) values ($1, $2), ($3, $4)',
+  args: ['Shallan', 'Davar', 'Navani', 'Kholin'] }
 ```
 
-When called as a template string or passed string column names, `.insert` may only be called once.
-
-When passed an object, `.insert` can be called multiple times to insert multiple rows. Column names are inferred from examining all object keys.
+Values may be subqueries.
 
 ```js
-sq.from`book`
-  .insert({ title: 'The Way of Kings', year: 2010 })
-  .insert({ title: 'Words of Radiance', year: null })
-  .insert({ title: 'Oathbringer' })
+sq.from('person').insert({
+    firstName: sq.return`${'Shallan'}`,
+    lastName: sq.l('Davar')
+  })
   .query
 
-{ text: 'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
-  args: ['The Way of Kings', 2010, 'Words of Radiance', null, 'Oathbringer'] }
+{ text: "insert into person(first_name, last_name) values ((select $1), $2)",
+  args: ['Shallan', 'Davar'] }
 ```
 
-Alternatively, multiple objects may be passed to `.insert`
+`.insert` accepts subqueries.
 
 ```js
-sq.from`book`
-  .insert({ title: 'The Way of Kings', year: 2010 },
-          { title: 'Words of Radiance', year: null },
-          { title: 'Oathbringer' })
+sq.from('superhero(name)')
+  .insert(sq.return`${'batman'}`.union(sq.return`${'superman'}`))
   .query
 
-{ text: 'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
-  args: ['The Way of Kings', 2010, 'Words of Radiance', 'Oathbringer'] }
+{ text: "insert into superhero(name) select $1 union (select $2)",
+  args: ['batman', 'superman'] }
+```
+
+Call `.insert` without arguments to insert default values.
+
+```js
+sq.from`person`.insert().query
+
+{ text: 'insert into person default values',
+  args: [] }
+```
+
+Only the last call to `.insert` is used.
+
+```js
+sq.from`person`
+  .insert({ firstName: 'Shallan', lastName: 'Davar' })
+  .insert({ firstName: 'Navani', lastName: 'Kholin' })
+  .query
+
+{ text: 'insert into person(first_name, last_name) values ($1, $2)',
+  args: ['Navani', 'Kholin'] }
 ```
 
 ### Returning
@@ -1118,7 +1213,7 @@ sq`book`()`id`.insert({ title: 'Squirrels and Acorns' }).query
 
 ### Set
 
-*Update* queries use `.set` to specify values to update. `.set` can be called multiple times.
+*Update* queries use `.set` to specify columns to update. `.set` can be called multiple times.
 
 ```js
 sq.from`person`.set`age = age + 1, processed = true`.set`name = ${'Sally'}`.query
@@ -1127,15 +1222,28 @@ sq.from`person`.set`age = age + 1, processed = true`.set`name = ${'Sally'}`.quer
   args: ['Sally'] }
 ```
 
-`.set` accepts an update object.
+`.set` accepts update objects.
 
 ```js
-sq.from`person`
-  .set({ firstName: 'Robert', nickname: 'Rob' })
+sq.from('person')
+  .set({ firstName: 'Robert', nickname: 'Rob' }, { processed: true })
   .query
 
-{ text: 'update person set first_name = $1, nickname = $2',
-  args: ['Robert', 'Rob'] }
+{ text: 'update person set first_name = $1, nickname = $2, processed = $3',
+  args: ['Robert', 'Rob', true] }
+```
+
+Update values may be subqueries.
+
+```js
+sq.from('person').set({
+  firstName: sq.l`'Bob'`,
+  lastName: sq.return`'Smith'`
+ })
+ .query
+
+{ text: "update person set first_name = 'Bob', last_name = (select 'Smith')",
+  args: [] }
 ```
 
 Call `.set` multiple times to update additional columns.

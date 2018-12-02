@@ -98,9 +98,10 @@ describe('tutorial', () => {
       query({
         name: '.from object - array of row objects',
         query: sq.from({
-          people: [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }]
+          people: [{ age: 7, firstName: 'Jo' }, { age: 9, firstName: 'Mo' }]
         }),
-        text: 'select * from (values ($1, $2), ($3, $4)) as people(age, name)',
+        text:
+          'select * from (values ($1, $2), ($3, $4)) as people(age, first_name)',
         args: [7, 'Jo', 9, 'Mo']
       })
       query({
@@ -241,34 +242,34 @@ describe('tutorial', () => {
         args: []
       })
       query({
-        name: '.distinct.on',
-        query: sq.from`weather`.distinct.on`location`
+        name: '.distinctOn',
+        query: sq.from`weather`.distinctOn`location`
           .return`location, time, report`,
         text:
           'select distinct on (location) location, time, report from weather',
         args: []
       })
       query({
-        name: '.distinct.on.on',
-        query: sq.from`weather`.distinct.on`location`.on`time`
+        name: '.distinct.distinctOn',
+        query: sq.from`weather`.distinctOn`location`.distinctOn`time`
           .return`location, time, report`,
         text:
           'select distinct on (location, time) location, time, report from weather',
         args: []
       })
       query({
-        name: ".distinct.on('')",
+        name: ".distinctOn('')",
         query: sq
           .from('weather')
-          .distinct.on('location', 'time')
+          .distinctOn('location', 'time')
           .return('location', 'time', 'report'),
         text:
           'select distinct on (location, time) location, time, report from weather',
         args: []
       })
       query({
-        name: ".distinct.on('', '').return",
-        query: sq.from`generate_series(0, 10) as n`.distinct.on(sq.l`n / 3`)
+        name: ".distinctOn('', '').return",
+        query: sq.from`generate_series(0, 10) as n`.distinctOn(sq.l`n / 3`)
           .return`n`,
         text: 'select distinct on (n / 3) n from generate_series(0, 10) as n',
         args: []
@@ -300,23 +301,58 @@ describe('tutorial', () => {
         expect(h.query).toEqual(i.query)
       })
     })
+    describe('Extend', () => {
+      const FantasyBook = sq.from('book').where({ genre: 'fantasy' })
+      const Title = sq.return('title')
+      query({
+        name: 'basic',
+        query: sq.extend(FantasyBook, Title),
+        text: 'select title from book where (genre = $1)',
+        args: ['fantasy']
+      })
+      query({
+        name: 'middle query chain',
+        query: sq
+          .from('book')
+          .extend(sq.where({ genre: 'fantasy' }))
+          .return('title'),
+        text: 'select title from book where (genre = $1)',
+        args: ['fantasy']
+      })
+      query({
+        name: 'middle query chain',
+        query: sq`author`.extend(
+          sq`book``book.author_id = author.id``title`,
+          sq`publisher``publisher.id = book.publisher_id``publisher`
+        )`author.id = 7``first_name`,
+        text:
+          'select title, publisher, first_name from author, book, publisher where (book.author_id = author.id) and (publisher.id = book.publisher_id) and (author.id = 7)',
+        args: []
+      })
+    })
     describe('Group By', () => {
       query({
         name: 'tagged template',
-        query: sq.from`person`.group`age`,
-        text: 'select * from person group by age',
+        query: sq.from`person`.return`age, count(*)`.group`age`,
+        text: 'select age, count(*) from person group by age',
         args: []
       })
       query({
         name: 'multiple calls',
-        query: sq.from`person`.group`age`.group`last_name`,
-        text: 'select * from person group by age, last_name',
+        query: sq.from`person`.return`age, last_name, count(*)`.group`age`
+          .group`last_name`,
+        text:
+          'select age, last_name, count(*) from person group by age, last_name',
         args: []
       })
       query({
         name: 'expression args',
-        query: sq.from`person`.group('age', [sq.l`last_name`, 'first_name']),
-        text: 'select * from person group by age, (last_name, first_name)',
+        query: sq
+          .from('person')
+          .return('count(*)')
+          .group('age', [sq.l`last_name`, 'first_name']),
+        text:
+          'select count(*) from person group by age, (last_name, first_name)',
         args: []
       })
       query({
@@ -413,7 +449,7 @@ describe('tutorial', () => {
       })
       query({
         name: 'object - using',
-        query: sq.from`person`.order({ by: 'first_name', sort: '~<~' }),
+        query: sq.from`person`.order({ by: 'first_name', using: '~<~' }),
         text: 'select * from person order by first_name using ~<~',
         args: []
       })
@@ -444,10 +480,16 @@ describe('tutorial', () => {
         args: []
       })
       query({
-        name: 'limit subquery',
+        name: 'limit manual subquery',
         query: sq.from`person`.limit(sq.l`1 + 7`),
         text: 'select * from person limit 1 + 7',
         args: []
+      })
+      query({
+        name: 'limit select subquery',
+        query: sq.from`person`.limit(sq.return(10)),
+        text: 'select * from person limit (select $1)',
+        args: [10]
       })
     })
     describe('Offset', () => {
@@ -470,10 +512,16 @@ describe('tutorial', () => {
         args: []
       })
       query({
-        name: 'offset subquery',
+        name: 'offset manual subquery',
         query: sq.from`person`.offset(sq.l`1 + 7`),
         text: 'select * from person offset 1 + 7',
         args: []
+      })
+      query({
+        name: 'offset select subquery',
+        query: sq.from`person`.offset(sq.return(10)),
+        text: 'select * from person offset (select $1)',
+        args: [10]
       })
     })
     describe('Join', () => {
@@ -560,7 +608,7 @@ describe('tutorial', () => {
       })
       query({
         name: 'union all',
-        query: Young.union.all(Old),
+        query: Young.unionAll(Old),
         text:
           'select * from person where (age < 30) union all (select * from person where (age >= 60))',
         args: []
@@ -615,7 +663,7 @@ describe('tutorial', () => {
       const next = sq.return`n + 1`.from`t`.where`n < 100`
       query({
         name: 'recursive cte',
-        query: sq.recursive.with({ 't(n)': one.union.all(next) }).from`t`
+        query: sq.recursive.with({ 't(n)': one.unionAll(next) }).from`t`
           .return`sum(n)`,
         text:
           'with recursive t(n) as (select 1 union all (select n + 1 from t where (n < 100))) select sum(n) from t',
@@ -675,62 +723,80 @@ describe('tutorial', () => {
   describe('Insert Queries', () => {
     describe('Insert', () => {
       query({
-        name: '.insert``',
-        query: sq.from`person`.insert`first_name, last_name`
-          .value`${'Shallan'}, ${'Davar'}`.value`${'Navani'}, ${'Kholin'}`,
+        name: '.insert({})',
+        query: sq
+          .from('person')
+          .insert({ firstName: 'Shallan', lastName: 'Davar' }),
+        text: 'insert into person(first_name, last_name) values ($1, $2)',
+        args: ['Shallan', 'Davar']
+      })
+      query({
+        name: '.insert(...[])',
+        query: sq
+          .from('person')
+          .insert(
+            { firstName: 'Shallan', lastName: 'Davar' },
+            { firstName: 'Navani', lastName: 'Kholin' }
+          ),
         text:
-          'insert into person (first_name, last_name) values ($1, $2), ($3, $4)',
+          'insert into person(first_name, last_name) values ($1, $2), ($3, $4)',
         args: ['Shallan', 'Davar', 'Navani', 'Kholin']
       })
       query({
-        name: ".insert('', '').value(1, '').value(1, '')",
-        query: sq.from`book`
-          .insert('title', 'year')
-          .value('The Way of Kings', 2010)
-          .value('Words of Radiance', null)
-          .value('Oathbringer'),
+        name: '.insert(...[])',
+        query: sq
+          .from('person')
+          .insert(
+            { firstName: 'Shallan', lastName: 'Davar' },
+            { firstName: 'Navani', lastName: 'Kholin' }
+          ),
         text:
-          'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
-        args: [
-          'The Way of Kings',
-          2010,
-          'Words of Radiance',
-          null,
-          'Oathbringer'
-        ]
+          'insert into person(first_name, last_name) values ($1, $2), ($3, $4)',
+        args: ['Shallan', 'Davar', 'Navani', 'Kholin']
+      })
+      query({
+        name: '.insert([])',
+        query: sq
+          .from('person')
+          .insert([
+            { firstName: 'Shallan', lastName: 'Davar' },
+            { firstName: 'Navani', lastName: 'Kholin' }
+          ]),
+        text:
+          'insert into person(first_name, last_name) values ($1, $2), ($3, $4)',
+        args: ['Shallan', 'Davar', 'Navani', 'Kholin']
+      })
+      query({
+        name: '.insert({ sq.l })',
+        query: sq.from('person').insert({
+          firstName: sq.return`${'Shallan'}`,
+          lastName: sq.l('Davar')
+        }),
+        text:
+          'insert into person(first_name, last_name) values ((select $1), $2)',
+        args: ['Shallan', 'Davar']
       })
       query({
         name: '.insert({}).insert({}).insert({})',
-        query: sq.from`book`
-          .insert({ title: 'The Way of Kings', year: 2010 })
-          .insert({ title: 'Words of Radiance', year: null })
-          .insert({ title: 'Oathbringer' }),
-        text:
-          'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
-        args: [
-          'The Way of Kings',
-          2010,
-          'Words of Radiance',
-          null,
-          'Oathbringer'
-        ]
+        query: sq
+          .from('superhero(name)')
+          .insert(sq.return`${'batman'}`.union(sq.return`${'superman'}`)),
+        text: 'insert into superhero(name) select $1 union (select $2)',
+        args: ['batman', 'superman']
       })
       query({
-        name: '.insert({}).insert({}).insert({})',
-        query: sq.from`book`.insert(
-          { title: 'The Way of Kings', year: 2010 },
-          { title: 'Words of Radiance', year: null },
-          { title: 'Oathbringer' }
-        ),
-        text:
-          'insert into book (title, year) values ($1, $2), ($3, $4), ($5, default)',
-        args: [
-          'The Way of Kings',
-          2010,
-          'Words of Radiance',
-          null,
-          'Oathbringer'
-        ]
+        name: '.insert default values',
+        query: sq.from`person`.insert(),
+        text: 'insert into person default values',
+        args: []
+      })
+      query({
+        name: '.insert default values',
+        query: sq.from`person`
+          .insert({ firstName: 'Shallan', lastName: 'Davar' })
+          .insert({ firstName: 'Navani', lastName: 'Kholin' }),
+        text: 'insert into person(first_name, last_name) values ($1, $2)',
+        args: ['Navani', 'Kholin']
       })
     })
     describe('Returning', () => {
@@ -738,7 +804,7 @@ describe('tutorial', () => {
         name: '.insert.return',
         query: sq.from`book`.insert({ title: 'Squirrels and Acorns' })
           .return`id`,
-        text: 'insert into book (title) values ($1) returning id',
+        text: 'insert into book(title) values ($1) returning id',
         args: ['Squirrels and Acorns']
       })
     })
@@ -746,7 +812,7 @@ describe('tutorial', () => {
       query({
         name: '.insert express',
         query: sq`book`()`id`.insert({ title: 'Squirrels and Acorns' }),
-        text: 'insert into book (title) values ($1) returning id',
+        text: 'insert into book(title) values ($1) returning id',
         args: ['Squirrels and Acorns']
       })
     })
@@ -762,9 +828,22 @@ describe('tutorial', () => {
       })
       query({
         name: '.set({})',
-        query: sq.from`person`.set({ firstName: 'Robert', nickname: 'Rob' }),
-        text: 'update person set first_name = $1, nickname = $2',
-        args: ['Robert', 'Rob']
+        query: sq
+          .from('person')
+          .set({ firstName: 'Robert', nickname: 'Rob' }, { processed: true }),
+        text:
+          'update person set first_name = $1, nickname = $2, processed = $3',
+        args: ['Robert', 'Rob', true]
+      })
+      query({
+        name: '.set({})',
+        query: sq.from('person').set({
+          firstName: sq.l`'Bob'`,
+          lastName: sq.return`'Smith'`
+        }),
+        text:
+          "update person set first_name = 'Bob', last_name = (select 'Smith')",
+        args: []
       })
       query({
         name: '.set({}).set({})',
