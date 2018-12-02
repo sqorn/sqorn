@@ -3,6 +3,7 @@
   "private": true,
   "license": "MIT",
   "dependencies": {
-    "sqorn-pg": "latest"
+    "sqorn-pg": "latest",
+    "pg": "latest"
   }
 }

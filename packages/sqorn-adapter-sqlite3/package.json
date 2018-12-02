@@ -1,6 +1,6 @@
 {
   "name": "sqorn-adapter-sqlite3",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "description": "Sqorn Adapter SQLite3",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -8,6 +8,6 @@
     "node": ">=8.0.0"
   },
   "main": "./src/index.js",
-  "repository": "https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-adapter-sqlite3",
+  "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-adapter-sqlite3",
   "homepage": "https://sqorn.org"
 }

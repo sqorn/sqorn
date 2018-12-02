@@ -1,6 +1,6 @@
 {
   "name": "sqorn-sql",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "description": "Utilities for making SQL query builders with Sqorn",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -8,7 +8,7 @@
     "node": ">=8.0.0"
   },
   "main": "./src/index.js",
-  "repository": "https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-sql",
+  "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-sql",
   "homepage": "https://sqorn.org",
   "keywords": [
     "javascript",
@@ -22,6 +22,6 @@
     "literals"
   ],
   "dependencies": {
-    "sqorn-util": "^0.0.38"
+    "sqorn-util": "^0.0.39"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "sqorn-mysql",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "description": "A Javascript library for building MySQL queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -8,7 +8,7 @@
     "node": ">=8.0.0"
   },
   "main": "./src/index.js",
-  "repository": "https://github.com/lusakasa/sqorn/tree/master/packages/sqorn-mysql",
+  "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-mysql",
   "homepage": "https://sqorn.org",
   "keywords": [
     "sqorn",
