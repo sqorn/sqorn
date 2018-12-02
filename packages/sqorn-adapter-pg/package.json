@@ -1,6 +1,6 @@
 {
   "name": "sqorn-adapter-pg",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "description": "Sqorn Adapter Node Postgres",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",

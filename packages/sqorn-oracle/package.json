@@ -1,6 +1,6 @@
 {
   "name": "sqorn-oracle",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "description": "A Javascript library for building Oracle Database queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",

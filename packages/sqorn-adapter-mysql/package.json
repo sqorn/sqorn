@@ -1,6 +1,6 @@
 {
   "name": "sqorn-adapter-mysql",
-  "version": "0.0.38",
+  "version": "0.0.39",
   "description": "Sqorn Adapter MySQL",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
