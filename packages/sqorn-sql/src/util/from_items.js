@@ -59,9 +59,10 @@ const fromArgs = (ctx, args) => {
 
 const fromArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
-  if (typeof arg === 'object') return objectTables(ctx, arg)
+  if (arg !== null && !Array.isArray(arg) && typeof arg === 'object')
+    return objectTables(ctx, arg)
   if (typeof arg === 'function') return arg._build(ctx).text
-  throw Error('Invalid .from argument')
+  throw Error('Invalid .from argument:', arg)
 }
 
 const objectTables = (ctx, object) => {

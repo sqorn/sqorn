@@ -1693,14 +1693,32 @@ export interface Buildable {
    *
    * @example
 ```js
+sq.l`select * from book`.query
+{ text: 'select * from book', args: [], type: 'manual' }
+
 sq`book`({ id: 7 })`title`.query
-{ text: 'select title from book where id = $1', args: [7] }
+{ text: 'select title from book where id = $1', args: [7], type: 'select' }
 
 sq`book`.delete({ id: 7 })`title`.query
-{ text: 'delete from book where id = $1 returning title', args: [7] }
+{ text: 'delete from book where id = $1 returning title', args: [7], type: 'delete' }
 ```
    */
-  readonly query: { text: string; args: any[] };
+  readonly query: { text: string; args: any[], type: 'manual' | 'select' | 'update' | 'delete' | 'insert' | 'values' };
+
+  /**
+   * **DANGER. DO NOT USE THIS METHOD. IT MAKES YOU VULNERABLE TO SQL INJECTION.**
+   * 
+   * Compiles the query builder state to return the equivalent unparameterized query.
+   * 
+   * Always use `.query` if possible. This method is dangerous and unreliable.
+   *
+   * @example
+```js
+sq`book`({ id: 7 })`title`.unparameterized ===
+'select title from book where id = 7'
+```
+   */
+  readonly unparameterized: string
 }
 
 interface Execute extends Promise<Row[]> {

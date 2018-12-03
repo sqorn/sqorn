@@ -9,6 +9,12 @@ describe('tutorial', () => {
         text: 'select * from person where age >= $1 and age < $2',
         args: [20, 30]
       })
+      test('unparameterized', () => {
+        expect(
+          sq.l`select * from person where age >= ${20} and age < ${30}`
+            .unparameterized
+        ).toBe('select * from person where age >= 20 and age < 30')
+      })
       query({
         name: 'chained calls',
         query: sq.l`select *`.l`from person`

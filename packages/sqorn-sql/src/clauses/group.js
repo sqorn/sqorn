@@ -31,8 +31,8 @@ const buildArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
   if (typeof arg === 'function') return arg._build(ctx).text
   if (Array.isArray(arg)) return buildArrayArg(ctx, arg)
-  if (typeof arg === 'object') return buildObject(ctx, arg)
-  throw Error('Invalid order by argument')
+  if (arg !== null && typeof arg === 'object') return buildObject(ctx, arg)
+  throw Error('Invalid order by argument:', arg)
 }
 
 const buildArrayArg = (ctx, array) => {

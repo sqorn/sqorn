@@ -4,49 +4,53 @@ const expressions = (ctx, calls) => {
   let txt = ''
   for (let i = 0; i < calls.length; ++i) {
     if (i !== 0) txt += ', '
-    txt += build(ctx, calls[i])
+    txt += buildCall(ctx, calls[i])
   }
   return txt
 }
 
-const build = (ctx, args) =>
-  isTaggedTemplate(args)
-    ? buildTaggedTemplate(ctx, args)
-    : expressionArgs(ctx, args)
+const buildCall = (ctx, args) =>
+  isTaggedTemplate(args) ? buildTaggedTemplate(ctx, args) : buildArgs(ctx, args)
 
-const expressionArgs = (ctx, args) => {
+const buildArgs = (ctx, args) => {
   let txt = ''
   for (let i = 0; i < args.length; ++i) {
     if (i !== 0) txt += ', '
-    txt += expressionArg(ctx, args[i])
+    txt += buildArg(ctx, args[i])
   }
   return txt
 }
 
-const expressionArg = (ctx, arg) => {
+const buildArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
-  if (typeof arg === 'object') return objectTables(ctx, arg)
-  if (typeof arg === 'function') return arg._build(ctx).text
+  if (arg !== null && !Array.isArray(arg) && typeof arg === 'object')
+    return buildObject(ctx, arg)
+  if (typeof arg === 'function') {
+    const { type, text } = arg._build(ctx)
+    return type === 'manual' ? text : `(${text})`
+  }
   return ctx.parameter(ctx, arg)
 }
 
-const objectTables = (ctx, object) => {
+const buildObject = (ctx, object) => {
   let txt = ''
   const keys = Object.keys(object)
   for (let i = 0; i < keys.length; ++i) {
     if (i !== 0) txt += ', '
     const key = keys[i]
-    txt += expressionAsAlias(ctx, key, object[key])
+    const expression = buildExpression(ctx, object[key])
+    txt += `${expression} as ${ctx.mapKey(key)}`
   }
   return txt
 }
 
-const expressionAsAlias = (ctx, alias, source) => {
-  let txt = ''
-  if (typeof source === 'string') txt += source
-  else if (typeof source === 'function') txt += source._build(ctx).text
-  else txt += ctx.parameter(ctx, source)
-  return `${txt} as ${ctx.mapKey(alias)}`
+const buildExpression = (ctx, source) => {
+  if (typeof source === 'string') return source
+  if (typeof source === 'function') {
+    const { type, text } = source._build(ctx)
+    return type === 'manual' ? text : `(${text})`
+  }
+  return ctx.parameter(ctx, source)
 }
 
 module.exports = { expressions }

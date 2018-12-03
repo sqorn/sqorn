@@ -1,9 +1,9 @@
 const { snakeCase, memoize } = require('sqorn-util')
 
 /** Initial ctx value */
-const newContextCreator = ({ parameter, mapInputKeys = snakeCase }) => {
+const newContextCreator = ({ parameter, escape, mapInputKeys = snakeCase }) => {
   const mapKey = memoize(mapInputKeys)
-  return ({ arg = [] } = {}) => {
+  return ({ arg = [], parameterize = true } = {}) => {
     const whr = []
     return {
       // query type: 'raw' | sql' | 'select' | 'delete' | 'insert' | 'update'
@@ -42,7 +42,8 @@ const newContextCreator = ({ parameter, mapInputKeys = snakeCase }) => {
       arg,
       // function that parameterizes an argument by adding it to ctx.arg then
       // returning the result text, e.g. '$1', '$2', ..., or '?' for mysql
-      parameter,
+      parameter: parameterize ? parameter : escape,
+      parameterize,
       // function that maps input keys, e.g. to convert camelCase to snake_case
       mapKey
     }
