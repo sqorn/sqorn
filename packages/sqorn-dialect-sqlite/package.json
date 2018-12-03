@@ -1,6 +1,6 @@
 {
   "name": "sqorn-dialect-sqlite",
-  "version": "0.0.39",
+  "version": "0.0.40",
   "description": "Sqorn Dialect SQLite",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -11,6 +11,6 @@
   "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-dialect-sqlite",
   "homepage": "https://sqorn.org",
   "dependencies": {
-    "sqorn-sql": "^0.0.39"
+    "sqorn-sql": "^0.0.40"
   }
 }
