@@ -20,6 +20,7 @@ const {
   set
 } = clauses
 const { fromItems, expressions } = util
+const escape = require('./escape')
 
 const postgresMethods = {
   distinctOn: {
@@ -71,7 +72,7 @@ const parameter = (ctx, arg) =>
 
 module.exports = ({ mapInputKeys }) => ({
   methods: { ...methods, ...postgresMethods },
-  newContext: newContextCreator({ parameter, mapInputKeys }),
+  newContext: newContextCreator({ parameter, escape, mapInputKeys }),
   queries: {
     ...queries,
     select: query(

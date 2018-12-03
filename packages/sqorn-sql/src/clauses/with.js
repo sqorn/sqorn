@@ -29,8 +29,9 @@ const buildArgs = (ctx, args) => {
 }
 
 const buildArg = (ctx, arg) => {
-  if (typeof arg === 'object') return buildObject(ctx, arg)
-  throw Error('Invalid order by argument')
+  if (arg !== null && !Array.isArray(arg) && typeof arg === 'object')
+    return buildObject(ctx, arg)
+  throw Error('Invalid with argument:', arg)
 }
 
 const buildObject = (ctx, object) => {
