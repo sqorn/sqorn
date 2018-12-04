@@ -21,6 +21,7 @@ const {
 } = clauses
 const { fromItems, expressions } = util
 const escape = require('./escape')
+const e = require('sqorn-expressions')
 
 const postgresMethods = {
   distinctOn: {
@@ -67,8 +68,10 @@ const updateFrom = ctx => {
   return txt && `from ${txt}`
 }
 
-const parameter = (ctx, arg) =>
-  arg === undefined ? 'default' : `$${ctx.arg.push(arg)}`
+function parameter(arg) {
+  if (arg === undefined) throw Error('Invalid Query: undefined parameter')
+  return `$${this.arg.push(arg)}`
+}
 
 module.exports = ({ mapInputKeys }) => ({
   methods: { ...methods, ...postgresMethods },
@@ -91,6 +94,9 @@ module.exports = ({ mapInputKeys }) => ({
     update: query(wth, update, set, updateFrom, where, returning)
   },
   properties: {
+    e: {
+      value: e
+    },
     rollup: {
       value: (...args) => {
         return {

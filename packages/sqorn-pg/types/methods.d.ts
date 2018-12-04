@@ -630,7 +630,7 @@ sq.from('book').return('genre', 'avg(book.rating) as r')
    */
   or(...conditions: Conditions): this
 
-    /**
+  /**
    * **OR condition** - template string
    * 
    * Condition to chain after `.where`, `.on`, or `.having`.
@@ -652,6 +652,67 @@ sq.from`book`.return`genre, avg(book.rating) as r`
 ```
    */
   or(strings: TemplateStringsArray, ...args: any[]): this
+}
+
+export interface Distinct {
+  /**
+   * **SELECT DISTINCT**
+   * 
+   * Filters the query results so only distinct rows are returned. Duplicate result rows are eliminated.
+   * 
+   * `.distinct` filters rows using every column. To filter on a subset of columns use `.distinctOn` instead.
+   * 
+   * `.distinct` is idempotent.
+   * 
+   * @example
+```js
+sq.return('name', 'age').distinct.from('person')
+// select distinct name from person
+```
+   */
+  distinct: this
+
+  /**
+   * **SELECT DISTINCT ON** - columns
+   * 
+   * Filters query results on a subset of columns.
+   * 
+   * If multiple rows share values for the distinct columns, only the first is returned. An order by clause is needed to make the result set deterministic.
+   * 
+   * Columns may be strings or subqueries.
+   * 
+   * Multiple calls to `.distinctOn` are joined with ', '.
+   * 
+   * @example
+```js
+sq.from('person').return('name', 'age').distinctOn('name').order('name')
+// select distinct on (name) name, age from person order by name
+
+sq.from('person').distinctOn('name', 'age').distinctOn('gender')
+// select distinct on (name, age, gender) * from person
+```
+   */
+  distinctOn(...columns: (string | SQ)[]): this
+
+  /**
+   * **SELECT DISTINCT ON** - template string
+   * 
+   * Filters query results on a subset of columns.
+   * 
+   * If multiple rows share values for the distinct columns, only the first is returned. An order by clause is needed to make the result set deterministic.
+   * 
+   * Multiple calls to `.distinctOn` are joined with ', '.
+   * 
+   * @example
+```js
+sq.from`person`.return`name, age`.distinctOn`name`.order`name`
+// select distinct on (name) name, age from person order by name
+
+sq.from`person`.distinctOn`name, age`.distinctOn`gender`
+// select distinct on (name, age, gender) * from person
+```
+   */
+  distinctOn(...columns: (string | SQ)[]): this
 }
 
 interface GroupItems extends Array<Expression | RollupItem | CubeItem | GroupingSetsItem | GroupItems> {}

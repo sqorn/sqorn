@@ -45,7 +45,18 @@ const newContextCreator = ({ parameter, escape, mapInputKeys = snakeCase }) => {
       parameter: parameterize ? parameter : escape,
       parameterize,
       // function that maps input keys, e.g. to convert camelCase to snake_case
-      mapKey
+      mapKey,
+      // builds argument
+      build: function(arg) {
+        if (typeof arg === 'function') {
+          if (arg._build) {
+            const { type, text } = arg._build(ctx)
+            return type === 'manual' ? text : `(${text})`
+          }
+          return `(${arg(this)})`
+        }
+        return this.parameter(arg)
+      }
     }
   }
 }
@@ -60,7 +71,8 @@ const methods = {
   },
   raw: {
     updateContext: (ctx, args) => {
-      ctx.type = ctx.type === 'select' ? 'arg' : 'manual'
+      // ctx.type = ctx.type === 'select' ? 'arg' : 'manual'
+      ctx.type = 'manual'
       ctx.sql.push({ args, raw: true })
     }
   },

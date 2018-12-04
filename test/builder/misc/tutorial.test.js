@@ -729,7 +729,14 @@ describe('tutorial', () => {
   describe('Insert Queries', () => {
     describe('Insert', () => {
       query({
-        name: '.insert({})',
+        name: '.insert``',
+        query: sq.from`person(first_name, last_name)`
+          .insert`values (${'Shallan'}, ${'Davar'})`,
+        text: 'insert into person(first_name, last_name) values ($1, $2)',
+        args: ['Shallan', 'Davar']
+      })
+      query({
+        name: '.insert({ firstName, lastName })',
         query: sq
           .from('person')
           .insert({ firstName: 'Shallan', lastName: 'Davar' }),
@@ -737,16 +744,10 @@ describe('tutorial', () => {
         args: ['Shallan', 'Davar']
       })
       query({
-        name: '.insert(...[])',
-        query: sq
-          .from('person')
-          .insert(
-            { firstName: 'Shallan', lastName: 'Davar' },
-            { firstName: 'Navani', lastName: 'Kholin' }
-          ),
-        text:
-          'insert into person(first_name, last_name) values ($1, $2), ($3, $4)',
-        args: ['Shallan', 'Davar', 'Navani', 'Kholin']
+        name: '.insert({ a: undefined, b: null })',
+        query: sq.from('test').insert({ a: undefined, b: null }),
+        text: 'insert into test(a, b) values (default, $1)',
+        args: [null]
       })
       query({
         name: '.insert(...[])',

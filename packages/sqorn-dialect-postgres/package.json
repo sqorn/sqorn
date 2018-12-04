@@ -11,6 +11,7 @@
   "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-dialect-postgres",
   "homepage": "https://sqorn.org",
   "dependencies": {
+    "sqorn-expressions": "^0.0.40",
     "sqorn-sql": "^0.0.40"
   }
 }

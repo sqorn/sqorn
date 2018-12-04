@@ -29,7 +29,7 @@ const buildArgs = (ctx, args) => {
 
 const buildArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
-  if (typeof arg === 'function') return arg._build(ctx).text
+  if (typeof arg === 'function') return ctx.build(arg)
   if (Array.isArray(arg)) return buildArrayArg(ctx, arg)
   if (arg !== null && typeof arg === 'object') return buildObject(ctx, arg)
   throw Error('Invalid order by argument:', arg)
@@ -48,7 +48,7 @@ const buildArrayArg = (ctx, array) => {
 // clone of buildArg() without support for object args
 const buildCubeOrRollupArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
-  if (typeof arg === 'function') return arg._build(ctx).text
+  if (typeof arg === 'function') return ctx.build(arg)
   if (Array.isArray(arg)) return buildCubeOrRollupArrayArg(ctx, arg)
   throw Error('Invalid cube/rollup argument')
 }

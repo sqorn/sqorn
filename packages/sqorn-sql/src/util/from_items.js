@@ -61,7 +61,7 @@ const fromArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
   if (arg !== null && !Array.isArray(arg) && typeof arg === 'object')
     return objectTables(ctx, arg)
-  if (typeof arg === 'function') return arg._build(ctx).text
+  if (typeof arg === 'function') return ctx.buid(arg)
   throw Error('Invalid .from argument:', arg)
 }
 
@@ -78,16 +78,14 @@ const objectTables = (ctx, object) => {
 
 const buildTable = (ctx, alias, source) => {
   if (typeof source === 'string') return `${source} as ${ctx.mapKey(alias)}`
-  if (typeof source === 'function') {
-    const query = source._build(ctx)
-    const table = query.type === 'select' ? `(${query.text})` : query.text
-    return `${table} as ${ctx.mapKey(alias)}`
-  }
   if (Array.isArray(source)) {
     const { columns, values } = valuesArray(ctx, source)
     return `(${values}) as ${ctx.mapKey(alias)}(${columns})`
   }
-  return `${ctx.parameter(ctx, source)} as ${ctx.mapKey(alias)}`
+  if (typeof source === 'function') {
+    return `${ctx.build(source)} as ${ctx.mapKey(alias)}`
+  }
+  return `${ctx.parameter(source)} as ${ctx.mapKey(alias)}`
 }
 
 module.exports = { fromItems }

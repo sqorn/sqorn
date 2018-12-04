@@ -48,13 +48,13 @@ TODO
 
 `sq` is Sqorn's immutable query-building interface. It has methods for building and executing SQL queries. Query-building methods are chainable and return a new query-building instance when called.
 
-### SQL
+### SQL Query
 
-Construct a query manually with `.l`. 
+Build a SQL query manually with `.sql`.
 
 ```js
 const min = 20, max = 30
-const People = sq.l`select * from person where age >= ${min} and age < ${max}`
+const People = sq.sql`select * from person where age >= ${min} and age < ${max}`
 ```
 
 Sqorn compiles this to a parameterized query safe from SQL injection. `.query` returns the compiled query object.
@@ -74,56 +74,110 @@ People.unparameterized
 'select * from person where age >= 20 and age < 30'
 ```
 
-`.l` can be called multiple times. Calls are joined with spaces.
+When you need a raw unparameterized argument, prefix it with `$`.
 
 ```js
-sq.l`select *`
-  .l`from person`
-  .l`where age >= ${20} and age < ${30}`
+sq.sql`select * from $${'test_table'} where id = ${7}`.query
+
+{ text: 'select * from test_table where id = $1',
+  args: [7] }
+```
+
+Alternatively, wrap the argument in a call to `.raw`.
+
+```js
+sq.sql`select * from ${sq.raw('test_table')} where id = ${7}`.query
+
+{ text: 'select * from test_table where id = $1',
+  args: [7] }
+```
+
+Javascript `null` maps to SQL `null`.
+
+```js
+sq.sql`select ${null}`.query
+
+{ text: 'select $1',
+  args: [null] }
+```
+
+`undefined` arguments are invalid.
+
+```js
+sq.sql`select ${undefined}`.query
+
+// throws error
+```
+
+`.sql` can be called multiple times. Calls are joined with spaces by default.
+
+```js
+sq.sql`select *`
+  .sql`from person`
+  .sql`where age >= ${20} and age < ${30}`
   .query
 
 { text: 'select * from person where age >= $1 and age < $2',
   args: [20, 30] }
 ```
 
-Template string arguments can be subqueries.
+Sqorn automatically parenthesizes subqueries.
 
 ```js
-const where = sq.l`where age >= ${20} and age < ${30}`
-sq.l`select * from person ${where}`.query
+const One = sq.sql`select ${1}`
+const Two = sq.sql`select ${2}`
+sq.sql`select ${One},`.sql(Two).query
 
-{ text: 'select * from person where age >= $1 and age < $2',
+{ text: 'select (select $1), (select $2)',
+  args: [1, 2] }
+```
+
+Call `.sql` as a function to parameterize an argument or build a subquery.
+
+```js
+sq.sql`select * from`
+  .sql(sq.raw('person'))
+  .sql`where age =`
+  .sql(sq.sql`select`.sql(20))
+  .query
+
+{ text: 'select * from person where age = (select $1)',
+  args: [20] }
+```
+
+Use `.sql` to build *complete* queries, not fragments.
+
+### Text Fragment
+
+Build query fragments with `.txt`. Sqorn does not automatically paranthesize embedded fragments.
+
+```js
+const Where = sq.txt`where age >= ${20}`
+sq.sql`select * from person ${Where}`.query
+
+{ text: 'select * from person where age >= $1',
   args: [20, 30] }
 ```
 
-Call `.l` as a function to parameterize a single argument.
+Like `.sql`, `.txt` can be chained and called as a function.
 
 ```js
-sq.l`select * from person where age >=`.l(20).l`and age < `.l(30).query
+const FromWhere = sq.txt`from person`.txt`where age >=`.txt(20)
+sq.sql`select * ${FromWhere}`.query
 
-{ text: 'select * from person where age >= $1 and age < $2',
-  args: [20, 30] }
+{ text: 'select * from person where age = $1',
+  args: [20] }
 ```
 
-### Raw
-
-When you need a raw unparameterized argument, prefix it with `$`.
+However, attempting to build a fragment will throw an error.
 
 ```js
-sq.l`select * from $${'test_table'} where id = ${7}`.query
+sq.txt`select 1`.query
 
-{ text: 'select * from test_table where id = $1',
-  args: [7] }
+// throws error
 ```
 
-Alternatively, pass a single argument to `.raw`.
-
-```js
-sq.l`select * from`.raw('test_table').l`where id = ${7}`.query
-
-{ text: 'select * from test_table where id = $1',
-  args: [7] }
-```
+Mixing calls to `.sql` and `.txt` is invalid.
 
 ### Extend
 
@@ -131,10 +185,22 @@ Create a query from query parts with `.extend`.
 
 ```js
 sq.extend(
-  sq.l`select *`,
-  sq.l`from person`,
-  sq.l`where age >= ${20} and age < ${30}`
+  sq.sql`select *`,
+  sq.sql`from person`,
+  sq.sql`where age >= ${20} and age < ${30}`
 ).query
+
+{ text: 'select * from person where age >= $1 and age < $2',
+  args: [20, 30] }
+```
+
+TODO: `.extend` also accepts an array of queries.
+
+```js
+sq.extend([
+  sq.sql`select * from person where age >= ${20}`
+  sq.sql`and age < ${30}`
+]).query
 
 { text: 'select * from person where age >= $1 and age < $2',
   args: [20, 30] }
@@ -142,13 +208,13 @@ sq.extend(
 
 ### Link
 
-`.link` specifies the separator used to join query parts. `.link` can be called as a template tag or passed a string argument.
+`.link` specifies the separator used to join query parts.
 
 ```js
 const books = [{ id: 1, title: '1984' }, { id: 2, title: 'Dracula' }]
-const value = book => sq.l`(${book.id}, ${book.title})`
-const values = sq.extend(...books.map(value)).link`, `
-sq.l`insert into book(id, title)`.l`values ${values}`.link('\n').query
+const value = book => sq.txt`(${book.id}, ${book.title})`
+const values = sq.extend(books.map(value)).link(', ')
+sq.sql`insert into book(id, title)`.sql`values ${values}`.link('\n').query
 
 { text: 'insert into book(id, title)\nvalues ($1, $2), ($3, $4)',
   args: [1, '1984', 2, 'Dracula'] }
@@ -162,7 +228,7 @@ sq.l`insert into book(id, title)`.l`values ${values}`.link('\n').query
 Execute the query and get back a Promise for all result rows with `.all`. The query builder is itself *thenable* so `.all` is optional.
 
 ```js
-const People = sq.l`select * from person`
+const People = sq.sql`select * from person`
 // four ways ways to print all people:
 console.log(await People.all())
 console.log(await People)
@@ -175,7 +241,7 @@ People.then(people => console.log(people))
 Call `.one` to fetch only the first result, or `undefined` if there are no matching results. The following all print the first person (or `undefined`).
 
 ```js
-const Person = sq.l`select * from person limit 1`
+const Person = sq.sql`select * from person limit 1`
 // four ways ways to print the first person:
 Person.one().then(person => console.log(person))
 Person.all().then(people => console.log(people[0])
@@ -215,7 +281,7 @@ Call `.transaction` with an asynchronous callback to begin a transaction. The fi
 // creates an account, returning a promise for the created user's id
 const createAccount = (email, password) => 
   sq.transaction(async trx => {
-    const { id } = await sq.l`insert into account(email) values (${email}) returning id`.one(trx) 
+    const { id } = await sq.sql`insert into account(email) values (${email}) returning id`.one(trx) 
     await sq`insert into authentication(account_id, password) values (${id}, ${password})`.all(trx)
     return id
   })
@@ -232,7 +298,7 @@ Pass `trx` to a query to add it to a transaction. To commit the transaction, run
 const createAccount = async (email, password) =>  {
   const trx = await sq.transaction()
   try {
-    const { id } = await sq.l`insert into account(email) values (${email}) returning id`.one(trx) 
+    const { id } = await sq.sql`insert into account(email) values (${email}) returning id`.one(trx) 
     await sq`insert into authorization(account_id, password) values (${id}, ${password})`.all(trx)
     await trx.commit()
     return id
@@ -247,7 +313,7 @@ const createAccount = async (email, password) =>  {
 
 ### From
 
-Pass `.from` a table to build a *from* clause.
+`.from` builds a *from* clause.
 
 ```js
 sq.from`book`.query
@@ -265,7 +331,7 @@ sq.from`book`.from`person`.query
   args: [] }
 ```
 
-`.from` accepts table names as strings.
+`.from` accepts strings.
 
 **To prevent SQL injection, never source *string* tables from user input.**
 
@@ -276,17 +342,19 @@ sq.from('book', 'author').query
   args: [] }
 ```
 
-`.from` accepts *manual* subqueries.
+`.from` accepts fragments.
 
 ```js
 // Postgres-only query
-sq.from(sq.l`unnest(array[1, 2, 3])`).query
+sq.from(sq.txt`unnest(array[1, 2, 3])`).query
 
 { text: 'select * from unnest(array[1, 2, 3])',
   args: [] }
 ```
 
-Pass `.from` an object in the form `{ alias: table }` to construct a *`table as alias`* clause.
+#### Table Objects
+
+Pass `.from` objects in the form `{ alias: table }` to construct *`table as alias`* clauses.
 
 Tables can be strings.
 
@@ -299,44 +367,36 @@ sq.from({ b: 'book', p: 'person' }).query
   args: [] }
 ```
 
-Tables can be arrays of row objects. A *values* clause is generated. Column names are inferred from all keys.
-
-By default, Sqorn [converts input object keys](#map-input-keys) to *snake_case*.
-
-```js
-const people = [{ age: 7, firstName: 'Jo' }, { age: 9, firstName: 'Mo' }]
-sq.from({ people }).query
-
-{ text: 'select * from (values ($1, $2), ($3, $4) as people(age, first_name))',
-  args: [7, 'Jo', 9, 'Mo'] }
-```
-
-Tables can be *select* subqueries.
-
-```js
-sq.from({ b: sq.from`book` }).query
-
-{ text: 'select * from (select * from book) as b',
-  args: [] }
-```
-
-Tables can be *manual* subqueries. These will *not* be parenthesized.
+Tables can be fragments.
 
 ```js
 // a Postgres-only query
-sq.from({ countDown: sq.l`unnest(${[3, 2, 1]})` }).query
+sq.from({ countDown: sq.txt`unnest(${[3, 2, 1]})` }).query
 
 { text: 'select * from unnest($1) as count_down',
   args: [[3, 2, 1]] }
 ```
 
-`.from` accepts multiple string, object, or subquery arguments.
+Tables can be subqueries.
 
 ```js
-sq.from({ b: 'book' }, 'person', sq.l`author`).query
+sq.from({ a: sq.sql`select * from author`, b: sq.from`book` }).query
 
-{ text: 'select * from book as b, person, author',
+{ text: 'select * from (select * from author) as a, (select * from book) as b',
   args: [] }
+```
+
+Tables can be arrays of values. Column names are inferred from all keys.
+
+Sqorn [converts input object keys](#map-input-keys) to *snake_case* by default.
+
+```js
+sq.from({
+  people: [{ age: 7, firstName: 'Jo' }, { age: 9, firstName: 'Mo' }]
+}).query
+
+{ text: 'select * from (values ($1, $2), ($3, $4)) as people(age, first_name)',
+  args: [7, 'Jo', 9, 'Mo'] }
 ```
 
 Construct join tables manually or learn about [building joins](#join).
@@ -359,7 +419,7 @@ sq.from`book`.where`genre = ${'Fantasy'}`.query
   args: ['Fantasy'] }
 ```
 
-Multiple `.where` calls are joined with *`and`*.
+Multiple `.where` calls are joined with *`and`*. Calls are parenthesized.
 
 ```js
 sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`.query
@@ -368,7 +428,7 @@ sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`.query
   args: ['Fantasy', 2000] }
 ```
 
-Chain `.and` and `.or` after `.on`. They accept the same arguments as `.where`.
+Chain `.and` and `.or` after `.where`.
 
 ```js
 sq.from`person`.where`name = ${'Rob'}`.or`name = ${'Bob'}`.and`age = ${7}`.query
@@ -377,25 +437,86 @@ sq.from`person`.where`name = ${'Rob'}`.or`name = ${'Bob'}`.and`age = ${7}`.query
   args: ['Rob', 'Bob', 7]}
 ```
 
-You can specify conditions with a *manual* subquery.
+`.where`, `.and`, and `.or` accept conditions.
+
+Conditions can be fragments.
 
 ```js
-sq.from`book`.where(sq.l`genre = ${'Fantasy'}`).query
+sq.from`book`.where(sq.txt`genre = ${'Fantasy'}`).query
 
 { text: 'select * from book where (genre = $12)',
   args: ['Fantasy'] }
 ```
 
-You can specify conditions with an object.
+Conditions can be subqueries.
+
+```js
+sq.from`book`.where(sq.sql`select true`).query
+
+{ text: 'select * from book where (select true)',
+  args: [] }
+```
+
+#### Condition Objects
+
+Conditions can be objects in the form `{ field: value }`.
+
+Each property generates a `field = value` clause.
 
 ```js
 sq.from`book`.where({ genre: 'Fantasy', year: 2000 }).query
 
-{ text: 'select * from book where (genre = $1 and year = $2)',
+{ text: 'select * from book where ((genre = $1) and (year = $2))',
   args: ['Fantasy', 2000] }
 ```
 
-By default, Sqorn [converts input object keys](#map-input-keys) to *snake_case*.
+`undefined` values are invalid.
+
+```js
+sq.from`oops`.where({ field: undefined }).query
+
+// throws error
+```
+
+`null` values generate a `field is null` clause.
+
+```js
+sq.from`book`.where({ author: null }).query
+
+{ text: 'select * from book where (author is null)',
+  args: [] }
+```
+
+Fields of fragment values are ignored.
+
+```js
+const min = sq.txt`year >= ${20}`
+const max = sq.txt`year < ${30}`
+sq.from`person`.where({ min, max }).query
+
+{ text: 'select * from person where ((year >= $1) and (year < $2))',
+  args: [20, 30] }
+```
+
+Fields of subquery values are ignored.
+
+```js
+sq.from`test`.where({ t: sq.sql`select true`, f: sq.sql`select false` }).query
+
+{ text: 'select * from test where ((select true) and (select false))',
+  args: [] }
+```
+
+Call `sq.raw` to prevent parameterization.
+
+```js
+sq.from('book', 'author').where({ 'book.id': sq.raw('author.id') }).query
+
+{ text: 'select * from book, author where (book.id = author.id)',
+  args: [] }
+```
+
+Sqorn [converts input object keys](#map-input-keys) to *snake_case* by default.
 
 ```js
 sq.from`person`.where({ firstName: 'Kaladin' }).query
@@ -404,38 +525,27 @@ sq.from`person`.where({ firstName: 'Kaladin' }).query
   args: ['Kaladin'] }
 ```
 
-Construct raw object values with a *single, unchained* call to `sq.raw`.
-
-```js
-sq.from('book', 'author').where({ 'book.id': sq.raw('author.id') }).query
-
-{ text: 'select * from book, author where book.id = author.id',
-  args: [] }
-```
-
-If you need a non-equality condition, add a property whose value is created with `sq.l`. The property's key will be ignored.
-
-```js
-const minYear = sq.l`year >= ${20}`
-const maxYear = sq.l`year < ${30}`
-sq.from`person`.where({ minYear, maxYear }).query
-
-{ text: 'select * from person where (year >= $1 and year < $2)',
-  args: [20, 30] }
-```
-
 Multiple arguments passed to `.where` are joined with `or`.
 
 ```js
-sq.from`person`.where({ name: 'Rob' }, sq.l`name = ${'Bob'}`).query
+sq.from`person`.where({ name: 'Rob' }, sq.txt`name = ${'Bob'}`).query
 
-{ text: 'select * from person where (name = $1 or name = $2)',
+{ text: 'select * from person where ((name = $1) or (name = $2))',
+  args: ['Rob', 'Bob'] }
+```
+
+TODO: Conditions in an array are joined with `and`.
+
+```js
+sq.from`person`.where([sq.txt`true`, sq.txt`true`], sq.txt`false`).query
+
+{ text: 'select * from person where ((true) and (true)) or (false)',
   args: ['Rob', 'Bob'] }
 ```
 
 ### Select
 
-Specify selected columns with `.return`.
+`.return` builds a *select* clause.
 
 ```js
 sq.return`${1} as a, ${2} as b, ${1} + ${2} as sum`.query
@@ -453,13 +563,9 @@ sq.from`book`.return`title, author`.return`id`.query
   args: [] }
 ```
 
-`.return` accepts expressions as arguments.
+`.return` accepts strings.
 
-#### Expressions
-
-Expressions can be strings.
-
-**To prevent SQL injection, never source *string* expressions from user input.**
+**To prevent SQL injection, never source strings from user input.**
 
 ```js
 sq.from`book`.return('title', 'author').query
@@ -468,37 +574,67 @@ sq.from`book`.return('title', 'author').query
   args: [] }
 ```
 
-Expressions can be *manual* subqueries.
+`.return` accepts fragments
 
 ```js
-sq.from`book`.return(sq.l`title`, sq.l`author`).query
+sq.return(sq.txt('moo'), sq.txt`now()`).query
 
-{ text: 'select title, author from book',
+{ text: 'select $1, now()',
+  args: ['moo'] }
+```
+
+`.return` accepts subqueries.
+
+```js
+sq.from`book`.return(sq.sql`select now()`, sq.return(sq.txt(8)).query
+
+{ text: 'select (select now()), (select $1)',
+  args: [8] }
+```
+
+#### Return Objects
+
+`.return` accepts objects in the form `{ alias: value }`. Each property generates a `value as alias` clause.
+
+Values can be strings.
+
+**To prevent SQL injection, never source string from user input.**
+
+```js
+sq.return({ name: 'person.name' , age: 'person.age' }).from('person').query
+
+{ text: 'select person.name as name, person.age as age from person',
   args: [] }
 ```
 
-#### Aliases
-
-You can pass `.return` an object whose keys are *aliases* and whose values are [expressions](#expressions).
-
-Expressions can be strings.
-
-**To prevent SQL injection, never source *string* expressions from user input.**
+Values can be fragments.
 
 ```js
-sq.from`person`.return({ firstName: 'person.first_name' , age: 'person.age' }).query
-
-{ text: 'select person.first_name as first_name, person.age as age from person',
-  args: [] }
-```
-
-Expressions can be *manual* subqueries.
-
-```js
-sq.return({ sum: sq.l`${2} + ${3}`, firstName: sq.l('Bob') }).query
+sq.return({ sum: sq.txt`${2} + ${3}`, firstName: sq.txt('Bob') }).query
 
 { text: 'select $1 + $2 as sum, $3 as first_name',
   args: [2, 3, 'Bob'] }
+```
+
+Values can be subqueries.
+
+```js
+sq.return({
+  time: sq.sql`select now()`,
+  eight: sq.return(sq.txt(8))
+}).query
+
+{ text: 'select (select now()) as time, (select $1) as eight',
+  args: [8] }
+```
+
+TODO: Values can be expressions.
+
+```js
+sq.return({ hello: sq.e('world'), sum: sq.plus(e(1), 2) }).query
+
+{ text: 'select (select now()) as time, (select $1) as eight',
+  args: [8] }
 ```
 
 #### Distinct
@@ -558,7 +694,7 @@ sq.from('weather')
 Expressions can be *manual* subqueries.
 
 ```js
-sq.from`generate_series(0, 10) as n`.distinctOn(sq.l`n / 3`).return`n`.query
+sq.from`generate_series(0, 10) as n`.distinctOn(sq.sql`n / 3`).return`n`.query
 
 { text: 'select distinct on (n / 3) n from generate_series(0, 10) as n',
   args: [] }
@@ -643,7 +779,7 @@ sq.from`person`.return`age, last_name, count(*)`
 `.group` accepts [expressions](#expressions) and arrays of expressions.
 
 ```js
-sq.from('person').return('count(*)').group('age', [sq.l`last_name`, 'first_name']).query
+sq.from('person').return('count(*)').group('age', [sq.sql`last_name`, 'first_name']).query
 
 { text: 'select count(*) from person group by age, (last_name, first_name)',
   args: [] }
@@ -652,7 +788,7 @@ sq.from('person').return('count(*)').group('age', [sq.l`last_name`, 'first_name'
 **Postgres Only:** `.group` accepts *rollup* arguments. `.rollup` accepts expressions and arrays of expressions.
 
 ```js
-sq.from`t`.group(sq.rollup('a', ['b', sq.l`c`], 'd')).query
+sq.from`t`.group(sq.rollup('a', ['b', sq.sql`c`], 'd')).query
 
 // postgres
 { text: 'select * from t group by rollup (a, (b, c)), d',
@@ -662,7 +798,7 @@ sq.from`t`.group(sq.rollup('a', ['b', sq.l`c`], 'd')).query
 **Postgres Only:** `.group` accepts *cube* arguments. `.cube` accepts expressions and arrays of expressions.
 
 ```js
-sq.from`t`.group(sq.cube('a', ['b', sq.l`c`], 'd')).query
+sq.from`t`.group(sq.cube('a', ['b', sq.sql`c`], 'd')).query
 
 // postgres
 { text: 'select * from t group by cube (a, (b, c)), d',
@@ -702,7 +838,7 @@ sq.from`person`.group`age`.having`age >= ${20}`.having`age < ${30}`.query
 Chain `.and` and `.or` after `.having`.
 
 ```js
-sq.from`person`.group`age`.having({ age: 18, c: sq.l`age < ${19}` }).or({ age: 20 }).and`count(*) > 10`.query
+sq.from`person`.group`age`.having({ age: 18, c: sq.sql`age < ${19}` }).or({ age: 20 }).and`count(*) > 10`.query
 
 { text: 'select * from person group by age having (age = $1 and age < $2) or (age = $3) and (count(*) > 10)',
   args: [18, 19, 20] }
@@ -733,7 +869,7 @@ sq.from`book`.order`title`.order`year`.query
 **To prevent SQL injection, never source *string* expressions from user input.**
 
 ```js
-sq.from`book`.order('title', sq.l`sales / ${1000}`).query
+sq.from`book`.order('title', sq.sql`sales / ${1000}`).query
 
 { text: 'select * from book order by title, sales / $1',
   args: [1000] }
@@ -742,7 +878,7 @@ sq.from`book`.order('title', sq.l`sales / ${1000}`).query
 `.order` accepts objects. Property `by` is the [expression](#expressions) used for ordering.
 
 ```js
-sq.from`book`.order({ by: 'title' }, { by: sq.l`sales / ${1000}` }).query
+sq.from`book`.order({ by: 'title' }, { by: sq.sql`sales / ${1000}` }).query
 
 { text: 'select * from book order by title, sales / $1',
   args: [1000] }
@@ -807,7 +943,7 @@ sq.from`person`.limit`1 + 7`.query
 `.limit` accepts a *manual* subquery.
 
 ```js
-sq.from`person`.limit(sq.l`1 + 7`).query
+sq.from`person`.limit(sq.sql`1 + 7`).query
 
 { text: 'select * from person limit 1 + 7',
   args: [] }
@@ -854,7 +990,7 @@ sq.from`person`.offset`1 + 7`.query
 `.offset` accepts a *manual* subquery.
 
 ```js
-sq.from`person`.offset(sq.l`1 + 7`).query
+sq.from`person`.offset(sq.sql`1 + 7`).query
 
 { text: 'select * from person offset 1 + 7',
   args: [] }
@@ -1012,9 +1148,9 @@ sq.with`width as (select ${10} as n)`
 ```js
 sq.with({
     width: sq.return({ n: 10 }),
-    height: sq.l`select ${20} as n`
+    height: sq.sql`select ${20} as n`
   })
-  .return({ area: sq.l`width.n * height.n` })
+  .return({ area: sq.sql`width.n * height.n` })
   .query
 
 { text: 'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
@@ -1132,13 +1268,22 @@ sq.from`person(first_name, last_name)`.insert`values (${'Shallan'}, ${'Davar'})`
 
 To insert one row, pass `.insert` a single object. Column names are inferred from the object's keys.
 
-By default, Sqorn [converts input object keys](#map-input-keys) to *snake_case*.
+Sqorn [converts input object keys](#map-input-keys) to *snake_case* by default.
 
 ```js
 sq.from('person').insert({ firstName: 'Shallan', lastName: 'Davar' }).query
 
 { text: 'insert into person(first_name, last_name) values ($1, $2)',
   args: ['Shallan', 'Davar'] }
+```
+
+`undefined` values are inserted as `default`. `default` cannot be parameterized.
+
+```js
+sq.from('test').insert({ a: undefined, b: null }).query
+
+{ text: 'insert into test(a, b) values (default, $1)',
+  args: [null] }
 ```
 
 To insert multiple rows, pass multiple objects. Column names are inferred from the keys of all objects.
@@ -1174,7 +1319,7 @@ Values may be subqueries.
 ```js
 sq.from('person').insert({
     firstName: sq.return`${'Shallan'}`,
-    lastName: sq.l('Davar')
+    lastName: sq.sql('Davar')
   })
   .query
 
@@ -1264,7 +1409,7 @@ Update values may be subqueries.
 
 ```js
 sq.from('person').set({
-  firstName: sq.l`'Bob'`,
+  firstName: sq.sql`'Bob'`,
   lastName: sq.return`'Smith'`
  })
  .query
@@ -1340,9 +1485,11 @@ sq.from`book`
   args: [false] }
 ```
 
-<!-- ## Values Queries -->
+## Values Queries
 
-<!-- TODO. See [Postgres docs](https://www.postgresql.org/docs/current/static/sql-values.html) -->
+TODO
+
+<!-- See [Postgres docs](https://www.postgresql.org/docs/current/static/sql-values.html) -->
 
 <!-- ### Ordery By -->
 
@@ -1374,12 +1521,12 @@ Disable this behavior by setting `thenable` to `false`.
 const sq = sqorn({ thenable: false })
 
 // throws error
-const people = await sq.l`select * from person`
-sq.l`select * from person`.then(people => {})
+const people = await sq.sql`select * from person`
+sq.sql`select * from person`.then(people => {})
 
 // succeeds
-const people = await sq.l`select * from person`.all()
-sq.l`select * from person`.all().then(people => {})
+const people = await sq.sql`select * from person`.all()
+sq.sql`select * from person`.all().then(people => {})
 ```
 
 ### Map Input Keys
@@ -1387,7 +1534,7 @@ sq.l`select * from person`.all().then(people => {})
 By default, Sqorn converts input object keys to *snake_case*.
 
 ```js
-sq.with({ aB: sq.l`select cD`, e_f: sq.l`select g_h` })
+sq.with({ aB: sq.sql`select cD`, e_f: sq.sql`select g_h` })
   .from({ iJ3: 'kL', mN: [{ oP: 1, q_r: 1 }] })
   .where({ sT: 1, u_v: 1 })
   .return({ wX: 1, y_z: 1 })
@@ -1402,7 +1549,7 @@ where (s_t = $5 and u_v = $6)`
 String arguments, template string arguments, and object values are not converted. By default, object keys containing parentheses are returned unmodified.
 
 ```js
-sq.with({ 'aB(cD, e_f)': sq.l`select 1, 2`})
+sq.with({ 'aB(cD, e_f)': sq.sql`select 1, 2`})
   .from('gH')
   .from`jK`
   .return({ lM: 'nO' }, 'pQ')
@@ -1444,6 +1591,78 @@ const { ID, FIRST_NAME, LAST_NAME } = first
 ```
 
 Mappings are computed once per key then cached.
+
+## Expressions
+
+Create expressions from string, number, boolean, null, or JSON values with `.e`.
+
+```js
+sq.return(
+  sq.e('hi'),
+  sq.e(8),
+  sq.e(true),
+  sq.e(null),
+  sq.e({ a: 1 })
+).query
+
+{ text: 'select $1, $2, $3, $4',
+  args: ['hi', 8, true, null] }
+```
+
+`.e` accepts raw values, expressions, fragments, and subqueries.
+
+```js
+sq.return(
+  sq.e(sq.raw('1 + 1')),
+  sq.e(sq.e(7)),
+  sq.e(sq.txt`'bye'`),
+  sq.e(sq.sql`select ${8}`),
+  sq.e(sq.return(sq.e(9))),
+).query
+
+{ text: "select 1 + 1, $1, 'bye', (select $2), (select $3)",
+  args: [7, 8, 9] }
+```
+
+`.e.eq` builds an equality expression. It accepts two arguments of the same type that `.e` accepts.
+
+```js
+sq.return(
+  sq.e.eq(sq.raw('genre'), 'fantasy'),
+  sq.e.eq('genre', 'history')
+).query
+
+{ text: 'select genre = $1, $2 = $3'
+  args: ['fantasy', 'genre', 'history']}
+```
+
+`.e.eq` can be curried. Give each argument its own function call or template tag.
+
+```js
+sq.return(
+  sq.e.eq(sq.raw('genre'))('fantasy'),
+  sq.e.eq`genre`('history'),
+  sq.e.eq`genre``${'art'}`,
+).query
+
+{ text: 'select genre = $1, genre = $2, genre = $3',
+  args: ['fantasy', 'history', 'art'] }
+```
+
+
+### Custom Expressions
+
+An expression is a function that takes argument `ctx` and returns the query text.
+
+For example, `.e.eq` is defined as follows:
+
+```js
+e.eq = (a, b) => ctx => `(${ctx.build(a)} = ${ctx.build(b)})`
+```
+
+```
+e.create()
+```
 
 ## Operators
 

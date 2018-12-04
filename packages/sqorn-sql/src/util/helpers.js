@@ -17,10 +17,10 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
       txt += prevString.substr(0, lastCharIndex) + args[i]
     } else if (typeof arg === 'function') {
       // sql builder arg
-      txt += prevString + arg._build(ctx).text
+      txt += prevString + ctx.build(arg)
     } else {
       // parameterized arg
-      txt += prevString + ctx.parameter(ctx, arg)
+      txt += prevString + ctx.parameter(arg)
     }
   }
   return txt + strings[i]

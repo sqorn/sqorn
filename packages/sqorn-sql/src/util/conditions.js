@@ -1,41 +1,35 @@
 const { isTaggedTemplate, buildTaggedTemplate } = require('./helpers')
 
-const conditions = (ctx, calls) => {
+const buildCalls = (ctx, calls) => {
   let txt = ''
   for (let i = 0; i < calls.length; ++i) {
     const cond = calls[i]
     if (i !== 0) txt += ` ${cond.type} `
-    txt += condition(ctx, cond.args)
+    txt += `(${buildCall(ctx, cond.args)})`
   }
   return txt
 }
 
-const condition = (ctx, call) =>
-  `(${
-    isTaggedTemplate(call)
-      ? buildTaggedTemplate(ctx, call)
-      : argsConditions(ctx, call)
-  })`
+const buildCall = (ctx, args) =>
+  isTaggedTemplate(args) ? buildTaggedTemplate(ctx, args) : buildArgs(ctx, args)
 
-// conditions for each argument of a function call
-const argsConditions = (ctx, args) => {
+const buildArgs = (ctx, args) => {
   let txt = ''
   for (let i = 0; i < args.length; ++i) {
     if (i !== 0) txt += ' or '
-    txt += argCondition(ctx, args[i])
+    txt += buidArg(ctx, args[i])
   }
   return txt
 }
 
-const argCondition = (ctx, arg) => {
+const buidArg = (ctx, arg) => {
   if (arg !== null && !Array.isArray(arg) && typeof arg === 'object')
-    return objectConditions(ctx, arg)
-  if (typeof arg === 'function') return arg._build(ctx).text
+    return buildObject(ctx, arg)
+  if (typeof arg === 'function') return ctx.build(arg)
   throw Error('Invalid condition of type:', arg)
 }
 
-// conditions for each property of an object
-const objectConditions = (ctx, obj) => {
+const buildObject = (ctx, obj) => {
   const keys = Object.keys(obj)
   let txt = ''
   for (let i = 0; i < keys.length; ++i) {
@@ -53,7 +47,7 @@ const buildCondition = (ctx, obj, key) => {
       ? `${ctx.mapKey(key)} = ${subquery.text}`
       : subquery.text
   }
-  return `${ctx.mapKey(key)} = ${ctx.parameter(ctx, val)}`
+  return `${ctx.mapKey(key)} = ${ctx.parameter(val)}`
 }
 
-module.exports = { conditions }
+module.exports = { conditions: buildCalls }

@@ -47,8 +47,7 @@ const buildObject = (ctx, object) => {
 
 const buildTable = (ctx, alias, source) => {
   if (typeof source === 'function') {
-    const query = source._build(ctx)
-    return `${ctx.mapKey(alias)} as (${query.text})`
+    return `${ctx.mapKey(alias)} as (${ctx.build(source)})`
   }
   if (Array.isArray(source)) {
     const { columns, values } = valuesArray(ctx, source)

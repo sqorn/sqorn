@@ -44,9 +44,7 @@ const values = (ctx, source, keys) => {
 }
 
 const value = (ctx, arg) => {
-  if (typeof arg === 'function') {
-    const subquery = arg._build(ctx)
-    return subquery.type === 'manual' ? subquery.text : `(${subquery.text})`
-  }
-  return ctx.parameter(ctx, arg)
+  if (arg === undefined) return 'default'
+  if (typeof arg === 'function') return ctx.build(arg)
+  return ctx.parameter(arg)
 }

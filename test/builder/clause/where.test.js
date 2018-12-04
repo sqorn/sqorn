@@ -30,6 +30,13 @@ describe('where', () => {
       text: 'select * where (name = $1)',
       args: ['Jo']
     })
+    expect(() => sq.where`name is ${undefined}`.query).toThrowError()
+    query({
+      name: 'null arg',
+      query: sq.where`name = ${null}`,
+      text: 'select * where (name = $1)',
+      args: [null]
+    })
     query({
       name: '2 paramterized args',
       query: sq.where`name = ${'Jo'} or name = ${'Mo'}`,

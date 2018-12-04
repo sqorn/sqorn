@@ -11,7 +11,7 @@ module.exports = ctx => {
       } else {
         first = false
       }
-      txt += `${type} (${args[j]._build(ctx).text})`
+      txt += `${type} (${ctx.build(args[j])})`
     }
   }
   return txt

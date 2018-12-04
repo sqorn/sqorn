@@ -25,11 +25,8 @@ const buildArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
   if (arg !== null && !Array.isArray(arg) && typeof arg === 'object')
     return buildObject(ctx, arg)
-  if (typeof arg === 'function') {
-    const { type, text } = arg._build(ctx)
-    return type === 'manual' ? text : `(${text})`
-  }
-  return ctx.parameter(ctx, arg)
+  if (typeof arg === 'function') return ctx.build(arg)
+  return ctx.parameter(arg)
 }
 
 const buildObject = (ctx, object) => {
@@ -46,11 +43,8 @@ const buildObject = (ctx, object) => {
 
 const buildExpression = (ctx, source) => {
   if (typeof source === 'string') return source
-  if (typeof source === 'function') {
-    const { type, text } = source._build(ctx)
-    return type === 'manual' ? text : `(${text})`
-  }
-  return ctx.parameter(ctx, source)
+  if (typeof source === 'function') return ctx.build(source)
+  return ctx.parameter(source)
 }
 
 module.exports = { expressions }

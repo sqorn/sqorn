@@ -1,5 +1,5 @@
 /** Escapes an argument for use in UNPARAMETERIZED queries. NOT SAFE AT ALL. */
-const escape = (ctx, arg) => {
+function escape(arg) {
   if (arg === undefined) return 'default'
   if (arg === null) return 'null'
   if (typeof arg === 'string') return escapeLiteral(arg)
@@ -7,7 +7,7 @@ const escape = (ctx, arg) => {
   if (typeof arg === 'boolean') return '' + arg
   if (typeof arg === 'object') {
     if (Array.isArray(arg)) {
-      return `array[${arg.map(e => escape(ctx, e)).join(', ')}]`
+      return `array[${arg.map(e => escape(e)).join(', ')}]`
     } else {
       return escapeLiteral(JSON.stringify(arg))
     }

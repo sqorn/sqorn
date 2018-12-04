@@ -29,7 +29,7 @@ const buildArgs = (ctx, args) => {
 
 const buildArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
-  if (typeof arg === 'function') return arg._build(ctx).text
+  if (typeof arg === 'function') return ctx.build(arg)
   if (arg !== null && !Array.isArray(arg) && typeof arg === 'object')
     return buildObject(ctx, arg)
   throw Error('Invalid order by argument:', arg)
@@ -40,7 +40,7 @@ const buildObject = (ctx, obj) => {
   const { by, sort, using, nulls } = obj
   // by
   if (typeof by === 'string') txt += by
-  else if (typeof by === 'function') txt += by._build(ctx).text
+  else if (typeof by === 'function') txt += ctx.build(by)
   else throw Error('Invalid order by property "by"')
   // sort
   if (sort) {

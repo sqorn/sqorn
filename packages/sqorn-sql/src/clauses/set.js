@@ -41,9 +41,6 @@ const buildArg = (ctx, obj) => {
 }
 
 const buildColumn = (ctx, arg) => {
-  if (typeof arg === 'function') {
-    const { type, text } = arg._build(ctx)
-    return type === 'manual' ? text : `(${text})`
-  }
-  return ctx.parameter(ctx, arg)
+  if (typeof arg === 'function') return ctx.build(arg)
+  return ctx.parameter(arg)
 }

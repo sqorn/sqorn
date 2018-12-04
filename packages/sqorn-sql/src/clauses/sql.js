@@ -17,7 +17,7 @@ const sql = (ctx, { args, raw }) =>
       : args[0]
     : isTaggedTemplate(args)
       ? buildTaggedTemplate(ctx, args)
-      : ctx.parameter(ctx, args[0])
+      : ctx.build(args[0])
 
 const unescapedTemplateString = ([strings, ...args]) => {
   let txt = ''
