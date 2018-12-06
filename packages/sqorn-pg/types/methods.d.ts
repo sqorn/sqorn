@@ -1,5 +1,4 @@
 import { SQ, SQF, SQW, SQR } from './sq'
-import { or, not } from 'ip';
 
 type Expression = string | SQ
 type Value = { [column: string]: any }
