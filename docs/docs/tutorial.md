@@ -52,6 +52,9 @@ TODO
 
 ## Manual Queries
 
+* **Build** [`.sql`](#sql-queries), [`.raw`](#sql-queries), [`.txt`](#text-fragments), [`.extend`](#extend), [`.link`](#link)
+* **Compile** [`.query`](#sql-queries), [`.unparameterized`](#sql-queries).
+
 ### SQL Queries
 
 Build SQL queries manually with `.sql`.
@@ -240,10 +243,13 @@ sq.sql`insert into book(id, title)`.sql`values ${values}`.link('\n').query
 
 ## Executing Queries
 
+* **Methods** [`.all`](#all-rows), [`.one`](#one-row), [`.query`](#manually)
+
 ### All Rows
 
+`.all` executes a query and returns a Promise for an array of rows. A row is an object where keys are [(camelCase)](#map-output-keys) column names and values are the corresponding data for the given row.
 
-Execute the query and get back a Promise for all result rows with `.all`. The query builder is itself *thenable* so `.all` is optional.
+The query builder is itself *thenable* so `.all` is optional.
 
 ```js
 const People = sq.sql`select * from person`
@@ -256,7 +262,7 @@ People.then(people => console.log(people))
 
 ### One Row
 
-Call `.one` to fetch only the first result, or `undefined` if there are no matching results. The following all print the first person (or `undefined`).
+`.one` fetches only the first result, or `undefined` if there are no matching results. The following all print the first person (or `undefined`).
 
 ```js
 const Person = sq.sql`select * from person limit 1`
@@ -287,6 +293,9 @@ pool.query(text, args).then((err, res) => { console.log(res) })
 Never use `.unparameterized` to build a query string. It is vulnerable to SQL injection.
 
 ## Transactions
+
+* **Begin** [`.transaction(cb)`](#callback), [`.transaction()`](#value)
+* **End** [`Transaction.commit`](#value), [`Transaction.rollback`](#value)
 
 ### Callback
 
@@ -333,7 +342,7 @@ const createAccount = async (email, password) =>  {
 * **Select** [`.return`](#select), [`.distinct`](#distinct), [`.distinctOn`](#distinct-on)
 * **From** [`.from`](#from), [`.join`](#joins), [`.left`](#join-type), [`.right`](#join-type), [`.full`](#join-type), [`.cross`](#join-type), [`.inner`](#join-type), [`.using`](#using), [`.on`](#on), [`.and`](#and-or), [`.or`](#and-or).
 * **Where** [`.where`](#where), [`.and`](#and-or), [`.or`](#and-or)
-* **Group By** [`.group`](#group-by)
+* **Group By** [`.group`](#group-by), [`.rollup`](#rollup), [`.cube`](#cube), [`.groupingSets`](#grouping-sets)
 * **Having** [`.having`](#having), [`.and`](#and-or), [`.or`](#and-or)
 * **Sets** [`.union`](#union-intersect-except), [`.intersect`](#union-intersect-except), [`.except`](#union-intersect-except), [`.unionAll`](#union-all-intersect-all-except-all), [`.intersectAll`](#union-all-intersect-all-except-all), [`.exceptAll`](#union-all-intersect-all-except-all)
 * **Order By** [`.order`](#order-by)
@@ -951,6 +960,8 @@ sq.from('person')
   args: [] }
 ```
 
+#### Rollup
+
 **Postgres Only:** `.group` accepts *rollup* arguments. `.rollup` accepts the same arguments as `.group` except *rollup*, *cube*, or *grouping sets* arguments.
 
 ```js
@@ -961,6 +972,8 @@ sq.from('t').group(sq.rollup('a', ['b', sq.txt`c`], 'd')).query
   args: [] }
 ```
 
+#### Cube
+
 **Postgres Only:** `.group` accepts *cube* arguments. `.cube` accepts the same arguments as `.rollup`.
 
 ```js
@@ -970,6 +983,8 @@ sq.from('t').group(sq.cube('a', ['b', sq.txt`c`], 'd')).query
 { text: 'select * from t group by cube (a, (b, c)), d',
   args: [] }
 ```
+
+#### Grouping Sets
 
 **Postgres Only:** `.group` accepts *grouping sets* arguments. `.groupingSets` accepts the same arguments as `.group`.
 
@@ -1534,7 +1549,7 @@ sq`person`({ job: 'student' })`name`.delete.query
 
 ### Insert
 
-Insert queries use `.from` to specify the table to insert into and `.insert` to specify the data to insert. [`.from`](#from-1) works as it does in delete queries.
+`.from` specifies the table to insert into and `.insert` specifies the data to insert. [`.from`](#from-1) works as it does in delete queries.
 
 ```js
 sq.from`person(first_name, last_name)`
@@ -1677,7 +1692,7 @@ sq('book')()('id').insert({ title: 'Squirrels and Acorns' }).query
 
 ### Set
 
-Update queries use `.from` to specify the table to insert into and `.set` to specify columns to update. [`.from`](#from-1) works as it does in delete queries.
+`.from` specifies the table to insert into and `.set` specifies the columns to update. [`.from`](#from-1) works as it does in delete queries.
 
 ```js
 sq.from`person`
@@ -1905,6 +1920,26 @@ Mappings are computed once per key then cached.
 
 ## Expressions
 
+* **Values** [`e`](#values)
+* **Logical** [`e.and`](#and), [`e.or`](#or), [`e.not`](#not)
+* **Comparison**
+  * **Operators** [`e.eq`](#comparison-operators), [`e.neq`](#comparison-operators), [`e.lt`](#comparison-operators), [`e.gt`](#comparison-operators), [`e.lte`](#comparison-operators), [`e.gte`](#comparison-operators)
+  * **Between** [`e.between`](#between-not-between), [`e.notBetween`](#not-between)
+  * **Distinct** [`e.isDistinct`](#is-distinct-is-not-distinct), [`e.isNotDistinct`](#is-distinct-is-not-distinct)
+  * **Null** [`e.isNull`](#is-null-is-not-null), [`e.isNotNull`](#is-null-is-not-null)
+  * **Boolean** [`e.true`](#true-not-true-false-not-false-unknown-not-unknown), [`e.notTrue`](#true-not-true-false-not-false-unknown-not-unknown), [`e.false`](#true-not-true-false-not-false-unknown-not-unknown), [`e.notFalse`](#true-not-true-false-not-false-unknown-not-unknown), [`e.unknown`](#true-not-true-false-not-false-unknown-not-unknown), [`e.notUnknown`](#true-not-true-false-not-false-unknown-not-unknown)
+* **Subquery** [`e.exists`](#exists), [`e.notExists`](#not-exists), [`e.in`](#in), [`.notIn`](#not-in), [`.any`](#any), [`.some`](#some), [`.all`](#all)
+* **Row and Array** [`e.in`](#in), [`e.notIn`](#not-in`), [`e.any`](#any), [`e.some`](#some), [`e.all`](#all), [`e.row`](#row), [`e.array`](#array)
+* **Math**
+  * **Operators** [`e.add`](#add), [`e.subtract`](#subtract), [`e.multiply`](#multiply), [`e.divide`](#divide), [`e.mod`](#modulo), [`e.exp`](#exponentiation), [`e.sqrt`](#square-root), [`e.cbrt`](#cube-root), [`e.factorial`](#factorial), [`e.abs`](#absolute-value)
+  * **Binary** [`e.binary`](#binary), [`e.andb`](#binary-and), [`e.orb`](#binary-or), [`e.xorb`](#binary-xor), [`e.notb`](#binary-not), [`e.shiftLeft`](#shift-left), [`e.shiftRight`](#shift-right)
+* **Aggregate** [`e.count`](#count), [`e.sum`](#sum), [`e.avg`](#average), [`e.min`](#min), [`e.max`](#max)
+* **Conditional** [`.case`](#case), [`e.coallesce`](#coallesce), [`e.nullif`](#nullif), [`e.greatest`](#greatest), [`e.least`](#least)
+* **String** [`e.concat`](#string-concatenation), [`e.substring`](#substring), [`e.length`](#length), [`e.bitLength`](#bit-length), [`e.charLength`](#charLength), [`e.lower`](#lower), [`e.upper`](#upper), [`e.like`](#like), [`e.notLike`](#not-like), [`e.iLike`](#case-insensitive-like), [`e.notILike`](#case-insensitive-not-like), [`e.similarTo`](#similarTo), [`e.notSimilarTo`](#not-similar-to), [`e.match`](#match), [`e.iMatch`](#case-insensitive-match), [`e.notMatch`](#not-match), [`e.notIMatch`](#case-insensitive-not-match)
+* **Date/Time** [`e.age`](#age), [`e.now`](#now), [`e.extract`](#extract)
+
+### Values
+
 Create expressions from string, number, boolean, null, or JSON values with `.e`.
 
 ```js
@@ -1960,46 +1995,105 @@ sq.return(
   args: ['fantasy', 'history', 'art'] }
 ```
 
-
-### Custom Expressions
-
-An expression is a function that takes argument `ctx` and returns the query text.
-
-For example, `.e.eq` is defined as follows:
-
-```js
-e.eq = (a, b) => ctx => `(${ctx.build(a)} = ${ctx.build(b)})`
-```
-
-```
-e.create()
-```
-
-## Operators
-
-### Custom
-
-TODO
-
 ### Logical
 
 #### And
 
-TODO
+`e.and` joins its arguments with `' and '`.
+
+```js
+sq.l(e.and(true, false, sq.return`true`)).query
+
+{ text: '$1 and $2 and (select true)',
+  args: [true, false] }
+```
+
+`e.and` requires at least one argument
+
+```js
+sq.l(e.and()).query // throws error
+```
+
+`e.and` can be curried.
+
+```js
+sq.l(e.and(true)(false)(sq.return`true`)).query
+
+{ text: '$1 and $2 and (select true)',
+  args: [true, false] }
+```
+
+`e.and` can be called as a template tag.
+
+```js
+sq.l(e.and`x`(true)`y`.query
+
+{ text: 'x and $1 and y',
+  args: [true] }
+```
 
 #### Or
 
-TODO
+`e.or` joins its arguments with `' or '`.
+
+```js
+sq.sql(e.or(true, false, sq.return`true`)).query
+
+{ text: '$1 or $2 or (select true)',
+  args: [true, false] }
+```
+
+`e.or` requires at least one argument
+
+```js
+sq.sql(e.or()).query // throws error
+```
+
+`e.or` can be curried.
+
+```js
+sq.sql(e.or(true)(false)(sq.return`true`)).query
+
+{ text: '$1 or $2 or (select true)',
+  args: [true, false] }
+```
+
+`e.or` can be called as a template tag.
+
+```js
+sq.l(e.or`x`(true)`y`.query
+
+{ text: 'x or $1 or y',
+  args: [true] }
+```
 
 #### Not
 
-TODO
+`e.not` negates its argument.
+
+```js
+sq.sql(e.not(e.and(true, true))).query
+
+{ text: 'not ($1 and $2)',
+  args: [true, true] }
+```
 
 ### Comparison
 
-#### <, >, <=, >=, =, != or <>
+#### Comparison Operators
 
-TODO
+Sqorn supports binary comparison operators:
+
+Method  | Operator | Operation
+--------|----------|----------------------
+`e.eq`  | =        | Equal
+`e.neq` | <>, !=   | Not Equal
+`e.lt`  | <        | Less Than
+`e.gt`  | >        | Greater Than
+`e.lte` | <=       | Less Than or Equal
+`e.gte` | >=       | Greater Than or Equal
+
+Pass exactly two arguments
 
 #### Between, Not Between
 
@@ -2067,7 +2161,7 @@ TODO
 
 TODO
 
-#### Nullif
+#### NullIf
 
 TODO
 
@@ -2110,3 +2204,16 @@ TODO
 TODO
 
 
+### Custom Expressions
+
+An expression is a function that takes argument `ctx` and returns the query text.
+
+For example, `.e.eq` is defined as follows:
+
+```js
+e.eq = (a, b) => ctx => `(${ctx.build(a)} = ${ctx.build(b)})`
+```
+
+```
+e.create()
+```
