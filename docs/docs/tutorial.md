@@ -1920,7 +1920,7 @@ Mappings are computed once per key then cached.
 
 ## Expressions
 
-* **Values** [`e`](#values)
+* **Values** [`e`](#values), [`e.raw`](#values), [`e.row`](#values), [`e.array`](#values)
 * **Logical** [`e.and`](#and), [`e.or`](#or), [`e.not`](#not)
 * **Comparison**
   * **Operators** [`e.eq`](#comparison-operators), [`e.neq`](#comparison-operators), [`e.lt`](#comparison-operators), [`e.gt`](#comparison-operators), [`e.lte`](#comparison-operators), [`e.gte`](#comparison-operators)
@@ -1933,7 +1933,7 @@ Mappings are computed once per key then cached.
 * **Math**
   * **Operators** [`e.add`](#add), [`e.subtract`](#subtract), [`e.multiply`](#multiply), [`e.divide`](#divide), [`e.mod`](#modulo), [`e.exp`](#exponentiation), [`e.sqrt`](#square-root), [`e.cbrt`](#cube-root), [`e.factorial`](#factorial), [`e.abs`](#absolute-value)
   * **Binary** [`e.binary`](#binary), [`e.andb`](#binary-and), [`e.orb`](#binary-or), [`e.xorb`](#binary-xor), [`e.notb`](#binary-not), [`e.shiftLeft`](#shift-left), [`e.shiftRight`](#shift-right)
-* **Aggregate** [`e.count`](#count), [`e.sum`](#sum), [`e.avg`](#average), [`e.min`](#min), [`e.max`](#max)
+* **Aggregate** [`e.count`](#count), [`e.sum`](#sum), [`e.avg`](#average), [`e.min`](#min), [`e.max`](#max), [`e.stddev`](#standard-deviation), [`e.variance`](#variance)
 * **Conditional** [`.case`](#case), [`e.coallesce`](#coallesce), [`e.nullif`](#nullif), [`e.greatest`](#greatest), [`e.least`](#least)
 * **String** [`e.concat`](#string-concatenation), [`e.substring`](#substring), [`e.length`](#length), [`e.bitLength`](#bit-length), [`e.charLength`](#charLength), [`e.lower`](#lower), [`e.upper`](#upper), [`e.like`](#like), [`e.notLike`](#not-like), [`e.iLike`](#case-insensitive-like), [`e.notILike`](#case-insensitive-not-like), [`e.similarTo`](#similarTo), [`e.notSimilarTo`](#not-similar-to), [`e.match`](#match), [`e.iMatch`](#case-insensitive-match), [`e.notMatch`](#not-match), [`e.notIMatch`](#case-insensitive-not-match)
 * **Date/Time** [`e.age`](#age), [`e.now`](#now), [`e.extract`](#extract)

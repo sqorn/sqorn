@@ -33,13 +33,15 @@ const siteConfig = {
   // For no header links in the top nav bar -> headerLinks: [],
   headerLinks: [
     { href: 'https://github.com/sqorn/sqorn', label: 'Github' },
-    { doc: 'tutorial', label: 'Tutorial' },
+    { doc: 'about', label: 'Documentation' },
     // { doc: 'api', label: 'API' },
     { page: 'demo', label: 'Demo' },
     { page: 'benchmarks', label: 'Benchmarks' }
     // { doc: 'benchmarks', label: 'Benchmarks' },
     // { blog: true, label: 'Blog' }
   ],
+
+  editUrl: 'https://github.com/sqorn/sqorn/edit/master/docs/docs/',
 
   algolia: {
     apiKey: '4f6441bc3ef3f696189b04d115eef1a1',
@@ -82,14 +84,14 @@ const siteConfig = {
   },
 
   // Add custom scripts here that would be placed in <script> tags
-  scripts: ['https://buttons.github.io/buttons.js'],
+  scripts: [],
 
   /* On page navigation for the current documentation page */
   onPageNav: 'separate',
 
   /* Open Graph and Twitter card images */
-  ogImage: 'img/docusaurus.png',
-  twitterImage: 'img/docusaurus.png'
+  ogImage: 'img/logo_blue.png',
+  twitterImage: 'img/logo_blue.png'
 
   // You may provide arbitrary config keys to be used as needed by your
   // template. For example, if you need your repo's URL...
