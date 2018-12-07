@@ -7,7 +7,7 @@ sidebar_label: Manual Queries
 * **Build** [`.sql`](#sql-queries), [`.raw`](#sql-queries), [`.txt`](#text-fragments), [`.extend`](#extend), [`.link`](#link)
 * **Compile** [`.query`](#sql-queries), [`.unparameterized`](#sql-queries).
 
-## SQL Queries
+## Queries
 
 Build SQL queries manually with `.sql`.
 
@@ -118,9 +118,18 @@ sq.sql`select * from`
   args: [20] }
 ```
 
+TODO: Pass `.sql` multiple arguments to build a row.
+
+```js
+sq.sql`select`.sql(2, 4, 8).query
+
+{ text: 'select ($1, $2, $3)',
+  args: [2, 4, 8] }
+```
+
 Use `.sql` to build *complete* queries, not fragments.
 
-## Text Fragments
+## Fragments
 
 Build query fragments with `.txt`. Sqorn does not automatically paranthesize embedded fragments.
 
