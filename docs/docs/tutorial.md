@@ -1835,8 +1835,6 @@ TODO
 
 ## Configuration
 
-
-
 ### Thenable
 
 By default, Sqorn's query builder `sq` is *thenable*. This allows you to directly `await` or call `.then` on `sq`.

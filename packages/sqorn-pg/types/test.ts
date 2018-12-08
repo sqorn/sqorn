@@ -56,3 +56,40 @@ const n2 = e(true).in([null, true, false, e.eq(1, 2)])
 const n3 = e(null).in([1, 2, 3, null, false]).in([]).notIn([true])
 const n4 = e.notIn(3, [1, 2, 3])
 const n5 = e(true).notIn([false, e(true), null])
+
+const o1 = e(subquery).eq(subquery).eq(true)
+const o2 = e.any(1, [1, 2, 3]).any([true, false, true])
+const o3 = e.all(3, [3, 3, 3])
+const o4 = e(3).all([3, 3, 3])
+const o5 = e(null).number.all([3, 3, 3])
+
+const p1 = e.unnest([])
+const p2 = e([1, 2, 3]).unnest
+
+const q1 = e.array([])
+const q2 = e.array(e([]))
+const q3 = e.number(2)
+const q4 = e.unknown(23)
+const q5 = e.json({})
+const q6 = e.boolean(true)
+const q7 = e(null).boolean
+const q8 = e(e.unknown(23412341234)).boolean
+
+const r1 = e.like('asd', 'asdf')
+const r2 = e.like('asd')('asdf')
+const r3 = e('asd').like('asd')
+const r4 = e.notLike('asd', 'asdf')
+const r5 = e.notLike('asd')('asdf')
+const r6 = e('asd').notLike('asd')
+const r7 = e.like`asdf`('asd')
+const r8 = e.like('a')`asdf`
+
+const s1 = e([])
+const s2 = e.arrayGet([], 23)
+const s3 = e.arrayGet([])(23)
+const s4 = e([]).arrayGet`(23)`
+const s5 = e([])
+const s6 = e.arrayAppend([], 23)
+const s7 = e.arrayAppend([])(23)
+const s8 = e([]).arrayAppend(23)
+const s9 = e([]).arrayCat([])

@@ -15,7 +15,7 @@ const buildCall = (ctx, args) => {
   if (isTaggedTemplate(args)) return ' ' + buildTaggedTemplate(ctx, args)
   if (args.length === 0) return ' default values'
   if (Array.isArray(args[0])) return buildValuesArray(ctx, args[0])
-  if (typeof args[0] === 'function') return ' ' + args[0]._build(ctx).text
+  if (typeof args[0] === 'function') return ctx.build(args[0])
   return buildValuesArray(ctx, args)
 }
 

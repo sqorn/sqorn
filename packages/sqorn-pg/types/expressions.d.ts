@@ -3,16 +3,22 @@ type TypeExpressionMap = {
   unknown: UnknownExpression
   boolean: BooleanExpression
   number: NumberExpression
+  string: StringExpression
+  array: ArrayExpression
   row: RowExpression
   subquery: SubqueryExpression
+  json: JSONExpression
 }
 type TypePrimitiveMap = {
   new: never
   unknown: null
   boolean: boolean
   number: number
+  string: string
+  array: any[]
   row: never
   subquery: never
+  json: null | number | boolean | string | any[] | { [key: string]: any }
 }
 type TypeInferenceMap = {
   [key in Types]: TypeExpressionMap[key] | TypePrimitiveMap[key]
@@ -22,22 +28,27 @@ type TypeCompatibilityMap = {
   unknown: Arg
   boolean: null | TypeInferenceMap['boolean']
   number: null | TypeInferenceMap['number']
+  string: null | TypeInferenceMap['string']
+  array: null | TypeInferenceMap['array']
   row: null | TypeInferenceMap['row']
   subquery: TypeInferenceMap['subquery']
+  json: null | TypeInferenceMap['json']
 }
 type Types = keyof TypeExpressionMap
 type ExpressionTypes = TypeExpressionMap[Types]
 type PrimitiveTypes = TypePrimitiveMap[Types]
 type Arg = ExpressionTypes | PrimitiveTypes
-
 type Compatible<T extends Types> = TypeCompatibilityMap[T]
 type Infer<T extends Arg> = 
   T extends TypeInferenceMap['new'] ? 'new' :
   T extends TypeInferenceMap['unknown'] ? 'unknown' :
   T extends TypeInferenceMap['boolean'] ? 'boolean' :
   T extends TypeInferenceMap['number'] ? 'number' :
+  T extends TypeInferenceMap['string'] ? 'string' :
+  T extends TypeInferenceMap['array'] ? 'array' :
   T extends TypeInferenceMap['row'] ? 'row' :
   T extends TypeInferenceMap['subquery'] ? 'subquery' :
+  T extends TypeInferenceMap['json'] ? 'json' :
   never
 type InferCompatible<T extends Arg> = Compatible<Infer<T>>
 type InferExpression<T extends Arg> = TypeExpressionMap[Infer<T>]
@@ -45,11 +56,14 @@ type tmp = Infer<SubqueryExpression>
 type UnknownArgument = TypeCompatibilityMap['unknown']
 type BooleanArgument = TypeCompatibilityMap['boolean']
 type NumberArgument = TypeCompatibilityMap['number']
+type StringArgument = TypeCompatibilityMap['string']
+type ArrayArgument = TypeCompatibilityMap['array']
 type RowArgument = TypeCompatibilityMap['row']
 type SubqueryArgument = TypeCompatibilityMap['subquery']
+type JSONArgument = TypeCompatibilityMap['json']
 
-interface Expression {
-  type: Types
+interface Expression<T extends Types> extends ComparisonOperators<T> {
+  type: T
   _build(): string
 }
 
@@ -57,34 +71,41 @@ interface Expression {
 // Expressions
 //
 
-interface AnyExpression<T extends Types> extends
-  Expression,
+interface AllOperators<T extends Types> extends
+  ValueOperators<T>,
   ArgOperators<T>,
   LogicalOperators<T>,
-  ComparisonOperators<T>,
   NumberOperators<T>,
-  SubqueryOperators<T> { type: T }
+  StringOperators<T>,
+  ArrayOperators<T>,
+  RowOperators<T>,
+  SubqueryOperators<T> {}
 
-interface NewExpression extends AnyExpression<'new'> {}
+interface NewExpression extends Expression<'new'>,
+  AllOperators<'new'> {}
 
-interface UnknownExpression extends AnyExpression<'unknown'> {}
+interface UnknownExpression extends Expression<'unknown'>,
+  AllOperators<'unknown'> {}
 
-interface BooleanExpression extends
-  Expression,
-  LogicalOperators<'boolean'>,
-  ComparisonOperators<'boolean'> { type: 'boolean' }
+interface BooleanExpression extends Expression<'boolean'>,
+  LogicalOperators<'boolean'> {}
 
-interface NumberExpression extends
-  Expression,
-  NumberOperators<'number'>,
-  ComparisonOperators<'number'> { type: 'number' }
+interface NumberExpression extends Expression<'number'>,
+  NumberOperators<'number'> {}
 
-interface RowExpression extends
-  Expression { type: 'row' }
+interface StringExpression extends Expression<'string'>,
+  StringOperators<'string'> {}
 
-interface SubqueryExpression extends
-  Expression,
-  SubqueryOperators<'subquery'> { type: 'subquery' }
+interface ArrayExpression extends Expression<'array'>,
+  ArrayOperators<'array'> {}
+
+interface RowExpression extends Expression<'row'> {}
+
+interface SubqueryExpression extends Expression<'subquery'>,
+  SubqueryOperators<'subquery'> {}
+
+interface JSONExpression extends Expression<'json'>,
+  JSONOperators<'json'> {}
 
 //
 // Operators
@@ -94,6 +115,38 @@ interface ArgOperators<T extends Types> {
   <T extends Arg>(arg: T): InferExpression<T>
   (strings: TemplateStringsArray, ...args: any[]): UnknownExpression
   // (...args: any): RowExpression
+}
+
+interface ValueOperators<T extends Types> {
+  unknown: T extends 'new' ? UnknownChain : UnknownExpression
+  boolean: T extends 'new' ? BooleanChain : BooleanExpression
+  number: T extends 'new' ? NumberChain : NumberExpression
+  array: T extends 'new' ? ArrayChain : ArrayExpression
+  row: T extends 'new' ? RowChain : RowExpression
+  subquery: T extends 'new' ? SubqueryChain : SubqueryExpression
+  json: T extends 'new' ? JSONChain : JSONExpression
+}
+
+interface UnknownChain {
+  (unknown: UnknownArgument): UnknownExpression
+}
+interface BooleanChain {
+  (boolean: BooleanArgument): BooleanExpression
+}
+interface NumberChain {
+  (number: NumberArgument): NumberExpression
+}
+interface ArrayChain {
+  (array: ArrayArgument): ArrayExpression
+}
+interface RowChain {
+  (row: RowArgument): RowExpression
+}
+interface SubqueryChain {
+  (subquery: SubqueryArgument): SubqueryExpression
+}
+interface JSONChain {
+  (json: JSONArgument): JSONExpression
 }
 
 //
@@ -272,13 +325,16 @@ interface Any {
   <T extends Arg>(arg1: T, arg2: SubqueryArgument): BooleanExpression
   <T extends Arg>(arg1: T): AnyChain<Infer<T>>
   (text: TemplateStringsArray, ...args: any[]): AnyChain<'unknown'>
-  // Values List
+  // Array
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>[]): BooleanExpression
+
 }
 interface AnyChain<T extends Types> {
   // Subquery
   (arg2: SubqueryArgument): BooleanExpression
   (text: TemplateStringsArray, ...args: any[]): BooleanExpression
-  // Values List
+  // Array
+  (arg2: Compatible<T>[]): BooleanExpression
 }
 
 interface Some {
@@ -286,13 +342,15 @@ interface Some {
   <T extends Arg>(arg1: T, arg2: SubqueryArgument): BooleanExpression
   <T extends Arg>(arg1: T): SomeChain<Infer<T>>
   (text: TemplateStringsArray, ...args: Some[]): SomeChain<'unknown'>
-  // Values List
+  // Array
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>[]): BooleanExpression
 }
 interface SomeChain<T extends Types> {
   // Subquery
   (arg2: SubqueryArgument): BooleanExpression
   (text: TemplateStringsArray, ...args: Some[]): BooleanExpression
-  // Values List
+  // Array
+  (arg2: Compatible<T>[]): BooleanExpression
 }
 
 interface All {
@@ -300,13 +358,15 @@ interface All {
   <T extends Arg>(arg1: T, arg2: SubqueryArgument): BooleanExpression
   <T extends Arg>(arg1: T): AllChain<Infer<T>>
   (text: TemplateStringsArray, ...args: All[]): AllChain<'unknown'>
-  // Values List
+  // Array
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>[]): BooleanExpression
 }
 interface AllChain<T extends Types> {
   // Subquery
   (arg2: SubqueryArgument): BooleanExpression
   (text: TemplateStringsArray, ...args: All[]): BooleanExpression
-  // Values List
+  // Array
+  (arg2: Compatible<T>[]): BooleanExpression
 }
 
 //
@@ -345,20 +405,106 @@ interface Divide {
 interface DivideChain extends Divide, NumberExpression {}
 
 //
+// String Operators
+//
+
+interface StringOperators<T extends Types> {
+  like: T extends 'new' ? Like : LikeChain
+  notLike: T extends 'new' ? NotLike : NotLikeChain
+}
+
+interface Like {
+  (arg1: StringArgument, arg2: StringArgument): BooleanExpression
+  (arg1: StringArgument): LikeChain
+  (strings: TemplateStringsArray, ...args: any[]): LikeChain
+}
+interface LikeChain {
+  (arg2: StringArgument): BooleanExpression
+  (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
+}
+
+interface NotLike {
+  (arg1: StringArgument, arg2: StringArgument): BooleanExpression
+  (arg1: StringArgument): NotLikeChain
+  (strings: TemplateStringsArray, ...args: any[]): NotLikeChain
+}
+interface NotLikeChain {
+  (arg2: StringArgument): BooleanExpression
+  (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
+}
+
+//
+// Array Operators
+//
+
+interface ArrayOperators<T extends Types> {
+  unnest: T extends 'new' ? Unnest : SubqueryExpression
+  arrayGet: T extends 'new' ? ArrayGet : ArrayGetChain
+  arrayAppend: T extends 'new' ? ArrayAppend : ArrayAppendChain
+  arrayCat: T extends 'new' ? ArrayCat : ArrayCatChain
+}
+
+interface Unnest {
+  (arg: ArrayArgument): SubqueryExpression
+  (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
+}
+
+interface ArrayGet {
+  (array: ArrayArgument, index: NumberArgument): UnknownExpression
+  (array: ArrayArgument): ArrayGetChain
+  (strings: TemplateStringsArray, ...args: any[]): ArrayGetChain
+}
+interface ArrayGetChain {
+  (index: NumberArgument): UnknownExpression
+  (strings: TemplateStringsArray, ...args: any[]): UnknownExpression
+}
+
+interface ArrayAppend {
+  (array: ArrayArgument, element: UnknownArgument): ArrayExpression
+  (array: ArrayArgument): ArrayAppendChain
+  (strings: TemplateStringsArray, ...args: any[]): ArrayAppendChain
+}
+interface ArrayAppendChain {
+  (element: UnknownArgument): ArrayExpression
+  (strings: TemplateStringsArray, ...args: any[]): ArrayExpression
+}
+
+interface ArrayCat {
+  (array1: ArrayArgument, array2: ArrayArgument): ArrayExpression
+  (array1: ArrayArgument): ArrayCatChain
+  (strings: TemplateStringsArray, ...args: any[]): ArrayCatChain
+}
+interface ArrayCatChain {
+  (array2: ArrayArgument): ArrayExpression
+  (strings: TemplateStringsArray, ...args: any[]): ArrayExpression
+}
+
+//
+// Row Operators
+//
+interface RowOperators<T extends Types> {}
+
+//
 // Subquery Operators
 //
 
 interface SubqueryOperators<T extends Types> {
-  exists: T extends 'new' ? ExistsSubquery : BooleanExpression
-  notExists: T extends 'new' ? NotExistsSubquery : BooleanExpression
+  exists: T extends 'new' ? Exists : BooleanExpression
+  notExists: T extends 'new' ? NotExists : BooleanExpression
 }
 
-interface ExistsSubquery {
+interface Exists {
   (arg: SubqueryArgument): BooleanExpression
   (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
 }
 
-interface NotExistsSubquery {
+interface NotExists {
   (arg: SubqueryArgument): BooleanExpression
   (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
 }
+
+//
+// JSON Operators
+//
+
+interface JSONOperators<T extends Types> {}
