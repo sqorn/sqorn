@@ -48,9 +48,10 @@ const newContextCreator = ({ parameter, escape, mapInputKeys = snakeCase }) => {
       mapKey,
       // builds argument
       build: function(arg) {
+        if (arg === undefined) throw Error('Error: undefined argument')
         if (typeof arg === 'function') {
           if (arg._build) {
-            const { type, text } = arg._build(ctx)
+            const { type, text } = arg._build(this)
             return type === 'manual' ? text : `(${text})`
           }
           return `(${arg(this)})`

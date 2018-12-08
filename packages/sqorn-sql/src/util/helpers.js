@@ -1,9 +1,5 @@
-const isTaggedTemplate = args => {
-  // the first argument of a tagged template literal is an array
-  // of strings with a property raw that is an array of strings
-  const [strings] = args
-  return Array.isArray(strings) && strings.raw
-}
+// first argument of tagged template literal is array with property raw
+const isTaggedTemplate = ([strings]) => Array.isArray(strings) && strings.raw
 
 const buildTaggedTemplate = (ctx, [strings, ...args]) => {
   let i = 0
@@ -15,18 +11,56 @@ const buildTaggedTemplate = (ctx, [strings, ...args]) => {
     if (prevString[lastCharIndex] === '$') {
       // raw arg
       txt += prevString.substr(0, lastCharIndex) + args[i]
-    } else if (typeof arg === 'function') {
-      // sql builder arg
-      txt += prevString + ctx.build(arg)
     } else {
       // parameterized arg
-      txt += prevString + ctx.parameter(arg)
+      txt += prevString + ctx.build(arg)
     }
   }
   return txt + strings[i]
 }
 
+const buildCall = callbackfn => (ctx, args) =>
+  isTaggedTemplate(args)
+    ? buildTaggedTemplate(ctx, args)
+    : callbackfn(ctx, args)
+
+const mapJoin = (callbackfn, separator = ', ') => (ctx, args) => {
+  let txt = ''
+  for (let i = 0; i < args.length; ++i) {
+    if (i !== 0) txt += separator
+    txt += callbackfn(ctx, args[i])
+  }
+  return txt
+}
+
+const mapJoinWrap = (callbackfn, separator = ', ', open = '(', close = ')') => (
+  ctx,
+  args
+) => {
+  let txt = open
+  for (let i = 0; i < args.length; ++i) {
+    if (i !== 0) txt += separator
+    txt += callbackfn(ctx, args[i])
+  }
+  return txt + close
+}
+
+const objectMapJoin = (callbackfn, separator = ', ') => (ctx, object) => {
+  let txt = ''
+  const keys = Object.keys(object)
+  for (let i = 0; i < keys.length; ++i) {
+    if (i !== 0) txt += separator
+    const key = keys[i]
+    txt += callbackfn(ctx, key, object[key])
+  }
+  return txt
+}
+
 module.exports = {
   isTaggedTemplate,
-  buildTaggedTemplate
+  buildTaggedTemplate,
+  buildCall,
+  mapJoin,
+  mapJoinWrap,
+  objectMapJoin
 }

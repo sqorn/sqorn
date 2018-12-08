@@ -1,4 +1,4 @@
-const { isTaggedTemplate, buildTaggedTemplate } = require('./helpers')
+const { buildCall, mapJoin, objectMapJoin } = require('./helpers')
 const { conditions } = require('./conditions')
 const valuesArray = require('./values_array')
 
@@ -31,61 +31,33 @@ const joinConditions = (ctx, from) =>
   (from.using && ` using (${using(ctx, from.using)})`) ||
   ''
 
-const using = (ctx, using) => {
-  let txt = ''
-  for (let i = 0; i < using.length; ++i) {
-    const args = using[i]
-    if (i !== 0) txt += ', '
-    if (typeof args[0] === 'string') {
-      txt += args.join(', ')
-    } else {
-      txt += buildTaggedTemplate(ctx, args)
-    }
-  }
-  return txt
+const usingArg = (ctx, arg) => {
+  if (typeof arg === 'string') return arg
+  if (typeof arg === 'function') return ctx.build(arg)
+  throw Error('Error: Invalid .using arg')
 }
-
-const fromItem = (ctx, args) =>
-  isTaggedTemplate(args) ? buildTaggedTemplate(ctx, args) : fromArgs(ctx, args)
-
-const fromArgs = (ctx, args) => {
-  let txt = ''
-  for (let i = 0; i < args.length; ++i) {
-    if (i !== 0) txt += ', '
-    txt += fromArg(ctx, args[i])
-  }
-  return txt
-}
+const using = mapJoin(buildCall(mapJoin(usingArg)))
 
 const fromArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
   if (arg !== null && !Array.isArray(arg) && typeof arg === 'object')
-    return objectTables(ctx, arg)
-  if (typeof arg === 'function') return ctx.buid(arg)
+    return buildObject(ctx, arg)
+  if (typeof arg === 'function') return ctx.build(arg)
   throw Error('Invalid .from argument:', arg)
 }
 
-const objectTables = (ctx, object) => {
-  let txt = ''
-  const keys = Object.keys(object)
-  for (let i = 0; i < keys.length; ++i) {
-    if (i !== 0) txt += ', '
-    const key = keys[i]
-    txt += buildTable(ctx, key, object[key])
+const buildProperty = (ctx, key, value) => {
+  if (typeof value === 'string') return `${value} as ${ctx.mapKey(key)}`
+  if (typeof value === 'function')
+    return `${ctx.build(value)} as ${ctx.mapKey(key)}`
+  if (Array.isArray(value)) {
+    const { columns, values } = valuesArray(ctx, value)
+    return `(${values}) as ${ctx.mapKey(key)}(${columns})`
   }
-  return txt
+  throw Error('Error: Invalid .from argument')
 }
 
-const buildTable = (ctx, alias, source) => {
-  if (typeof source === 'string') return `${source} as ${ctx.mapKey(alias)}`
-  if (Array.isArray(source)) {
-    const { columns, values } = valuesArray(ctx, source)
-    return `(${values}) as ${ctx.mapKey(alias)}(${columns})`
-  }
-  if (typeof source === 'function') {
-    return `${ctx.build(source)} as ${ctx.mapKey(alias)}`
-  }
-  return `${ctx.parameter(source)} as ${ctx.mapKey(alias)}`
-}
+const buildObject = objectMapJoin(buildProperty)
+const fromItem = buildCall(mapJoin(fromArg))
 
 module.exports = { fromItems }

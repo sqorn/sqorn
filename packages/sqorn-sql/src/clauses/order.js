@@ -1,30 +1,9 @@
-const { isTaggedTemplate, buildTaggedTemplate } = require('../util')
+const { buildCall, mapJoin } = require('../util')
 
 module.exports = ctx => {
   if (ctx.ord.length === 0) return
-  const txt = buildCalls(ctx, ctx.ord)
+  const txt = calls(ctx, ctx.ord)
   return txt && `order by ${txt}`
-}
-
-const buildCalls = (ctx, calls) => {
-  let txt = ''
-  for (let i = 0; i < calls.length; ++i) {
-    if (i !== 0) txt += ', '
-    txt += buildCall(ctx, calls[i])
-  }
-  return txt
-}
-
-const buildCall = (ctx, args) =>
-  isTaggedTemplate(args) ? buildTaggedTemplate(ctx, args) : buildArgs(ctx, args)
-
-const buildArgs = (ctx, args) => {
-  let txt = ''
-  for (let i = 0; i < args.length; ++i) {
-    if (i !== 0) txt += ', '
-    txt += buildArg(ctx, args[i])
-  }
-  return txt
 }
 
 const buildArg = (ctx, arg) => {
@@ -60,3 +39,5 @@ const buildObject = (ctx, obj) => {
   // return
   return txt
 }
+
+const calls = mapJoin(buildCall(mapJoin(buildArg)))

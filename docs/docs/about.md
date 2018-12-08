@@ -45,18 +45,20 @@ sq.sql`select a.author_id, json_agg(b.*)`
 
 ## Expression Builder
 
-Build complex conditions and operations with the functional [expression builder](#expressions).
+Build complex conditions and operations with the fluent, typed, functional [expression builder](#expressions).
 
 ```js
 sq.from('book')
   .where(
-    sq.e.or(
-      sq.e.in`title`(['1984', 'Moby Dick', 'Oathbringer']),
-      sq.e.eq`genre`('Fantasy')
+    e`id`.eq(
+      e(3).add(20).subtract(5)
+    ).or(
+      e.eq`genre`('Fantasy').not,
+      e.in`title`(['1984', 'Moby Dick', 'Oathbringer'])
     )
   )
   .query
 
-{ text: 'select * from book where (title in ($1, $2, $3)) or (genre = $4)',
-  args: ['1984', 'Moby Dick', 'Oathbringer', 'Fantasy'] }
+{ text: 'select * from book where ((id = (($1 + $2) - $3)) or (not (genre = $4)) or (title in ($5, $6, $7)))',
+  args: [3, 20, 5, 'Fantasy', '1984', 'Moby Dick', 'Oathbringer'] }
 ```

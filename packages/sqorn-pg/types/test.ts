@@ -62,6 +62,7 @@ const o2 = e.any(1, [1, 2, 3]).any([true, false, true])
 const o3 = e.all(3, [3, 3, 3])
 const o4 = e(3).all([3, 3, 3])
 const o5 = e(null).number.all([3, 3, 3])
+const o6 = e(e)
 
 const p1 = e.unnest([])
 const p2 = e([1, 2, 3]).unnest
@@ -93,3 +94,5 @@ const s6 = e.arrayAppend([], 23)
 const s7 = e.arrayAppend([])(23)
 const s8 = e([]).arrayAppend(23)
 const s9 = e([]).arrayCat([])
+
+e.and(e(true).gt(true), e.in('a')([]))

@@ -45,6 +45,5 @@ const values = (ctx, source, keys) => {
 
 const value = (ctx, arg) => {
   if (arg === undefined) return 'default'
-  if (typeof arg === 'function') return ctx.build(arg)
-  return ctx.parameter(arg)
+  return ctx.build(arg)
 }

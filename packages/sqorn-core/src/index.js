@@ -2,7 +2,12 @@ const { camelCase, memoize } = require('sqorn-util')
 
 /** Returns a new Sqorn SQL query builder */
 module.exports = ({ adapter, dialect }) => (config = {}) => {
-  const { newContext, queries, methods, properties } = dialect(config)
+  const {
+    newContext,
+    queries,
+    methods,
+    properties: dialectProperties
+  } = dialect(config)
   const client = adapter(config)
   const reducers = createReducers(methods)
   const updateContext = applyReducers(reducers)
@@ -15,7 +20,7 @@ module.exports = ({ adapter, dialect }) => (config = {}) => {
     ...builderProperties({ chain, newContext, updateContext, queries }),
     ...(client && adapterProperties({ client, config })),
     ...methodProperties({ methods, chain }),
-    ...properties,
+    ...dialectProperties,
     ...(client && client.properties)
   })
   return chain()

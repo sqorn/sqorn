@@ -37,7 +37,7 @@ type TypeCompatibilityMap = {
 type Types = keyof TypeExpressionMap
 type ExpressionTypes = TypeExpressionMap[Types]
 type PrimitiveTypes = TypePrimitiveMap[Types]
-type Arg = ExpressionTypes | PrimitiveTypes
+type Arg = Exclude<ExpressionTypes | PrimitiveTypes, NewExpression>
 type Compatible<T extends Types> = TypeCompatibilityMap[T]
 type Infer<T extends Arg> = 
   T extends TypeInferenceMap['new'] ? 'new' :
@@ -52,7 +52,7 @@ type Infer<T extends Arg> =
   never
 type InferCompatible<T extends Arg> = Compatible<Infer<T>>
 type InferExpression<T extends Arg> = TypeExpressionMap[Infer<T>]
-type tmp = Infer<SubqueryExpression>
+
 type UnknownArgument = TypeCompatibilityMap['unknown']
 type BooleanArgument = TypeCompatibilityMap['boolean']
 type NumberArgument = TypeCompatibilityMap['number']
