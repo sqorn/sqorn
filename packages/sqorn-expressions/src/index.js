@@ -27,6 +27,9 @@ const buildContext = ({ params = [] } = {}) => {
   return { params, build }
 }
 
+// TODO: Performance optimization:
+// inline expression building with this method so at most only one array
+// is allocated in total, no array of object containing arrays nonsense
 const buildCalls = current => {
   // get call nodes
   const calls = []
@@ -38,16 +41,12 @@ const buildCalls = current => {
   const expressions = [expression]
   for (let i = 0; i < calls.length; ++i) {
     const { name, args } = calls[i]
-    if (i == 0) {
+    if (i === 0) {
       if (name) expression.name = name
       else pushCall(expression.args, args)
     } else {
-      if (name) {
-        expression = { name, args: [] }
-        expressions.push(expression)
-      } else {
-        pushCall(expression.args, args)
-      }
+      if (name) expressions.push((expression = { name, args: [undefined] }))
+      else pushCall(expression.args, args)
     }
   }
   return expressions
@@ -70,20 +69,13 @@ const createExpressionBuilder = expressions => (ctx, calls) => {
   for (let i = 0; i < calls.length; ++i) {
     const { name, args } = calls[i]
     const { build, minArgs, maxArgs } = expressions[name]
+    if (i !== 0) args[0] = { exp }
     const numArgs = args.length
-    if (i === 0) {
-      if (numArgs < minArgs)
-        throw Error(`Error: ${name} requires at least ${minArgs} arguments`)
-      if (numArgs > maxArgs)
-        throw Error(`Error: ${name} accepts at most ${maxArgs} arguments`)
-      exp = build(ctx, args)
-    } else {
-      if (numArgs + 1 < minArgs)
-        throw Error(`Error: ${name} requires at least ${minArgs} arguments`)
-      if (numArgs + 1 > maxArgs)
-        throw Error(`Error: ${name} accepts at most ${maxArgs} arguments`)
-      exp = build(ctx, [{ exp }, ...args])
-    }
+    if (numArgs < minArgs)
+      throw Error(`Error: ${name} requires at least ${minArgs} arguments`)
+    if (numArgs > maxArgs)
+      throw Error(`Error: ${name} accepts at most ${maxArgs} arguments`)
+    exp = build(ctx, args)
   }
   return exp
 }
@@ -122,8 +114,6 @@ const expressionProperties = ({ chain }) => {
 
 const e = ExpressionBuilder({})()
 
-// console.log(JSON.stringify(e(5, 6, 7)(8).eq(3, 5).eq`meow`.query, null, 2))
-// console.log(JSON.stringify(e.eq(3, 4).query, null, 2))
 console.log(
   JSON.stringify(
     e(1, 2)
@@ -133,15 +123,3 @@ console.log(
     2
   )
 )
-console.log(
-  JSON.stringify(
-    e.eq(e(1).eq(2), 3).and(true, false, true).not.not.query,
-    null,
-    2
-  )
-)
-// console.log(JSON.stringify(e(1, 2).eq(3).query, null, 2))
-// console.log(JSON.stringify(e.and(true, false, true, false).query, null, 2))
-// console.log(JSON.stringify(e.eq(3, 4).and(true).query, null, 2))
-// console.log(e.eq(3)(5).query)
-// console.log(e(3).eq(5).query)
