@@ -1,16 +1,16 @@
-const { unary, binary, ternary, nary } = require('./util')
+const { build, unary, binary, ternary, nary } = require('./util')
 
 // value
 const value = {
   arg: {
-    name,
+    name: 'arg',
     minArgs: 1,
     maxArgs: Number.MAX_SAFE_INTEGER,
     build: (ctx, args) => {
       let txt = ''
       for (let i = 0; i < args.length; ++i) {
         if (i !== 0) txt += ', '
-        txt += ctx.build(args[i])
+        txt += build(ctx, args[i])
       }
       return args.length > 1 ? `(${txt})` : txt
     }
@@ -34,10 +34,11 @@ const comparison = {
   gte: binary('gte', '>='),
   between: ternary('between', 'between', 'and'),
   notBetween: ternary('notBetween', 'not between', 'and'),
-  in: binary('eq', 'in')
+  in: binary('in', 'in')
 }
 
 module.exports = {
+  build,
   ...value,
   ...logical,
   ...comparison

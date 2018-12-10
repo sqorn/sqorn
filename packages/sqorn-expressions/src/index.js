@@ -1,3 +1,4 @@
+const { isTaggedTemplate } = require('sqorn-util')
 const operators = require('./operators')
 
 const ExpressionBuilder = ({ dialect }) => (config = {}) => {
@@ -16,8 +17,9 @@ const ExpressionBuilder = ({ dialect }) => (config = {}) => {
   return chain()
 }
 
-function build() {
+function build(arg) {
   if (arg === undefined) throw Error('Invalid Query: undefined parameter')
+  if (typeof arg === 'function') return arg._build(this)
   return `$${this.params.push(arg)}`
 }
 
@@ -26,78 +28,70 @@ const buildContext = ({ params = [] } = {}) => {
 }
 
 const buildCalls = current => {
+  // get call nodes
   const calls = []
-  for (; current; current = current.prev) {
-    if (current.name) {
-      calls.push(current)
+  for (; current; current = current.prev) calls.push(current)
+  if (calls.length === 0) throw Error('Error: Empty expression')
+  calls.reverse()
+  // build expression list
+  let expression = { name: 'arg', args: [] }
+  const expressions = [expression]
+  for (let i = 0; i < calls.length; ++i) {
+    const { name, args } = calls[i]
+    if (i == 0) {
+      if (name) expression.name = name
+      else pushCall(expression.args, args)
     } else {
+      if (name) {
+        expression = { name, args: [] }
+        expressions.push(expression)
+      } else {
+        pushCall(expression.args, args)
+      }
     }
   }
-  return calls
+  return expressions
 }
 
-// (can consume, args to consume)
-// (true, N): consume args until expression
-//                  e ?
-//                  e(3) ?
-//                  e.and(true)
-// (true, 0):  -> consume expression
-//                 e.eq(1)(2) ?
-// (false, N): consume 1 arg
-//                 e.and ?
-//
-// (false, N): consume 1 arg
-//                 e.eq(1)
-//                 e.arg
-// (false, 1): consume1  -> consume 1 arg but not expression
-//                 e.eq(1)?
-// (false, 2): consume2  -> consume 2 args but not expressions
-//                 e.eq
+const pushCall = (array, args) => {
+  if (isTaggedTemplate(args)) {
+    array.push({ tag: args })
+  } else {
+    if (args.length === 0)
+      throw Error('Error: Expression call requires at least one argument')
+    for (let i = 0; i < args.length; ++i) {
+      array.push({ arg: args[i] })
+    }
+  }
+}
 
 const createExpressionBuilder = expressions => (ctx, calls) => {
-  if (calls.length === 0) throw Error('Error. Empty Expression')
-
-  // let build
-  // let minArgs
-  // let maxArgs
-  // let numArgs
-  // let accumulate = []
-  // let txt = ''
-
-  // for (let i = 0; i < calls.length; ++i) {
-  //   let { name, args } = calls[i]
-  //   // First argument is special
-  //   if (i === 0) {
-  //     // first call is an expression
-  //     if (name) {
-  //       ;({ build, minArgs, maxArgs } = expressions[name])
-  //       numArgs = 0
-  //     } else {
-  //       // first call is an argument
-  //       ;({ build, minArgs, maxArgs } = expressions['arg'])
-  //       numArgs = accumulate.push(build)
-  //     }
-  //   }
-  //   // Remaining follow pattern
-  //   else {
-  //     if (numArgs < minArgs) {
-  //     }
-  //   }
-}
-
-const compileFirst = compiler => ctx => {}
-const compileRest = compiler => ctx => {}
-
-const compile = (count, build) => ctx => {
-  const { args } = ctx
-  if (ctx.argIndex + count >= args.length) {
+  let exp
+  for (let i = 0; i < calls.length; ++i) {
+    const { name, args } = calls[i]
+    const { build, minArgs, maxArgs } = expressions[name]
+    const numArgs = args.length
+    if (i === 0) {
+      if (numArgs < minArgs)
+        throw Error(`Error: ${name} requires at least ${minArgs} arguments`)
+      if (numArgs > maxArgs)
+        throw Error(`Error: ${name} accepts at most ${maxArgs} arguments`)
+      exp = build(ctx, args)
+    } else {
+      if (numArgs + 1 < minArgs)
+        throw Error(`Error: ${name} requires at least ${minArgs} arguments`)
+      if (numArgs + 1 > maxArgs)
+        throw Error(`Error: ${name} accepts at most ${maxArgs} arguments`)
+      exp = build(ctx, [{ exp }, ...args])
+    }
   }
+  return exp
 }
 
 const createExpressions = () => {
   const expressions = {}
   Object.values(operators).forEach(operator => {
-    expressions[name] = operator
+    expressions[operator.name] = operator
   })
   return expressions
 }
@@ -128,5 +122,26 @@ const expressionProperties = ({ chain }) => {
 
 const e = ExpressionBuilder({})()
 
-console.log(e.eq(3)(5).query)
-console.log(e(3).eq(5).query)
+// console.log(JSON.stringify(e(5, 6, 7)(8).eq(3, 5).eq`meow`.query, null, 2))
+// console.log(JSON.stringify(e.eq(3, 4).query, null, 2))
+console.log(
+  JSON.stringify(
+    e(1, 2)
+      .eq(3)
+      .and(true).query,
+    null,
+    2
+  )
+)
+console.log(
+  JSON.stringify(
+    e.eq(e(1).eq(2), 3).and(true, false, true).not.not.query,
+    null,
+    2
+  )
+)
+// console.log(JSON.stringify(e(1, 2).eq(3).query, null, 2))
+// console.log(JSON.stringify(e.and(true, false, true, false).query, null, 2))
+// console.log(JSON.stringify(e.eq(3, 4).and(true).query, null, 2))
+// console.log(e.eq(3)(5).query)
+// console.log(e(3).eq(5).query)

@@ -1,7 +1,7 @@
 {
   "name": "sqorn-expressions",
   "version": "0.0.40",
-  "description": "Sqorn expressions",
+  "description": "Sqorn Expressions",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
   "engines": {
@@ -10,5 +10,6 @@
   "main": "./src/index.js",
   "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-expressions",
   "homepage": "https://sqorn.org",
-  "dependencies": {}
+  "dependencies": {
+    "sqorn-util": "^0.0.40"}
 }
