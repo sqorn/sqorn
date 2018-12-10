@@ -1,4 +1,4 @@
-const { expressions } = require('../util')
+const expressions = require('../common/expressions')
 
 module.exports = ctx => {
   let txt = 'select '

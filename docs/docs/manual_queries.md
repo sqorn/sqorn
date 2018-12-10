@@ -1,7 +1,7 @@
 ---
 id: manual-queries
 title: Manual Queries
-sidebar_label: Manual Queries
+sidebar_label: Manual
 ---
 
 * **Build** [`.sql`](#sql-queries), [`.raw`](#sql-queries), [`.txt`](#text-fragments), [`.extend`](#extend), [`.link`](#link)

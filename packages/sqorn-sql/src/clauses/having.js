@@ -1,4 +1,4 @@
-const { conditions } = require('../util')
+const conditions = require('../common/conditions')
 
 module.exports = ctx => {
   if (ctx.hav.length === 0) return

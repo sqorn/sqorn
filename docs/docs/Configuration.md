@@ -37,7 +37,7 @@ sq.with({ aB: sq.sql`select cD`, e_f: sq.sql`select g_h` })
 
 `with a_b as (select cD), e_f as (select g_h)
 select $1 as w_x, $2 as y_z
-from kL as i_j_3, (values ($3, $4)) as m_n(o_p, q_r)
+from kL as i_j3, (values ($3, $4)) as m_n(o_p, q_r)
 where (s_t = $5 and u_v = $6)`
 ```
 

@@ -1,4 +1,4 @@
-const { buildCall, mapJoin } = require('../util')
+const { buildCall, mapJoin, objectMapJoin } = require('sqorn-util')
 
 module.exports = ctx => {
   if (!ctx.set) return
@@ -6,21 +6,7 @@ module.exports = ctx => {
   return txt && 'set ' + txt
 }
 
-const buildArg = (ctx, obj) => {
-  let txt = ''
-  const keys = Object.keys(obj)
-  for (let i = 0; i < keys.length; ++i) {
-    if (i !== 0) txt += ', '
-    const column = keys[i]
-    const value = obj[column]
-    txt += `${ctx.mapKey(column)} = ${buildColumn(ctx, value)}`
-  }
-  return txt
-}
+const buildProperty = (ctx, key, value) =>
+  `${ctx.mapKey(key)} = ${ctx.build(value)}`
 
-const buildColumn = (ctx, arg) => {
-  if (typeof arg === 'function') return ctx.build(arg)
-  return ctx.parameter(arg)
-}
-
-const calls = mapJoin(buildCall(mapJoin(buildArg)))
+const calls = mapJoin(buildCall(mapJoin(objectMapJoin(buildProperty))))

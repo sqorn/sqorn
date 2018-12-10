@@ -1,7 +1,7 @@
 ---
 id: insert-queries
 title: Insert Queries
-sidebar_label: Insert Queries
+sidebar_label: Insert
 ---
 
 * **With** [`.with`](#with), [`.recursive`](#recursive-ctes)

@@ -35,8 +35,8 @@ const siteConfig = {
     { href: 'https://github.com/sqorn/sqorn', label: 'Github' },
     { doc: 'about', label: 'Documentation' },
     // { doc: 'api', label: 'API' },
-    { page: 'demo', label: 'Demo' },
-    { page: 'benchmarks', label: 'Benchmarks' }
+    { page: 'demo', label: 'Demo' }
+    // { page: 'benchmarks', label: 'Benchmarks' }
     // { doc: 'benchmarks', label: 'Benchmarks' },
     // { blog: true, label: 'Blog' }
   ],

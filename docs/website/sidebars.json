@@ -1,16 +1,23 @@
 {
   "docs": {
-    "Documentation": [
+    "Introduction": [
       "about",
       "setup",
+      "quick-start"
+    ],
+    "Queries": [
       "manual-queries",
-      "executing-queries",
-      "transactions",
       "select-queries",
       "delete-queries",
       "insert-queries",
       "update-queries",
-      "expressions",
+      "expressions"
+    ],
+    "Execution": [
+      "executing-queries",
+      "transactions"
+    ],
+    "Misc": [
       "configuration",
       "api",
       "faq"

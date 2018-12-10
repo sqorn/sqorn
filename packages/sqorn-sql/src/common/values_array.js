@@ -1,3 +1,5 @@
+const { mapJoin } = require('sqorn-util')
+
 module.exports = (ctx, array) => {
   const keys = uniqueKeys(array)
   return {
@@ -18,14 +20,7 @@ const uniqueKeys = array => {
 }
 
 // gets column string from unique keys of object array
-const columns = (ctx, keys) => {
-  let txt = ''
-  for (let i = 0; i < keys.length; ++i) {
-    if (i !== 0) txt += ', '
-    txt += ctx.mapKey(keys[i])
-  }
-  return txt
-}
+const columns = mapJoin((ctx, arg) => ctx.mapKey(arg))
 
 // gets values string of object array
 const values = (ctx, source, keys) => {

@@ -171,6 +171,10 @@ TODO
 
 ## Logical
 
+* `and => ...boolean => boolean`
+* `or => ...boolean => boolean`
+* `not => boolean => boolean`
+
 ### And
 
 `e.and` joins its arguments with `' and '`.
@@ -253,6 +257,25 @@ sq.sql(e.not(e.and(true, true))).query
 ```
 
 ## Comparison
+
+* `eq => T => T => boolean`
+* `neq => T => T => boolean`
+* `lt => T => T => boolean`
+* `gt => T => T => boolean`
+* `lte => T => T => boolean`
+* `gte => T => T => boolean`
+* `between => T => T => T => boolean`
+* `notBetween => T => T => T => boolean`
+* `isDistinctFrom => T => T => boolean`
+* `isNotDistinctFrom => T => T => boolean`
+* `isNull => T => boolean`
+* `isNotNull => T => boolean`
+* `isTrue => T => boolean`
+* `isNotTrue => T => boolean`
+* `isFalse => T => boolean`
+* `isNotFalse => T => boolean`
+* `isUnknown => T => boolean`
+* `isNotUnknown => T => boolean`
 
 ### Operators
 

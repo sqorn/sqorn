@@ -1,4 +1,4 @@
-const { isTaggedTemplate, buildTaggedTemplate } = require('../util')
+const { isTaggedTemplate, buildTaggedTemplate } = require('sqorn-util')
 
 module.exports = ctx => {
   const calls = ctx.sql

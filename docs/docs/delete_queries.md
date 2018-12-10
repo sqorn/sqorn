@@ -1,7 +1,7 @@
 ---
 id: delete-queries
 title: Delete Queries
-sidebar_label: Delete Queries
+sidebar_label: Delete
 ---
 
 * **With** [`.with`](#with), [`.recursive`](#recursive-ctes)

@@ -1,4 +1,4 @@
-const { isTaggedTemplate, buildTaggedTemplate } = require('./helpers')
+const { isTaggedTemplate, buildTaggedTemplate } = require('sqorn-util')
 
 module.exports = (ctx, args) => {
   if (isTaggedTemplate(args)) return buildTaggedTemplate(ctx, args)

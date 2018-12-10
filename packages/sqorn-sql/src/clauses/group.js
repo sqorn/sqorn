@@ -1,4 +1,4 @@
-const { buildCall, mapJoin, mapJoinWrap } = require('../util')
+const { buildCall, mapJoin, mapJoinWrap } = require('sqorn-util')
 
 module.exports = ctx => {
   if (ctx.grp.length === 0) return

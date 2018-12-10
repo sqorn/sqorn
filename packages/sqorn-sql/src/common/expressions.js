@@ -1,4 +1,4 @@
-const { buildCall, mapJoin, objectMapJoin } = require('./helpers')
+const { buildCall, mapJoin, objectMapJoin } = require('sqorn-util')
 
 const buildArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
@@ -14,6 +14,4 @@ const buildProperty = (ctx, key, value) => {
 }
 
 const buildObject = objectMapJoin(buildProperty)
-const expressions = mapJoin(buildCall(mapJoin(buildArg)))
-
-module.exports = { expressions }
+module.exports = mapJoin(buildCall(mapJoin(buildArg)))

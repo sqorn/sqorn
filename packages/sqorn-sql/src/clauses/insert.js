@@ -1,9 +1,6 @@
-const {
-  fromItems,
-  valuesArray,
-  isTaggedTemplate,
-  buildTaggedTemplate
-} = require('../util')
+const { isTaggedTemplate, buildTaggedTemplate } = require('sqorn-util')
+const fromItems = require('../common/from_items')
+const valuesArray = require('../common/values_array')
 
 module.exports = ctx => {
   const table = fromItems(ctx, ctx.frm)

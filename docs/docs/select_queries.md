@@ -1,7 +1,7 @@
 ---
 id: select-queries
 title: Select Queries
-sidebar_label: Select Queries
+sidebar_label: Select
 ---
 
 * **With** [`.with`](#with), [`.recursive`](#recursive-ctes)

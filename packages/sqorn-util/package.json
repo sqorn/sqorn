@@ -10,8 +10,5 @@
   "main": "./src/index.js",
   "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-util",
   "homepage": "https://sqorn.org",
-  "dependencies": {
-    "lodash.camelcase": "^4.3.0",
-    "lodash.snakecase": "^4.1.1"
-  }
+  "dependencies": {}
 }

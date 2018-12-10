@@ -1,7 +1,7 @@
 const { newContextCreator, methods } = require('./methods')
 const { query, queries } = require('./query')
 const clauses = require('./clauses')
-const util = require('./util')
+const common = require('./common')
 
 module.exports = {
   newContextCreator,
@@ -9,5 +9,5 @@ module.exports = {
   query,
   queries,
   clauses,
-  util
+  common
 }

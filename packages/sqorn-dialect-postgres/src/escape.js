@@ -1,5 +1,5 @@
 /** Escapes an argument for use in UNPARAMETERIZED queries. NOT SAFE AT ALL. */
-function escape(arg) {
+module.exports = arg => {
   if (arg === undefined) return 'default'
   if (arg === null) return 'null'
   if (typeof arg === 'string') return escapeLiteral(arg)
@@ -36,5 +36,3 @@ const escapeLiteral = str => {
   }
   return escaped
 }
-
-module.exports = escape

@@ -1,7 +1,7 @@
 ---
 id: update-queries
 title: Update Queries
-sidebar_label: Update Queries
+sidebar_label: Update
 ---
 
 

@@ -1,8 +1,8 @@
-const { buildCall, mapJoin, objectMapJoin } = require('./helpers')
-const { conditions } = require('./conditions')
+const { buildCall, mapJoin, objectMapJoin } = require('sqorn-util')
+const conditions = require('./conditions')
 const valuesArray = require('./values_array')
 
-const fromItems = (ctx, froms, start = 0, end = froms.length) => {
+module.exports = (ctx, froms, start = 0, end = froms.length) => {
   if (end > froms.length) end = froms.length
   let txt = ''
   for (let i = start; i < end; ++i) {
@@ -43,7 +43,7 @@ const fromArg = (ctx, arg) => {
   if (arg !== null && !Array.isArray(arg) && typeof arg === 'object')
     return buildObject(ctx, arg)
   if (typeof arg === 'function') return ctx.build(arg)
-  throw Error('Invalid .from argument:', arg)
+  throw Error('Error: Invalid .from argument:', arg)
 }
 
 const buildProperty = (ctx, key, value) => {
@@ -59,5 +59,3 @@ const buildProperty = (ctx, key, value) => {
 
 const buildObject = objectMapJoin(buildProperty)
 const fromItem = buildCall(mapJoin(fromArg))
-
-module.exports = { fromItems }

@@ -1,5 +1,5 @@
-const { buildCall, mapJoin, objectMapJoin } = require('../util')
-const valuesArray = require('../util/values_array')
+const { buildCall, mapJoin, objectMapJoin } = require('sqorn-util')
+const valuesArray = require('../common/values_array')
 
 module.exports = ctx => {
   if (ctx.with.length === 0) return
@@ -15,7 +15,7 @@ const buildArg = (ctx, arg) => {
 
 const buildProperty = (ctx, key, value) => {
   if (typeof value === 'function') {
-    return `${ctx.mapKey(key)} as (${ctx.build(value)})`
+    return `${ctx.mapKey(key)} as ${ctx.build(value)}`
   }
   if (Array.isArray(value)) {
     const { columns, values } = valuesArray(ctx, value)

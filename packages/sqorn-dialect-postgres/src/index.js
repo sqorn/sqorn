@@ -4,7 +4,7 @@ const {
   queries,
   query,
   clauses,
-  util
+  common: { fromItems, expressions }
 } = require('sqorn-sql')
 const {
   wth,
@@ -19,7 +19,6 @@ const {
   returning,
   set
 } = clauses
-const { fromItems, expressions } = util
 const escape = require('./escape')
 const e = require('sqorn-expressions')
 
@@ -70,7 +69,7 @@ const updateFrom = ctx => {
 
 function parameter(arg) {
   if (arg === undefined) throw Error('Invalid Query: undefined parameter')
-  return `$${this.arg.push(arg)}`
+  return `$${this.params.push(arg)}`
 }
 
 module.exports = ({ mapInputKeys }) => ({

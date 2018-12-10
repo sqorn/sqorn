@@ -51,7 +51,7 @@ Build complex conditions and operations with the fluent, typed, functional [expr
 sq.from('book')
   .where(
     e`id`.eq(
-      e(3).add(20).subtract(5)
+      e.add(3, 20).subtract(5)
     ).or(
       e.eq`genre`('Fantasy').not,
       e.in`title`(['1984', 'Moby Dick', 'Oathbringer'])

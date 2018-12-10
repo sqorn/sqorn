@@ -10,7 +10,7 @@ Sqorn Postgres is a Javascript library for building SQL queries.
 
 [**Fast:**](https://sqorn.org/benchmarks.html) 10x faster than [Knex.js](https://knexjs.org/) and 200x faster than [Squel](https://github.com/hiddentao/squel)
 
-**Secure:** Sqorn generates parameterized queries safe from SQL injection.
+**Secure:** Sqorn generates parameterized queries safe from SQL injection. Sqorn has no external dependencies.
 
 ## Install
 
