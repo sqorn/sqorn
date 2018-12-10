@@ -28,12 +28,12 @@ describe('return', () => {
   describe('subquery args', () => {
     query({
       name: 'one arg',
-      query: sq.return(sq.l`name`),
+      query: sq.return(sq.txt`name`),
       text: 'select name'
     })
     query({
       name: 'two args',
-      query: sq.return(sq.l`id`, sq.l`name`),
+      query: sq.return(sq.txt`id`, sq.txt`name`),
       text: 'select id, name'
     })
   })

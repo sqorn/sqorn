@@ -1,4 +1,4 @@
-const { buildCall, mapJoin } = require('sqorn-util')
+const { isObject, buildCall, mapJoin } = require('sqorn-util')
 
 module.exports = ctx => {
   if (ctx.ord.length === 0) return
@@ -9,8 +9,7 @@ module.exports = ctx => {
 const buildArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
   if (typeof arg === 'function') return ctx.build(arg)
-  if (arg !== null && !Array.isArray(arg) && typeof arg === 'object')
-    return buildObject(ctx, arg)
+  if (isObject(arg)) return buildObject(ctx, arg)
   throw Error('Invalid order by argument:', arg)
 }
 

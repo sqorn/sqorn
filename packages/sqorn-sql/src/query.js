@@ -26,7 +26,7 @@ const query = (...clauses) => ctx => {
       text += str
     }
   }
-  return { text, args: ctx.params, type: ctx.type }
+  return { text, args: ctx.params, type: ctx.userType || ctx.type }
 }
 
 const sqlQuery = query(sql)

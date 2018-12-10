@@ -14,8 +14,8 @@ describe('pg', async () => {
   beforeAll(async () => {
     const pool = new pg.Pool(adminConnection)
     const sq = sqorn({ pg, pool })
-    await sq.l`drop database if exists $${db_name}`
-    await sq.l`create database $${db_name}`
+    await sq.sql`drop database if exists $${db_name}`
+    await sq.sql`create database $${db_name}`
     await sq.end()
   })
   const pool = new pg.Pool(connection)
@@ -30,7 +30,7 @@ describe('pg', async () => {
   })
   test('create table author', async () => {
     expect(
-      await sq.l`create table author (
+      await sq.sql`create table author (
         id              serial primary key,
         first_name      text,
         last_name       text,
@@ -40,7 +40,7 @@ describe('pg', async () => {
   })
   test('create table book', async () => {
     expect(
-      await sq.l`create table book (
+      await sq.sql`create table book (
         id              serial primary key,
         title           text,
         genre           text,

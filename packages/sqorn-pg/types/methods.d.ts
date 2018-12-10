@@ -24,9 +24,9 @@ export interface With {
 ```js
 sq.with({
     width: sq.return({ n: 10 }),
-    height: sq.l`select ${20} as n`
+    height: sq.sql`select ${20} as n`
   })
-  .return({ area: sq.l`width.n * height.n`})
+  .return({ area: sq.txt`width.n * height.n`})
 // with width as (select 10 as n), height as (select 20 as n)
 // select width.n * height.n as area
 
@@ -130,7 +130,7 @@ sq.delete.from('book').where({ id: 7 })
 sq.from('book').insert({ title: 'Moby Dick', authorId: 8 })
 // insert into book (title, author_id) values ($1, $2)
 
-sq.from(sq.l`unnest(array[1, 2, 3])`)
+sq.from(sq.txt`unnest(array[1, 2, 3])`)
 // select * from unnest(array[1, 2, 3])
 
 sq.from({ b: 'book' a: 'author' })
@@ -145,7 +145,7 @@ sq.from({ old: sq.from('person').where`age > 60` })
 sq.from({ p: [{ id: 7, name: 'Jo' }, { id: 9, name: 'Mo' }] })
 // select * from (values ($1, $2), ($3, $4)) as p(id, name)
 
-sq.from({ countDown: sq.l`unnest(${[3, 2, 1]})` }).query
+sq.from({ countDown: sq.txt`unnest(${[3, 2, 1]})` }).query
 // select * from unnest($1) as count_down'
 ```
    */
@@ -225,7 +225,7 @@ sq.delete('book').where({ id: 7 })
 sq('book').insert({ title: 'Moby Dick', authorId: 8 })
 // insert into book (title, author_id) values ($1, $2)
 
-sq(sq.l`unnest(array[1, 2, 3])`)
+sq(sq.txt`unnest(array[1, 2, 3])`)
 // select * from unnest(array[1, 2, 3])
 
 sq({ b: 'book' a: 'author' })
@@ -240,7 +240,7 @@ sq({ old: sq('person').where`age > 60` })
 sq({ p: [{ id: 7, name: 'Jo' }, { id: 9, name: 'Mo' }] })
 // select * from (values ($1, $2), ($3, $4)) as p(id, name)
 
-sq({ countDown: sq.l`unnest(${[3, 2, 1]})` }).query
+sq({ countDown: sq.txt`unnest(${[3, 2, 1]})` }).query
 // select * from unnest($1) as count_down'
 ```
    */
@@ -304,7 +304,7 @@ export interface Return {
    *
    * @example
 ```js
-sq.return('user.name', 'user.id', '33', sq.l('33'), 27, true)
+sq.return('user.name', 'user.id', '33', sq.txt('33'), 27, true)
 // select user.name, user.id, 33, $1, $2, $3
 
 sq.from('person').set`age = age + 1`.return('id', 'age')
@@ -317,11 +317,11 @@ sq.from('person').insert({ age: 12 }).return('id', 'age')
 // insert into person (age) values (12) returning id, age
 
 const userInput = '; drop table user;'
-sq.from('book').return(sq.l(userInput), 23).return(true)
+sq.from('book').return(sq.txt(userInput), 23).return(true)
 // select $1, $2, $3 from book
 
 sq.return({
-  now: sq.l`now()`,
+  now: sq.txt`now()`,
   tomorrow: sq.return`now() + '1 day'`
 })
 // select now() as today, (select now() + '1 day') as tomorrow
@@ -387,7 +387,7 @@ sq('person')().insert({ age: 12 })('id', 'age')
 // insert into person (age) values (12) returning id, age
 
 const userInput = '; drop table user;'
-sq('book')()(sq.l(userInput), 23)
+sq('book')()(sq.txt(userInput), 23)
 // select $1, $2 from book
 ```
    */
@@ -440,16 +440,16 @@ export interface Where {
 sq.from('person').where({ id: 7 })
 // select * form person where (id = $1)
 
-sq.from('person').where(sq.l`age >= ${18}`).set({ adult: true })
+sq.from('person').where(sq.txt`age >= ${18}`).set({ adult: true })
 // update person set adult = $1 where (age >= ${2})
 
 sq.delete.from('person').where({ age: 20, id: 5 }, { age: 30 })
 // delete from person where (age = $1 and id = $1 or age = $2)
 
-sq.from('person').where(sq.l`name = ${'Jo'}`, { age: 17 })
+sq.from('person').where(sq.txt`name = ${'Jo'}`, { age: 17 })
 // select * from person where (name = $1 or age = $2)
 
-sq.from('person').where({ minAge: sq.l`age < ${17}` })
+sq.from('person').where({ minAge: sq.txt`age < ${17}` })
 // select * from person where (age = $1)
 
 sq.from('person').where({ age: 7, gender: 'male' })
@@ -509,16 +509,16 @@ export interface ExpressWhere {
 sq('person')({ id: 7 })
 // select * form person where (id = $1)
 
-sq('person')(sq.l`age >= ${18}`).set({ adult: true })
+sq('person')(sq.txt`age >= ${18}`).set({ adult: true })
 // update person set adult = $1 where (age >= ${2})
 
 sq.delete('person')({ age: 20, id: 5 }, { age: 30 })
 // delete from person where (age = $1 and id = $1 or age = $2)
 
-sq('person')(sq.l`name = ${'Jo'}`, { age: 17 })
+sq('person')(sq.txt`name = ${'Jo'}`, { age: 17 })
 // select * from person where (name = $1 or age = $2)
 
-sq('person')({ minAge: sq.l`age < ${17}` })
+sq('person')({ minAge: sq.txt`age < ${17}` })
 // select * from person where (age = $1)
 
 sq('person')({ age: 7, gender: 'male' })
@@ -573,7 +573,7 @@ sq.from('book').left.join('author')
 // select * from book left join author
 // on (book.author_id = author.id) and (author.status = $1)
 sq.from('book').return('genre', 'avg(book.rating) as r')
-  .group('genre').having(sq.l`r > 7`).and(sq.l`r <= 10`)
+  .group('genre').having(sq.txt`r > 7`).and(sq.txt`r <= 10`)
 // select genre, avg(book.rating) as r from book
 // group by genre having (r > 7) and (r <= 10)
 ```
@@ -612,7 +612,7 @@ interface Or {
    * 
    * @example
 ```js
-sq.from('person').where(sq.l`age < 20`).or(sq.l`age > 30`)
+sq.from('person').where(sq.txt`age < 20`).or(sq.txt`age > 30`)
 // select * from person where (age < 20) or (age > 30)
 
 sq.from('book').left.join('author')
@@ -622,7 +622,7 @@ sq.from('book').left.join('author')
 // on (book.author_id = author.id) or (book.editor_id = author.id)
 
 sq.from('book').return('genre', 'avg(book.rating) as r')
-  .group('genre').having(sq.l`r < 2`).or(sq.l`r > 8`)
+  .group('genre').having(sq.txt`r < 2`).or(sq.txt`r > 8`)
 // select genre, avg(book.rating) as r from book
 // group by genre having (r < 2) or (r > 8)
 ```
@@ -744,7 +744,7 @@ grouping sets ((a, b, c), (a, b), (a), ())
    * 
    * @example
 ```js
-sq.from`t`.group(sq.rollup('a', ['b', sq.l`c`], 'd'))
+sq.from`t`.group(sq.rollup('a', ['b', sq.txt`c`], 'd'))
 // select * from t group by rollup (a, (b, c)), d
 ```
    */
@@ -763,7 +763,7 @@ grouping sets ((a, b, c), (a, b), (a, c), (a), (b, c), (b), (c), ())
    * 
    * @example
 ```js
-sq.from`t`.group(sq.cube('a', ['b', sq.l`c`], 'd'))
+sq.from`t`.group(sq.cube('a', ['b', sq.txt`c`], 'd'))
 // select * from t group by cube (a, (b, c)), d
 ```
    */
@@ -821,10 +821,10 @@ sq.from('book').return('genre', 'year').group('genre').group('year')
 sq.from('book').return('genre', 'year').group(['genre', 'year'])
 // select genre, year from book group by (genre, year)
 
-sq.from`t`.group(sq.rollup('a', ['b', sq.l`c`], 'd'))
+sq.from`t`.group(sq.rollup('a', ['b', sq.txt`c`], 'd'))
 // select * from t group by rollup (a, (b, c)), d
 
-sq.from`t`.group(sq.cube('a', ['b', sq.l`c`], 'd'))
+sq.from`t`.group(sq.cube('a', ['b', sq.txt`c`], 'd'))
 // select * from t group by cube (a, (b, c)), d
 
 sq.from`t`.group(
@@ -881,7 +881,7 @@ export interface Having {
    * @example
 ```js
 sq.from('book').return('genre')
-  .group('genre').having(sq.l`count(*) > 10`)
+  .group('genre').having(sq.txt`count(*) > 10`)
 // select genre from book group by genre having count(*) > 10
 ```
    */
@@ -916,12 +916,12 @@ export interface Order {
    * 
    * @example
 ```js
-sq.from('book').order('title desc', sq.l`sales / ${1000}`)
+sq.from('book').order('title desc', sq.txt`sales / ${1000}`)
 // select * from book order by title desc, sales / 1000
 
 sq.from('book').order(
   { by: 'title', sort: 'desc' },
-  { by: sq.l`sales / ${1000}` }
+  { by: sq.txt`sales / ${1000}` }
 )
 // select * from book order by title desc, sales / 1000
 
@@ -973,7 +973,7 @@ sq.from`person`.limit(8)
 sq.from`person`.limit(7).limit(5)
 // select * from person limit 5
 
-sq.from`person`.limit(sq.l`1 + 7`)
+sq.from`person`.limit(sq.txt`1 + 7`)
 // select * from person limit 1 + 7
 
 sq.from`person`.limit(sq.return(10))
@@ -1018,7 +1018,7 @@ sq.from`person`.limit(8)
 sq.from`person`.limit(7).limit(5)
 // select * from person limit 5
 
-sq.from`person`.limit(sq.l`1 + 7`)
+sq.from`person`.limit(sq.txt`1 + 7`)
 // select * from person limit 1 + 7
 
 sq.from`person`.limit(sq.return(10))
@@ -1508,7 +1508,7 @@ sq.from('person')
 
 sq.from('person').insert({
   firstName: sq.return`${'Shallan'}`,
-  lastName: sq.l('Davar')
+  lastName: sq.txt('Davar')
 })
 // insert into person(first_name, last_name) values ((select 'Shallan'), 'Davar')
 ```
@@ -1538,7 +1538,7 @@ sq.from('person')
 
 sq.from('person').insert([{
   firstName: sq.return`${'Shallan'}`,
-  lastName: sq.l('Davar')
+  lastName: sq.txt('Davar')
 }])
 // insert into person(first_name, last_name) values ((select 'Shallan'), 'Davar')
 ```
@@ -1554,10 +1554,10 @@ sq.from('person').insert([{
    * 
    * @example
 ```js
-sq.from('person(name, age)').insert(sq.return(sq.l('Jo'), 23))
+sq.from('person(name, age)').insert(sq.return(sq.txt('Jo'), 23))
 // insert into person(name, age) select 'Jo', 23
 
-sq.from('person(name)').insert(sq.l`values (${'Jo'})`)
+sq.from('person(name)').insert(sq.txt`values (${'Jo'})`)
 // insert into person(name) values ('Jo')
 ```
    */
@@ -1590,7 +1590,7 @@ export interface Set {
    * @example
 ```js
 sq.from('person')
-  .set({ age: sq.l`age + 1`, done: true })
+  .set({ age: sq.txt`age + 1`, done: true })
   .where({ age: 7 })
   .return('person.name')
 // update person
@@ -1606,7 +1606,7 @@ sq.from('person').set(
 // set first_name = 'Robert', nickname = 'Rob', processed = true
 
 sq.from('person')
-  .set({ firstName: sq.l`'Bob'` })
+  .set({ firstName: sq.txt`'Bob'` })
   .set({ lastName: sq.return`'Smith'` })
 // update person
 // set first_name = 'Bob', last_name = (select 'Smith')
@@ -1659,11 +1659,11 @@ sq`person``age < 7``id`.delete
 }
 
 
-export interface SQL {
+export interface Manual {
   /**
-   * Appends Raw SQL string
+   * Manually Build Query
    *
-   * Multiple calls to `.l` are joined with spaces.
+   * Multiple calls to `.sql` are joined with spaces.
    *
    * Template string arguments are automatically parameterized.
    * To provide a raw unparameterized argument, prefix it with `$`.
@@ -1671,39 +1671,67 @@ export interface SQL {
    *
    * @example
 ```js
-sq.l`select * from book`
+sq.sql`select * from book`
 // select * from book
 
-sq.l`select * from person`.l`where age = ${8}`.l`or name = ${'Jo'}`
+sq.sql`select * from person`.sql`where age = ${8}`.sql`or name = ${'Jo'}`
 // select * from person where age = $1 or name = $2
 
-sq.l`select * $${'person'}`
+sq.sql`select * $${'person'}`
 // select * from person
 
-sq`person`.where({ min: sq.l`age < 7` })
+sq`person`.where({ min: sq.txt`age < 7` })
 // select * from person where age < 7
 
 sq.return`now() today, (${sq.return`now() + '1 day'`}) tomorrow`
 // select now() today, (select now() + '1 day') tomorrow
 ```
    */
-  l(strings: TemplateStringsArray, ...args: any[]): this
+  sql(strings: TemplateStringsArray, ...args: any[]): this
 
   /**
-   * Parameterizes the given argument
+   * Parameterizes Query argument(s)
    *
-   * Multiple calls to `.l` are joined with spaces.
+   * Multiple calls to `.sql` are joined with spaces.
    *
    * @example
 ```js
-sq.l`select * from person where age >=`.l(20).l`and age < `.l(30)
+sq.sql`select * from person where age >=`.sql(20).sql`and age < `.sql(30)
 // select * from person where age >= $1 and age < $2
 
-sq.return({ safe: sq.l('Jo'), dangerous: 'Mo' })
+sq.return({ safe: sq.txt('Jo'), dangerous: 'Mo' })
 // select $1 as safe, Mo as dangerous
 ```
    */
-  l(arg: any): this
+  sql(...args: any): this
+
+  /**
+   * Manually Build Text Fragment
+   *
+   * Multiple calls to `.txt` are joined with spaces.
+   *
+   * Template string arguments are automatically parameterized.
+   * To provide a raw unparameterized argument, prefix it with `$`.
+   * Arguments can be subQ.
+   *
+   * @example
+```js
+```
+   */
+  txt(strings: TemplateStringsArray, ...args: any[]): this
+
+  /**
+   * Parameterizes Fragment argument(s)
+   *
+   * Multiple calls to `.txt` are joined with spaces.
+   *
+   * @example
+```js
+
+```
+   */
+  txt(...args: any): this
+
 }
 
 
@@ -1713,14 +1741,14 @@ export interface Raw {
    *
    * Multiple calls to `.raw` are joined with spaces.
    *
-   * Alternatively prefix an argument with `$` in a call to `.l`.
+   * Alternatively prefix an argument with `$` in a call to `.sql`.
    *
    * @example
 ```js
-sq.l`select * from`.raw('test_table').l`where id = ${7}`
+sq.sql`select * from`.raw('test_table').sql`where id = ${7}`
 // select * from test_table where id = $1
 
-sq.l`select * from $${'test_table'} where id = ${7}`
+sq.sql`select * from $${'test_table'} where id = ${7}`
 // select * from test_table where id = $1
 ```
    */
@@ -1735,11 +1763,11 @@ export interface Link {
    * @example
 ```js
 const books = [{ id: 1, title: '1984' }, { id: 2, title: 'Hi' }]
-const val = book => sq.l`(${book.id}, ${book.title})`
+const val = book => sq.sql`(${book.id}, ${book.title})`
 const values = sq.extend(...books.map(val)).link(', ')
 // ($1, $2), ($3, $4)
 
-sq.l`insert into book(id, title)`.l`values ${values}`.link('\n')
+sq.sql`insert into book(id, title)`.sql`values ${values}`.link('\n')
 // insert into book(id, title)
 // values ($1, $2), ($3, $4)'
 ```
@@ -1753,7 +1781,7 @@ export interface Buildable {
    *
    * @example
 ```js
-sq.l`select * from book`.query
+sq.sql`select * from book`.query
 { text: 'select * from book', args: [], type: 'manual' }
 
 sq`book`({ id: 7 })`title`.query
@@ -1832,7 +1860,7 @@ sq.extend(sq.from('book').where({ id: 8 }), sq.return('title'))
 sq.from('book').extend(sq.where({ genre: 'Fantasy'})).return('id')
 // select id from book where genre = $1
 
-sq.l`select id`.extend(sq.l`from book`, sq.l`where genre = ${'Fantasy'}`)
+sq.sql`select id`.extend(sq.sql`from book`, sq.sql`where genre = ${'Fantasy'}`)
 // select id from book where genre = $1
 
 sq`author`.extend(

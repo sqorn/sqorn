@@ -1,5 +1,7 @@
 const { isTaggedTemplate, buildTaggedTemplate } = require('./tagged_template')
 
+const isObject = arg => arg && arg.constructor.prototype === Object.prototype
+
 const buildCall = callbackfn => (ctx, args) =>
   isTaggedTemplate(args)
     ? buildTaggedTemplate(ctx, args)
@@ -38,6 +40,7 @@ const objectMapJoin = (callbackfn, separator = ', ') => (ctx, object) => {
 }
 
 module.exports = {
+  isObject,
   buildCall,
   mapJoin,
   mapJoinWrap,

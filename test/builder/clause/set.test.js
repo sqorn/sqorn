@@ -46,12 +46,12 @@ describe('set', () => {
   describe('object', () => {
     query({
       name: '1 column',
-      query: sq.set({ age: sq.l`age + 1` }),
+      query: sq.set({ age: sq.txt`age + 1` }),
       text: 'set age = age + 1'
     })
     query({
       name: '2 columns',
-      query: sq.set({ age: sq.l`age + 1`, updated: sq.l`now()` }),
+      query: sq.set({ age: sq.txt`age + 1`, updated: sq.txt`now()` }),
       text: 'set age = age + 1, updated = now()'
     })
     query({
@@ -82,7 +82,7 @@ describe('set', () => {
   describe('subquery', () => {
     query({
       name: 'manual',
-      query: sq.from('person').set({ firstName: sq.l`${'Bob'}` }),
+      query: sq.from('person').set({ firstName: sq.txt`${'Bob'}` }),
       text: `update person set first_name = $1`,
       args: ['Bob']
     })

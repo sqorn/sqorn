@@ -25,7 +25,7 @@ describe('with', () => {
   describe('object - subquery arg', () => {
     query({
       name: 'manual subquery arg',
-      query: sq.with({ a: sq.l`select ${1}, ${2}` }).from`a`,
+      query: sq.with({ a: sq.sql`select ${1}, ${2}` }).from`a`,
       text: 'with a as (select $1, $2) select * from a',
       args: [1, 2]
     })
@@ -94,7 +94,7 @@ describe('with', () => {
     query({
       name: 'one',
       query: sq.recursive.with({
-        't(n)': sq.return`1`.unionAll(sq.l`select n + 1 from t where n < 100`)
+        't(n)': sq.return`1`.unionAll(sq.sql`select n + 1 from t where n < 100`)
       }).return`sum(n)`,
       text:
         'with recursive t(n) as (select 1 union all (select n + 1 from t where n < 100)) select sum(n)'

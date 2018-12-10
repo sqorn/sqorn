@@ -148,7 +148,7 @@ ${"await Person({ id: 23 }).set({ name: 'Rob' })"}
 "update person where id = 23 set name = 'Rob'"
 
 // RAW
-sq.l\`select * from book where id = \${8}\`
+sq.sql\`select * from book where id = \${8}\`
 "select * from book where id = 8"
 ${'```'}
 `

@@ -1,10 +1,8 @@
-const { buildCall, mapJoin, objectMapJoin } = require('sqorn-util')
+const { isObject, buildCall, mapJoin, objectMapJoin } = require('sqorn-util')
 
 const buildArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
-  if (typeof arg === 'object' && arg !== null && !Array.isArray(arg)) {
-    return buildObject(ctx, arg)
-  }
+  if (isObject(arg)) return buildObject(ctx, arg)
   return ctx.build(arg)
 }
 

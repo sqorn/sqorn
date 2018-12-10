@@ -180,7 +180,7 @@ TODO
 `e.and` joins its arguments with `' and '`.
 
 ```js
-sq.l(e.and(true, false, sq.return`true`)).query
+sq.sql(e.and(true, false, sq.return`true`)).query
 
 { text: '$1 and $2 and (select true)',
   args: [true, false] }
@@ -189,13 +189,13 @@ sq.l(e.and(true, false, sq.return`true`)).query
 `e.and` requires at least one argument
 
 ```js
-sq.l(e.and()).query // throws error
+sq.sql(e.and()).query // throws error
 ```
 
 `e.and` can be curried.
 
 ```js
-sq.l(e.and(true)(false)(sq.return`true`)).query
+sq.sql(e.and(true)(false)(sq.return`true`)).query
 
 { text: '$1 and $2 and (select true)',
   args: [true, false] }
@@ -204,7 +204,7 @@ sq.l(e.and(true)(false)(sq.return`true`)).query
 `e.and` can be called as a template tag.
 
 ```js
-sq.l(e.and`x`(true)`y`.query
+sq.sql(e.and`x`(true)`y`.query
 
 { text: 'x and $1 and y',
   args: [true] }
@@ -239,7 +239,7 @@ sq.sql(e.or(true)(false)(sq.return`true`)).query
 `e.or` can be called as a template tag.
 
 ```js
-sq.l(e.or`x`(true)`y`.query
+sq.sql(e.or`x`(true)`y`.query
 
 { text: 'x or $1 or y',
   args: [true] }

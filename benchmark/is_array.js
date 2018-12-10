@@ -4,6 +4,9 @@ new Benchmark.Suite('is_array')
   .add('Array.isArray', function() {
     return Array.isArray([])
   })
+  .add('constructor.prototype === Array.prototype', function() {
+    return [].constructor.prototype === Array.prototype
+  })
   .add('instanceof Array', function() {
     return [] instanceof Array
   })

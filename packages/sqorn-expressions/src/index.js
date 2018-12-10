@@ -1,7 +1,7 @@
 const { isTaggedTemplate } = require('sqorn-util')
 const operators = require('./operators')
 
-const ExpressionBuilder = ({ dialect }) => (config = {}) => {
+module.exports = ({ dialect }) => (config = {}) => {
   const builder = {
     _build(inherit) {
       const ctx = buildContext(inherit)
@@ -17,13 +17,7 @@ const ExpressionBuilder = ({ dialect }) => (config = {}) => {
   return chain()
 }
 
-function build(arg) {
-  if (arg === undefined) throw Error('Invalid Query: undefined parameter')
-  if (typeof arg === 'function') return arg._build(this)
-  return `$${this.params.push(arg)}`
-}
-
-const buildContext = ({ params = [] } = {}) => {
+const newContextCreator = ({ params = [], build } = {}) => {
   return { params, build }
 }
 
@@ -35,13 +29,13 @@ const buildCalls = current => {
   const calls = []
   for (; current; current = current.prev) calls.push(current)
   if (calls.length === 0) throw Error('Error: Empty expression')
-  calls.reverse()
   // build expression list
   let expression = { name: 'arg', args: [] }
   const expressions = [expression]
-  for (let i = 0; i < calls.length; ++i) {
+  const last = calls.length - 1
+  for (let i = last; i >= 0; --i) {
     const { name, args } = calls[i]
-    if (i === 0) {
+    if (i === last) {
       if (name) expression.name = name
       else pushCall(expression.args, args)
     } else {
@@ -111,15 +105,3 @@ const expressionProperties = ({ chain }) => {
   })
   return properties
 }
-
-const e = ExpressionBuilder({})()
-
-console.log(
-  JSON.stringify(
-    e(1, 2)
-      .eq(3)
-      .and(true).query,
-    null,
-    2
-  )
-)

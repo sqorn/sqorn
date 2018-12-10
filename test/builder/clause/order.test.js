@@ -41,7 +41,7 @@ describe('order', () => {
     name: 'subquery args',
     query: sq
       .from('book')
-      .order(sq.l`title asc`, sq.l`year desc`, sq.l`author`),
+      .order(sq.txt`title asc`, sq.txt`year desc`, sq.txt`author`),
     text: 'select * from book order by title asc, year desc, author',
     args: []
   })
@@ -121,7 +121,7 @@ describe('order', () => {
     query: sq.from`book`.order(
       { by: 'title', sort: 'asc' },
       'year using < nulls last',
-      sq.l`author nulls last`
+      sq.txt`author nulls last`
     ),
     text:
       'select * from book order by title asc, year using < nulls last, author nulls last',

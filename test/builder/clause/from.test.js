@@ -121,12 +121,12 @@ describe('from', () => {
   describe('subquery args', () => {
     query({
       name: 'one arg',
-      query: sq.from(sq.l`person p`),
+      query: sq.from(sq.txt`person p`),
       text: 'select * from person p'
     })
     query({
       name: 'two args',
-      query: sq.from(sq.l`person p`, sq.l`book b`),
+      query: sq.from(sq.txt`person p`, sq.txt`book b`),
       text: 'select * from person p, book b'
     })
   })
@@ -200,7 +200,7 @@ describe('from', () => {
   describe('object subquery property', () => {
     query({
       name: 'simple',
-      query: sq.from({ n: sq.l`(select ${1} as a)` }),
+      query: sq.from({ n: sq.sql`select ${1} as a` }),
       text: 'select * from (select $1 as a) as n',
       args: [1]
     })
@@ -238,7 +238,7 @@ describe('from', () => {
     query({
       name: 'update, set, from, where',
       query: sq.from`book`.from`author`.set({ available: false }).where({
-        join: sq.l`book.author_id = author.id`,
+        join: sq.sql`book.author_id = author.id`,
         'author.contract': 'terminated'
       }),
       text: `update book set available = $1 from author where (book.author_id = author.id and author.contract = $2)`,

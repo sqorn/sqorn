@@ -36,23 +36,27 @@ describe('Group By', () => {
     })
     query({
       name: 'subquery',
-      query: sq.from`person`.group(sq.l`age`),
+      query: sq.from`person`.group(sq.txt`age`),
       text: 'select * from person group by age',
       args: []
     })
     query({
       name: 'multiple subqueries',
       query: sq.from`person`.group(
-        sq.l`age`,
-        sq.l`last_name`,
-        sq.l`first_name`
+        sq.txt`age`,
+        sq.txt`last_name`,
+        sq.txt`first_name`
       ),
       text: 'select * from person group by age, last_name, first_name',
       args: []
     })
     query({
       name: 'mixed strings and subqueries',
-      query: sq.from`person`.group(sq.l`age`, 'last_name', sq.l`first_name`),
+      query: sq.from`person`.group(
+        sq.txt`age`,
+        'last_name',
+        sq.txt`first_name`
+      ),
       text: 'select * from person group by age, last_name, first_name',
       args: []
     })
@@ -178,8 +182,8 @@ describe('Group By', () => {
   describe('complex', () => {
     query({
       name: 'multiple mixed calls',
-      query: sq.from`person`.group(sq.l`age`).group`last_name`.group(
-        sq.l`first_name`
+      query: sq.from`person`.group(sq.txt`age`).group`last_name`.group(
+        sq.txt`first_name`
       ),
       text: 'select * from person group by age, last_name, first_name',
       args: []

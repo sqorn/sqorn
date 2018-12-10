@@ -21,7 +21,7 @@ describe('Offset', () => {
   })
   query({
     name: 'manual subquery',
-    query: sq.from`person`.offset(sq.l`1 + 7`),
+    query: sq.from`person`.offset(sq.txt`1 + 7`),
     text: 'select * from person offset 1 + 7',
     args: []
   })

@@ -20,7 +20,7 @@ interface Insert extends M.With, M.From, M.Return, M.Insert, M.Logic {}
 
 interface Values extends M.Order, M.Limit, M.Offset, M.Values {}
 
-interface Manual extends M.SQL, M.Raw {}
+interface Manual extends M.Manual, M.Raw {}
 
 interface Helper extends M.End, M.TransactionMethods, M.GroupHelpers {}
 

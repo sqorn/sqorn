@@ -4,8 +4,8 @@ title: Manual Queries
 sidebar_label: Manual
 ---
 
-* **Build** [`.sql`](#sql-queries), [`.raw`](#sql-queries), [`.txt`](#text-fragments), [`.extend`](#extend), [`.link`](#link)
-* **Compile** [`.query`](#sql-queries), [`.unparameterized`](#sql-queries).
+* **Build** [`.sql`](#queries), [`.raw`](#queries), [`.txt`](#fragments), [`.extend`](#extend), [`.link`](#link)
+* **Compile** [`.query`](#queries), [`.unparameterized`](#queries).
 
 ## Queries
 
@@ -16,7 +16,7 @@ const min = 20, max = 30
 const People = sq.sql`select * from person where age >= ${min} and age < ${max}`
 ```
 
-Sqorn compiles this to a parameterized query safe from SQL injection. `.query` returns the compiled query object.
+`.query` compiles to a parameterized query with text and argument components.
 
 ```js
 People.query
@@ -35,7 +35,7 @@ People.unparameterized
 'select * from person where age >= 20 and age < 30'
 ```
 
-When you need a raw unparameterized argument, prefix it with `$`.
+Prefix arguments with `$` to prevent parameterization.
 
 ```js
 sq.sql`select * from $${'test_table'} where id = ${7}`.query
@@ -44,7 +44,7 @@ sq.sql`select * from $${'test_table'} where id = ${7}`.query
   args: [7] }
 ```
 
-Alternatively, wrap the argument in a call to `.raw`.
+Alternatively, wrap arguments in calls to `.raw`.
 
 ```js
 sq.sql`select * from ${sq.raw('test_table')} where id = ${7}`.query
@@ -149,14 +149,6 @@ sq.sql`select * ${FromWhere}`.query
 
 { text: 'select * from person where age = $1',
   args: [20] }
-```
-
-However, attempting to build a fragment will throw an error.
-
-```js
-sq.txt`select 1`.query
-
-// throws error
 ```
 
 Mixing calls to `.sql` and `.txt` is invalid.

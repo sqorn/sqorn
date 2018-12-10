@@ -15,7 +15,7 @@ describe('Having', () => {
     name: 'object args',
     query: sq.from`book`.group`age`.having(
       { age: 7 },
-      { age: 9, c: sq.l`age < ${10}` }
+      { age: 9, c: sq.txt`age < ${10}` }
     ),
     text:
       'select * from book group by age having (age = $1 or age = $2 and age < $3)',

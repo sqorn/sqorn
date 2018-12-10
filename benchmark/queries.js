@@ -3,16 +3,16 @@ const sq = require('../packages/sqorn-pg')()
 
 console.log(
   sq
-    .from(sq.l`book`)
-    .where({ author: sq.l`author = ${'Jo'}` })
+    .from(sq.txt`book`)
+    .where({ author: sq.txt`author = ${'Jo'}` })
     .return(sq.return`1`, 'author', 'year').query
 )
 
 new Benchmark.Suite()
   .add('sqorn complex', function() {
     sq
-      .from(sq.l`book`)
-      .where({ author: sq.l`author = ${'Jo'}` })
+      .from(sq.txt`book`)
+      .where({ author: sq.txt`author = ${'Jo'}` })
       .return(sq.return`1`, 'author', 'year').query
   })
   // .add('sqorn select', function() {

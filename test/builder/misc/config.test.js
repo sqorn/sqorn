@@ -12,12 +12,12 @@ const appConnection = {
 const createTestDatabase = async () => {
   // create test database
   let sq = sqorn({ pg, pool: new pg.Pool(adminConnection) })
-  await sq.l`drop database if exists $${db_name}`
-  await sq.l`create database $${db_name}`
+  await sq.sql`drop database if exists $${db_name}`
+  await sq.sql`create database $${db_name}`
   await sq.end()
   // populate test database
   sq = sqorn({ pg, pool: new pg.Pool(appConnection) })
-  await sq.l`create table person (
+  await sq.sql`create table person (
     id              serial primary key,
     first_name      text,
     last_name       text
@@ -77,7 +77,7 @@ describe('Config', async () => {
       try {
         expect(
           sq
-            .with({ aB: sq.l`select cD`, e_f: sq.l`select g_h` })
+            .with({ aB: sq.sql`select cD`, e_f: sq.sql`select g_h` })
             .from({ iJ3: 'kL', mN: [{ oP: 1, q_r: 1 }] })
             .where({ sT: 1, u_v: 1 })
             .return({ wX: 1, y_z: 1 })
@@ -94,7 +94,7 @@ where (s_t = $5 and u_v = $6)`)
       const sq = sqorn({ pg, pool: new pg.Pool(appConnection) })
       try {
         expect(
-          sq.with({ 'aB(cD, e_f)': sq.l`select 1, 2` }).from('gH')
+          sq.with({ 'aB(cD, e_f)': sq.sql`select 1, 2` }).from('gH')
             .from`jK`.return({ lM: 'nO' }, 'pQ').query.text
         ).toEqual(
           'with aB(cD, e_f) as (select 1, 2) select nO as l_m, pQ from gH, jK'
@@ -112,7 +112,7 @@ where (s_t = $5 and u_v = $6)`)
       try {
         expect(
           sq
-            .with({ aB: sq.l`select cD`, e_f: sq.l`select g_h` })
+            .with({ aB: sq.sql`select cD`, e_f: sq.sql`select g_h` })
             .from({ iJ3: 'kL', mN: [{ oP: 1, q_r: 1 }] })
             .where({ sT: 1, u_v: 1 })
             .return({ wX: 1, y_z: 1 })
@@ -134,7 +134,7 @@ where (sT = $5 and u_v = $6)`)
       try {
         expect(
           sq
-            .with({ aB: sq.l`select cD`, e_f: sq.l`select g_h` })
+            .with({ aB: sq.sql`select cD`, e_f: sq.sql`select g_h` })
             .from({ iJ3: 'kL', mN: [{ oP: 1, q_r: 1 }] })
             .where({ sT: 1, u_v: 1 })
             .return({ wX: 1, y_z: 1 })

@@ -1,4 +1,4 @@
-const { buildCall, mapJoin, objectMapJoin } = require('sqorn-util')
+const { isObject, buildCall, mapJoin, objectMapJoin } = require('sqorn-util')
 const conditions = require('./conditions')
 const valuesArray = require('./values_array')
 
@@ -40,9 +40,8 @@ const using = mapJoin(buildCall(mapJoin(usingArg)))
 
 const fromArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
-  if (arg !== null && !Array.isArray(arg) && typeof arg === 'object')
-    return buildObject(ctx, arg)
   if (typeof arg === 'function') return ctx.build(arg)
+  if (isObject(arg)) return buildObject(ctx, arg)
   throw Error('Error: Invalid .from argument:', arg)
 }
 

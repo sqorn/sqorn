@@ -79,7 +79,7 @@ describe('join', () => {
     query({
       name: 'on object',
       query: sq.from`book`.join`author`.on({
-        join: sq.l`book.author_id = author.id`,
+        join: sq.txt`book.author_id = author.id`,
         'book.genre': 'Fantasy'
       }),
       text:

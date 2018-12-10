@@ -1,4 +1,4 @@
-const { buildCall, mapJoin, objectMapJoin } = require('sqorn-util')
+const { isObject, buildCall, mapJoin, objectMapJoin } = require('sqorn-util')
 const valuesArray = require('../common/values_array')
 
 module.exports = ctx => {
@@ -8,8 +8,7 @@ module.exports = ctx => {
 }
 
 const buildArg = (ctx, arg) => {
-  if (arg !== null && !Array.isArray(arg) && typeof arg === 'object')
-    return buildObject(ctx, arg)
+  if (isObject(arg)) return buildObject(ctx, arg)
   throw Error('Invalid with argument:', arg)
 }
 

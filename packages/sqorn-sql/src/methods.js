@@ -47,26 +47,36 @@ const newContextCreator = ({ parameter, escape, mapInputKeys = snakeCase }) => {
       // function that maps input keys, e.g. to convert camelCase to snake_case
       mapKey,
       // builds argument
-      build: function(arg) {
-        if (arg === undefined) throw Error('Error: undefined argument')
-        if (typeof arg === 'function') {
-          if (arg._build) {
-            const { type, text } = arg._build(this)
-            return type === 'manual' ? text : `(${text})`
-          }
-          return `(${arg(this)})`
-        }
-        return this.parameter(arg)
-      }
+      build
     }
   }
 }
 
+function build(arg) {
+  if (arg === undefined) throw Error('Error: undefined argument')
+  if (typeof arg === 'function') {
+    if (arg._build) {
+      const { type, text } = arg._build(this)
+      return type === 'fragment' ? text : `(${text})`
+    }
+    return `(${arg(this)})`
+  }
+  return this.parameter(arg)
+}
+
 /** Query building methods */
 const methods = {
-  l: {
+  sql: {
     updateContext: (ctx, args) => {
       ctx.type = 'manual'
+      ctx.userType = 'select'
+      ctx.sql.push({ args, raw: false })
+    }
+  },
+  txt: {
+    updateContext: (ctx, args) => {
+      ctx.type = 'manual'
+      ctx.userType = 'fragment'
       ctx.sql.push({ args, raw: false })
     }
   },
