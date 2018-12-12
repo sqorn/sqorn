@@ -788,7 +788,7 @@ describe('tutorial', () => {
         query: sq
           .from('superhero(name)')
           .insert(sq.return`${'batman'}`.union(sq.return`${'superman'}`)),
-        text: 'insert into superhero(name) select $1 union (select $2)',
+        text: 'insert into superhero(name) (select $1 union (select $2))',
         args: ['batman', 'superman']
       })
       query({

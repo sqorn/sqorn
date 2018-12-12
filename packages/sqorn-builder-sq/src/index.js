@@ -10,7 +10,7 @@ const createQueryBuilder = ({ defaultContext, query, adapter, e, config }) => {
   reducers.extend = (ctx, args) => {
     for (const arg of args) updateContext(arg.method, ctx)
   }
-  const builder = {}
+  const builder = () => {} // must not be object literal
   const chain = createChain(builder)
 
   Object.defineProperties(builder, {

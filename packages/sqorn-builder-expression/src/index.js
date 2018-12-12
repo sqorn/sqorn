@@ -4,7 +4,7 @@ module.exports = ({ defaultContext, expression }) => {
   const { expressions } = expression
   const newContext = createNewContext(defaultContext)
   const compile = createExpressionCompiler(expressions)
-  const builder = {}
+  const builder = () => {} // must not be object literal
   const chain = createChain(builder)
   Object.defineProperties(builder, {
     ...builderProperties({ compile, newContext }),

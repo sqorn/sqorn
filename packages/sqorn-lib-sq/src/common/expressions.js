@@ -1,8 +1,15 @@
-const { isObject, buildCall, mapJoin, objectMapJoin } = require('@sqorn/lib-util')
+const {
+  isObject,
+  buildCall,
+  mapJoin,
+  objectMapJoin
+} = require('@sqorn/lib-util')
 
 const buildArg = (ctx, arg) => {
   if (typeof arg === 'string') return arg
+  console.log('may build object', arg)
   if (isObject(arg)) return buildObject(ctx, arg)
+  console.log('building arg', arg)
   return ctx.build(arg)
 }
 

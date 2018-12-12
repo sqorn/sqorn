@@ -2,7 +2,7 @@ const { sq } = require('../tape')
 
 describe('unparameterized', () => {
   test('undefined', () => {
-    expect(sq.txt`${undefined}`.unparameterized).toBe('default')
+    expect(sq.txt`${undefined}`.unparameterized).toThrow()
   })
   test('null', () => {
     expect(sq.txt`${null}`.unparameterized).toBe('null')
@@ -35,7 +35,6 @@ describe('unparameterized', () => {
   test('multiple args', () => {
     expect(
       sq
-        .return(undefined)
         .return(null)
         .return(sq.txt('hi'))
         .return(23)
@@ -46,7 +45,7 @@ describe('unparameterized', () => {
         .return(sq.txt`1`)
         .return(sq.return`1`).unparameterized
     ).toBe(
-      `select default, null, 'hi', 23, true, array[1, 2, 3], array['a', 'b', 'c'], '{"a":23,"b":"asdf"}', 1, (select 1)`
+      `select null, 'hi', 23, true, array[1, 2, 3], array['a', 'b', 'c'], '{"a":23,"b":"asdf"}', 1, (select 1)`
     )
   })
 })

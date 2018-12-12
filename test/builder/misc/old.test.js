@@ -160,7 +160,7 @@ describe('sql query - tagged template args', () => {
 describe('query - tagged template sql arg', () => {
   query({
     name: 'select - .sql`${sq``}`',
-    query: sq`(${sq`person``age > 7`})`.return`name`,
+    query: sq`${sq`person``age > 7`}`.return`name`,
     text: 'select name from (select * from person where (age > 7))',
     args: []
   })

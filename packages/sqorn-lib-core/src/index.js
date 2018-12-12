@@ -17,7 +17,7 @@ const createSqorn = ({ dialect, adapter }) => (config = {}) => {
   const { query, expression, parameter, escape } = dialect
 
   // 1. Create default context properties passed through build tree
-  const mapKey = memoize(config.mapKey || snakeCase)
+  const mapKey = memoize(config.mapInputKeys || snakeCase)
   const defaultContext = { parameter, escape, mapKey, build }
 
   // 2. Create Expression Builder
