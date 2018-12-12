@@ -11,6 +11,8 @@
   "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-core",
   "homepage": "https://sqorn.org",
   "dependencies": {
+    "@sqorn/builder-sq": "^0.0.40",
+    "@sqorn/builder-expression": "^0.0.40",
     "@sqorn/lib-util": "^0.0.40"
   }
 }

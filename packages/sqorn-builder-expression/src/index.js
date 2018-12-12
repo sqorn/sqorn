@@ -1,13 +1,15 @@
-module.exports = ({ defaultContext, expression, config = {} }) => {
-  const { expressions } = dialect
-  const newContext = newContextCreator()
-  const compile = createExpressionBuilder(expressions)
+const createExpressionCompiler = require('./compile')
+
+module.exports = ({ defaultContext, expression }) => {
+  const { expressions } = expression
+  const newContext = createNewContext(defaultContext)
+  const compile = createExpressionCompiler(expressions)
   const builder = {}
+  const chain = createChain(builder)
   Object.defineProperties(builder, {
-    ...builderProperties({ compile, newContext })
+    ...builderProperties({ compile, newContext }),
+    ...methodProperties({ expressions, chain })
   })
-  const chain = createBuilder(builder)
-  Object.defineProperties(builder, expressionProperties({ chain }))
   return chain()
 }
 
@@ -24,15 +26,25 @@ const builderProperties = ({ compile, newContext }) => ({
   }
 })
 
-const newContextCreator = ({
-  parameter,
-  escape,
-  mapInputKeys = snakeCase
-}) => ({ params = [], parameterize = true } = {}) => {
-  return { params, parameterize }
+const createNewContext = defaultContext => {
+  const { build, parameter, escape, mapKey } = defaultContext
+  return inherit => {
+    const { params = [], parameterize = true } = inherit || {}
+    return {
+      // sqorn instance properties
+      build,
+      parameter,
+      escape,
+      mapKey,
+
+      // inherited properties
+      params,
+      parameterize
+    }
+  }
 }
 
-const createBuilder = prototype => {
+const createChain = prototype => {
   const chain = current => {
     const fn = (...args) => chain({ prev: current, args })
     fn.current = current
@@ -42,14 +54,14 @@ const createBuilder = prototype => {
   return chain
 }
 
-const expressionProperties = ({ chain }) => {
+const methodProperties = ({ expressions, chain }) => {
   const properties = {}
-  Object.values(operators).forEach(({ name }) => {
+  for (name in expressions) {
     properties[name] = {
       get: function() {
         return chain({ prev: this.current, name })
       }
     }
-  })
+  }
   return properties
 }

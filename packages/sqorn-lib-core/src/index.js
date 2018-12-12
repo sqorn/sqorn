@@ -1,3 +1,5 @@
+const createQueryBuilder = require('@sqorn/builder-sq')
+const createExpressionBuilder = require('@sqorn/builder-expression')
 const { snakeCase, memoize } = require('@sqorn/lib-util')
 
 /**

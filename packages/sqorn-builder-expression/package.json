@@ -10,5 +10,7 @@
   "main": "./src/index.js",
   "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-expression-builder",
   "homepage": "https://sqorn.org",
-  "dependencies": {}
+  "dependencies": {
+    "@sqorn/lib-util": "^0.0.40"
+  }
 }

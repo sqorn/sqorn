@@ -1,7 +1,12 @@
 const { isTaggedTemplate } = require('@sqorn/lib-util')
 
-const compileExpression = (ctx, current) =>
-  buildExpression(ctx, buildCalls(current))
+const createExpressionCompiler = expressionTable => {
+  const callsCompiler = createCallsCompiler(expressionTable)
+  return (ctx, current) => {
+    const calls = buildCalls(expressions)
+    return callsCompiler(calls)
+  }
+}
 
 // TODO: Performance optimization:
 // inline expression building with this method so at most only one array
@@ -40,20 +45,11 @@ const pushCall = (array, args) => {
   }
 }
 
-// /** Constructs expression table from object of expressions */
-// const createExpressionTable = expressions => {
-//   const table = {}
-//   Object.values(operators).forEach(operator => {
-//     table[expressions.name] = operator
-//   })
-//   return table
-// }
-
-const createExpressionBuilder = expressions => (ctx, calls) => {
+const createCallsCompiler = expressionTable => (ctx, calls) => {
   let exp
   for (let i = 0; i < calls.length; ++i) {
     const { name, args } = calls[i]
-    const { build, minArgs, maxArgs } = expressions[name]
+    const { build, minArgs, maxArgs } = expressionTable[name]
     if (i !== 0) args[0] = { exp }
     const numArgs = args.length
     if (numArgs < minArgs)
@@ -65,8 +61,4 @@ const createExpressionBuilder = expressions => (ctx, calls) => {
   return exp
 }
 
-module.exports = {
-  compileExpression,
-  createExpressionTable,
-  createExpressionBuilder
-}
+module.exports = createExpressionCompiler

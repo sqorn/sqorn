@@ -1,5 +1,5 @@
 /** Returns a function the creates a new context */
-const createContext = defaultContext => {
+const createNewContext = defaultContext => {
   const { parameter, escape, mapKey, build } = defaultContext
 
   return (inherit = {}) => {
@@ -44,4 +44,4 @@ const createContext = defaultContext => {
   }
 }
 
-module.exports = createContext
+module.exports = createNewContext
