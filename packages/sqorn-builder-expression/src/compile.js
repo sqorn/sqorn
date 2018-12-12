@@ -3,8 +3,12 @@ const { isTaggedTemplate } = require('@sqorn/lib-util')
 const createExpressionCompiler = expressionTable => {
   const callsCompiler = createCallsCompiler(expressionTable)
   return (ctx, current) => {
-    const calls = buildCalls(expressions)
-    return callsCompiler(calls)
+    const calls = buildCalls(current)
+    const text = callsCompiler(ctx, calls)
+    return {
+      text,
+      args: ctx.params
+    }
   }
 }
 
@@ -16,6 +20,7 @@ const buildCalls = current => {
   const calls = []
   for (; current; current = current.prev) calls.push(current)
   if (calls.length === 0) throw Error('Error: Empty expression')
+
   // build expression list
   let expression = { name: 'arg', args: [] }
   const expressions = [expression]

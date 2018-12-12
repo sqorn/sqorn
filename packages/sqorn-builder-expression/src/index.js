@@ -56,7 +56,7 @@ const createChain = prototype => {
 
 const methodProperties = ({ expressions, chain }) => {
   const properties = {}
-  for (name in expressions) {
+  for (const name in expressions) {
     properties[name] = {
       get: function() {
         return chain({ prev: this.current, name })

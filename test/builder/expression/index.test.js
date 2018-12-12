@@ -13,7 +13,7 @@ describe('expression', () => {
       name: 'e',
       query: e('hi'),
       text: '$1',
-      args: []
+      args: ['hi']
     })
     query({
       name: 'e(1)',
@@ -43,9 +43,21 @@ describe('expression', () => {
   describe('binary', () => {
     query({
       name: 'eq',
-      query: e.eq('name', 'bob'),
+      query: e.eq('jo', 'bob'),
       text: '$1 = $2',
-      args: ['bob']
+      args: ['jo', 'bob']
+    })
+    query({
+      name: 'neq',
+      query: e.neq('jo', 'bob'),
+      text: '$1 <> $2',
+      args: ['jo', 'bob']
+    })
+    query({
+      name: 'lt',
+      query: e.lt('jo', 'bob'),
+      text: '$1 < $2',
+      args: ['jo', 'bob']
     })
   })
 })

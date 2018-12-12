@@ -37,7 +37,6 @@ const comparison = {
 }
 
 module.exports = {
-  build,
   ...value,
   ...logical,
   ...comparison
