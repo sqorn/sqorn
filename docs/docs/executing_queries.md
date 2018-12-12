@@ -41,7 +41,7 @@ You can use `.query` to build a query, then send its text and arguments to anoth
 
 ```js
 const pg = require('pg')
-const sqorn = require('sqorn-pg')
+const sqorn = require('@sqorn/pg')
 
 const pool = new pg.Pool()
 const sq = sqorn()

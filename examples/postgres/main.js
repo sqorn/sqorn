@@ -1,4 +1,4 @@
-const sqorn = require('sqorn-pg')
+const sqorn = require('@sqorn/pg')
 const pg = require('pg')
 
 const server = 'postgresql://postgres@localhost:5432/'

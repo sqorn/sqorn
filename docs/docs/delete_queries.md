@@ -4,6 +4,11 @@ title: Delete Queries
 sidebar_label: Delete
 ---
 
+**Reference:** [Postgres](https://www.postgresql.org/docs/current/sql-delete.html), [SQLite](https://www.sqlite.org/lang_delete.html), 
+[MySQL](https://dev.mysql.com/doc/refman/en/delete.html), [T-SQL](https://docs.microsoft.com/en-us/sql/t-sql/statements/delete-transact-sql), [Oracle](https://docs.oracle.com/database/121/SQLRF/statements_8005.htm)
+
+## Methods
+
 * **With** [`.with`](#with), [`.recursive`](#recursive-ctes)
 * **Delete** [`.delete`](#delete)
 * **From** [`.from`](#from-1)

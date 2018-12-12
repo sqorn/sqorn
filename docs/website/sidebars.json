@@ -10,8 +10,11 @@
       "select-queries",
       "delete-queries",
       "insert-queries",
-      "update-queries",
-      "expressions"
+      "update-queries"
+    ],
+    "Expressions": [
+      "expressions",
+      "expression-types"
     ],
     "Execution": [
       "executing-queries",

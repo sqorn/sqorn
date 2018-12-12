@@ -1,0 +1,13 @@
+{
+  "name": "@sqorn/adapter-node-sqlite3",
+  "version": "0.0.40",
+  "description": "Sqorn Node SQLite3 Adapter",
+  "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "main": "./src/index.js",
+  "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-adapter-node-sqlite3",
+  "homepage": "https://sqorn.org"
+}

@@ -1,5 +1,5 @@
 {
-  "name": "sqorn-oracle",
+  "name": "@sqorn/oracle",
   "version": "0.0.40",
   "description": "A Javascript library for building Oracle Database queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",

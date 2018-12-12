@@ -26,17 +26,17 @@ Sqorn is a collection of libraries, one for each SQL dialect. Follow the instruc
 
 ### Postgres
 
-Install [Node Postgres](https://www.npmjs.com/package/pg) and [Sqorn Postgres](https://www.npmjs.com/package/sqorn-pg).
+Install [Node Postgres](https://www.npmjs.com/package/pg) and [Sqorn Postgres](https://www.npmjs.com/package/@sqorn/pg).
 
 ```sh
-npm install --save pg sqorn-pg
+npm install --save pg @sqorn/pg
 ```
 
 Create a [Node Postgres connection pool](https://node-postgres.com/features/connecting). Then pass `pg` and `pool` as arguments to `sqorn()` to create a query builder `sq`.
 
 ```javascript
 const pg = require('pg')
-const sqorn = require('sqorn-pg')
+const sqorn = require('@sqorn/pg')
 
 const pool = new pg.Pool()
 const sq = sqorn({ pg, pool })
@@ -279,7 +279,7 @@ You can use `.query` to build a query, then send its text and arguments to anoth
 
 ```js
 const pg = require('pg')
-const sqorn = require('sqorn-pg')
+const sqorn = require('@sqorn/pg')
 
 const pool = new pg.Pool()
 const sq = sqorn()

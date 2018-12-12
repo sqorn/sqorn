@@ -171,8 +171,8 @@ TODO
 
 ## Logical
 
-* `and => ...boolean => boolean`
-* `or => ...boolean => boolean`
+* `and => boolean => ...boolean => boolean`
+* `or => boolean => ...boolean => boolean`
 * `not => boolean => boolean`
 
 ### And

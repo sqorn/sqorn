@@ -4,6 +4,11 @@ title: Select Queries
 sidebar_label: Select
 ---
 
+**Reference:** [Postgres](https://www.postgresql.org/docs/current/sql-select.html), [SQLite](https://www.sqlite.org/lang_select.html), 
+[MySQL](https://dev.mysql.com/doc/refman/en/select.html), [T-SQL](https://docs.microsoft.com/en-us/sql/t-sql/queries/select-transact-sql), [Oracle](https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_10002.htm)
+
+## Methods
+
 * **With** [`.with`](#with), [`.recursive`](#recursive-ctes)
 * **Select** [`.return`](#select), [`.distinct`](#distinct), [`.distinctOn`](#distinct-on)
 * **From** [`.from`](#from), [`.join`](#joins), [`.left`](#join-type), [`.right`](#join-type), [`.full`](#join-type), [`.cross`](#join-type), [`.inner`](#join-type), [`.using`](#using), [`.on`](#on), [`.and`](#and-or), [`.or`](#and-or).
