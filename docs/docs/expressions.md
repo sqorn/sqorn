@@ -22,6 +22,86 @@ sidebar_label: Expressions
 * **String** [`e.concat`](#string-concatenation), [`e.substring`](#substring), [`e.length`](#length), [`e.bitLength`](#bit-length), [`e.charLength`](#charLength), [`e.lower`](#lower), [`e.upper`](#upper), [`e.like`](#like), [`e.notLike`](#not-like), [`e.iLike`](#case-insensitive-like), [`e.notILike`](#case-insensitive-not-like), [`e.similarTo`](#similarTo), [`e.notSimilarTo`](#not-similar-to), [`e.match`](#match), [`e.iMatch`](#case-insensitive-match), [`e.notMatch`](#not-match), [`e.notIMatch`](#case-insensitive-not-match)
 * **Date/Time** [`e.age`](#age), [`e.now`](#now), [`e.extract`](#extract)
 
+## Expressions
+
+Builds complex expressions with Sqorn's Expression Builder.
+
+Access the expression API at `sq.e`.
+
+## Types
+
+**Reference:** [Postgres 1](https://www.postgresql.org/docs/current/datatype.html),  [Postgres 2](https://www.postgresql.org/docs/current/catalog-pg-type.html#CATALOG-TYPCATEGORY-TABLE)
+
+### Boolean
+
+Boolean Expressions represent values true and false.
+
+They are useful for constructing *where*, *having* and *join* conditions.
+
+**Compatible Types:** `boolean`, `null`, `BooleanExpression`, `UnknownExpression`
+
+**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Logical](#logical)
+
+### Number
+
+Number Expressions represent numbers like `2`, `70.5`, and `-2749.234`.
+
+**Compatible Types:** `number`, `null`, `NumberExpression`, `UnknownExpression`
+
+**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Math](#math)
+
+### String
+
+String Expressions represent character sequences like `'kitty'`, `'Tuxedo cats are best'`, and `''`.
+
+**Compatible Types:** `string`, `null`, `StringExpression` and `UnknownExpression`
+
+**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [String](#string)
+
+### Unknown
+
+Unknown Expressions represent values of unknown type. They could be anything from `true`, `null`, and `'meow'`, to `(true, 24)`, `Array[3, 5, 7]`, and `'{ "hello": "world" }'`.
+
+**Compatible Types:** `any`
+
+**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Logical](#logical), [Math](#math), [String](#string), [Array](#array), [Row](#row), [Table](#table)
+
+### Array
+
+Array Expressions represent [Postgres Arrays](https://www.postgresql.org/docs/current/arrays.html).
+
+**Compatible Types:** `any[]`, `null`, `Array Expression`, `Unknown Expression` 
+
+**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Array](#array)
+
+### JSON
+
+JSON Expressions represent JSON values.
+
+**Compatible Types:** `{}`, `null`, `JSONExpression`, `UnknownExpression`
+
+**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [JSON](#json)
+
+### Row
+
+Row Expressions represent one or more values of any type.
+
+**Compatible Types:** `null`, `Row Expression`, `Unknown Expression`
+
+**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Row](#row)
+
+### Table
+
+Table Expressions represent a table.
+
+**Compatible Types:** `null`, `SQ`, `Table Expression`, `Unknown Expression`
+
+**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Table](#table)
+
+
+## About Null
+
+
 ## Introduction
 
 Builds complex expressions with Sqorn's Expression Builder.

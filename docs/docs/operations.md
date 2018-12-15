@@ -1,0 +1,951 @@
+---
+id: operations
+title: Operations
+sidebar_label: Operations
+---
+
+## Methods
+
+* **Value** [`arg`](#arg), [`unknown`](#unknown), [`boolean`](#boolean), [`number`](#number), [`string`](#string), [`array`](#array), [`json`](#json), [`row`](#row), [`table`](#table)
+* **Logical** [`and`](#and), [`or`](#or), [`not`](#not)
+* **Comparison** [`eq`](#equal), [`neq`](#not-equal), [`lt`](#less-than), [`gt`](#greater-than), [`lte`](#less-than-or-equal), [`gte`](#greater-than-or-equal), [`between`](#between) [`notBetween`](#not-between), [`isDistinctFrom`](#is-distinct-from), [`isNotDistinctFrom`](#is-not-distinct-from), [`isNull`](#is-null), [`isNotNull`](#is-not-null), [`isTrue`](#is-true), [`isNotTrue`](#is-not-true), [`isFalse`](#is-false), [`isNotFalse`](#is-not-false), [`isUnknown`](#is-unknown), [`isNotUnknown`](#is-not-unknown)
+* **Membership** [`in`](#in), [`notIn`](#not-in), [`any`](#any), [`some`](#some), [`all`](#all)
+* **Math** [`add`](#add), [`subtract`](#subtract), [`multiply`](#multiply), [`divide`](#divide)
+* **String** [`cat`](#concatenation), [`like`](#like), [`notLike`](#not-like), [`similarTo`](#similar-to), [`notSimilarTo`](#not-similar-to), [`lower`](#lower), [`upper`](#upper)
+* **Row**
+* **Date/Time** [`age`](#age), [`now`](#now), [`extract`](#extract)
+* **Range**
+* **Aggregate** [`count`](#count), [`sum`](#sum), [`avg`](#average), [`min`](#min), [`max`](#max), [`stddev`](#standard-deviation), [`variance`](#variance)
+* **Conditional** [`case`](#case), [`coallesce`](#coallesce), [`nullif`](#nullif), [`greatest`](#greatest), [`least`](#least)
+* **Array** [`arrayGet`](#array-get), [`arrayAppend`](#array-append), [`arrayCat`](#array-cat)
+* **JSON**
+* **Table**
+* **Binary** [`binary`](#binary), [`andb`](#binary-and), [`orb`](#binary-or), [`xorb`](#binary-xor), [`notb`](#binary-not), [`shiftLeft`](#shift-left), [`shiftRight`](#shift-right)
+
+
+To interpret these type signatures, read [Understanding Expression Types](#understanding-expression-types).
+
+## Value
+
+### Arg
+
+* `arg: T => T`
+* `arg: T1 => T2 => ... Tn => row`
+
+`.arg` builds an expression from its argument.
+
+```ja
+e.arg(23).query
+
+{ text: $1,
+  args: [23] }
+```
+
+The argument determines the return type.
+
+```js
+e.arg(23)                 // NumberExpression
+e.arg(true)               // BooleanExpression
+e.arg(null)               // UnknownExpression
+e.arg('adsf')             // StringExpression
+e.arg`hello`              // UnknownExpression
+e.arg([1, 2])             // ArrayExpression
+e.arg({ hello: 'world' }) // JSONExpression
+e.arg(e.arg(23))          // NumberExpression
+```
+
+Multiple arguments build a Row Expression.
+
+```js
+e.arg(23, true)             // RowExpression
+e.arg('moo', 'moo', 'meow') // RowExpression
+e.arg('moo')('moo')         // RowExpression
+e.arg`moo``moo`('meow')     // RowExpression
+```
+
+`e` is shorthand for `e.arg`.
+
+```js
+e(23)   // NumberExpression
+e(true) // BooleanExpression
+```
+
+Like other operations `.arg` takes the expression it is called on as its first argument.
+
+```js
+e(12).arg(23).arg(45)        // equivalent to below
+e.arg(e.arg(e(12))(23))(45)  // equivalent to above
+```
+
+### Unknown
+
+* `unknown: any => unknown`
+
+`.unknown` builds an Unknown Expression from its argument.
+
+```js
+e.unknown(true)     // UnknownExpression
+e.unknown(23)       // UnknownExpression
+e.unknown(null)     // UnknownExpression
+e.unknown(e('moo')) // UnknownExpression
+e.unknown`moo`      // UnknownExpression
+```
+
+Avoid using `.unknown`. It is an escape hatch from Sqorn's Type System. Any operation is possible on an Unknown Expression.
+
+```js
+e.unknown(true).add(23)
+```
+
+### Boolean
+
+* `boolean: boolean => boolean`
+
+`.boolean` builds a Boolean Expression.
+
+```js
+e.boolean(true)    // BooleanExpression
+e.boolean(false)   // BooleanExpression
+e.boolean(null)    // BooleanExpression
+e.boolean(e(true)) // BooleanExpression
+e.boolean`moo`     // BooleanExpression
+```
+
+### Number
+
+* `number: number => number`
+
+`.number` builds a Number Expression.
+
+```js
+e.number(23)      // NumberExpression
+e.number(-999.23) // NumberExpression
+e.number(null)    // NumberExpression
+e.number(e(0))    // NumberExpression
+e.number`moo`     // NumberExpression
+```
+
+### String
+
+* `string: string => string`
+
+`.string` builds a String Expression.
+
+```js
+e.string('adsf')    // StringExpression
+e.string('moo moo') // StringExpression
+e.string(null)      // StringExpression
+e.string(e('moo'))  // StringExpression
+e.string`moo`       // StringExpression
+```
+
+### Array
+
+* `array: array => array`
+
+`.string` builds an Array Expression.
+
+```js
+e.array([])                  // ArrayExpression
+e.array([2, 3, 5])           // ArrayExpression
+e.array(['moo', 'moo'])      // ArrayExpression
+e.array(null)                // ArrayExpression
+e.array(e([]))               // ArrayExpression
+e.array`array['moo', 'moo']` // ArrayExpression
+```
+
+### JSON
+
+* `json: json => json`
+
+`.json` builds a JSON Expression.
+
+```js
+e.json({ a: 'hi' }) // JSONExpression
+e.json([23])        // JSONExpression
+e.json(true)        // JSONExpression
+e.json(23)          // JSONExpression
+e.json('moo')       // JSONExpression
+e.json(null)        // JSONExpression
+e.json(e({}))       // JSONExpression
+e.json`moo`         // JSONExpression
+```
+
+### Row
+
+* `row: row => row`
+* `row: T1 => T2 => ...Tn => row`
+
+`.row` builds a Row Expression.
+
+```js
+e.row(true, 23)       // RowExpression
+e.row('moo', 'moo')   // RowExpression
+e.row(true)           // RowExpression
+e.row(23)             // RowExpression
+e.row('moo')          // RowExpression
+e.row(null)           // RowExpression
+e.row(e.row(1, 2))    // RowExpression
+e.row(1, true, 'moo') // RowExpression
+e.row(1)(true)('moo') // RowExpression
+e.row`moo`            // RowExpression
+```
+
+### Table
+
+* `table: table => table`
+
+`.table` builds a Table Expression.
+
+```js
+e.table(null)                // TableExpression
+e.table(sq.from('book'))     // TableExpression
+e.table`moo`                 // TableExpression
+e.table(e.table`moo`)        // TableExpression
+e.table(e.unnest([1, 2, 3])) // TableExpression
+```
+
+## Logical
+
+### And
+
+* `and: boolean => ...boolean => boolean`
+
+`.and` performs logical conjunction on its arguments.
+
+```js
+e.and(true, false).query
+
+{ text: '$1 and $2',
+  args: [true, false] }
+```
+
+At least one argument is required.
+
+```js
+e.and().query // throws error
+
+e.and(true).query
+
+{ text: '$1',
+  args: [true] }
+```
+
+More than two arguments is allowed.
+
+```js
+e.and(true, false, true, false).query
+
+{ text: '$1 and $2 and $3 and $4',
+  args: [true, false, true, false] }
+```
+
+Chain and curry `.and`.
+
+
+```js
+e(true).and(false)(true).and`moo`.query
+
+{ text: '$1 and $2 and $3 and moo',
+  args: [true, false, true, true] }
+```
+
+### Or
+
+* `or: boolean => ...boolean => boolean`
+
+`.or` performs logical disjunction on its arguments.
+
+```js
+e.or(true, false).query
+
+{ text: '$1 or $2',
+  args: [true, false] }
+```
+
+At least one argument is required.
+
+```js
+e.or().query // throws error
+
+e.or(true).query
+
+{ text: '$1',
+  args: [true] }
+```
+
+More than two arguments is allowed.
+
+```js
+e.or(true, false, true, false).query
+
+{ text: '$1 or $2 or $3 or $4',
+  args: [true, false, true, false] }
+```
+
+Chain and curry `.or`.
+
+
+```js
+e(true).or(false)(true).or`moo`.query
+
+{ text: '$1 or $2 or $3 or moo',
+  args: [true, false, true, true] }
+```
+
+### Not
+
+* `not: boolean => boolean`
+
+`.not` performs logical negation on its argument.
+
+```js
+e.not(true).query
+
+{ text: 'not($1)',
+  args: [true] }
+```
+
+Chaining `.not` negates the Expression it is called on
+
+```js
+e`moo`.not.query
+
+{ text: 'not(moo)',
+  args: [] }
+```
+
+## Comparison
+
+### Equal
+
+* `eq: T => T => boolean`
+
+`.eq` returns whether its arguments are equal.
+
+```js
+e.eq('moo', 'moo').query
+
+{ text: '$1 = $2',
+  args: ['moo', 'moo'] }
+```
+
+Chain and curry `.eq`.
+
+```js
+e`moo`.eq`moo`.query
+
+{ text: 'moo = moo',
+  args: [] }
+```
+
+### Not Equal
+
+* `neq: T => T => boolean`
+
+`.neq` returns whether its arguments are *not* equal.
+
+```js
+e.neq('moo', 'moo').query
+
+{ text: '$1 <> $2',
+  args: ['moo', 'moo'] }
+```
+
+Chain and curry `.neq`.
+
+```js
+e`moo`.neq`moo`.query
+
+{ text: 'moo <> moo',
+  args: [] }
+```
+
+### Less Than
+
+* `lt: T => T => boolean`
+
+`.lt` returns whether its first argument is less than its second argument.
+
+```js
+e.lt('moo', 'moo').query
+
+{ text: '$1 < $2',
+  args: ['moo', 'moo'] }
+```
+
+Chain and curry `.lt`.
+
+```js
+e`moo`.lt`moo`.query
+
+{ text: 'moo < moo',
+  args: [] }
+```
+
+### Greater Than
+
+* `gt: T => T => boolean`
+
+`.gt` returns whether its first argument is greater than its second argument.
+
+```js
+e.gt('moo', 'moo').query
+
+{ text: '$1 > $2',
+  args: ['moo', 'moo'] }
+```
+
+Chain and curry `.gt`.
+
+```js
+e`moo`.gt`moo`.query
+
+{ text: 'moo > moo',
+  args: [] }
+```
+
+### Less Than or Equal
+
+* `lte: T => T => boolean`
+
+`.lte` returns whether its first argument is less than or equal to its second argument.
+
+```js
+e.lte('moo', 'moo').query
+
+{ text: '$1 <= $2',
+  args: ['moo', 'moo'] }
+```
+
+Chain and curry `.lte`.
+
+```js
+e`moo`.lte`moo`.query
+
+{ text: 'moo <= moo',
+  args: [] }
+```
+
+### Greater Than or Equal
+
+* `gte: T => T => boolean`
+
+`.gte` returns whether its first argument is greater than or equal to its second argument.
+
+```js
+e.gte('moo', 'moo').query
+
+{ text: '$1 >= $2',
+  args: ['moo', 'moo'] }
+```
+
+Chain and curry `.gte`.
+
+```js
+e`moo`.gte`moo`.query
+
+{ text: 'moo >= moo',
+  args: [] }
+```
+
+### Between
+
+* `between: T => T => T => boolean`
+
+`.between` returns whether its first argument is between its second and third arguments.
+
+```js
+e.between(5, 3, 9).query
+
+{ text: '$1 between $2 and $3',
+  args: [5, 3, 9] }
+```
+
+Chain and curry `.between`.
+
+```js
+e`moos`.between(3)(7).query
+
+{ text: 'moomoo between $1 and $2',
+  args: [3, 7] }
+```
+
+### Not Between
+
+* `notBetween: T => T => T => boolean`
+
+`.notBetween` returns whether its first argument is *not* between its second and third arguments.
+
+```js
+e.notBetween(5, 3, 9).query
+
+{ text: '$1 not between $2 and $3',
+  args: [5, 3, 9] }
+```
+
+Chain and curry `.notBetween`.
+
+```js
+e`moos`.between(3)(7).query
+
+{ text: 'moomoo not between $1 and $2',
+  args: [3, 7] }
+```
+
+### Is Distinct From
+
+* `isDistinctFrom: T => T => boolean`
+
+`.isDistinctFrom` returns whether its arguments are distinct. It is equivalent to `.neq` except it treats `null` as a value.
+
+Expression | Result
+-|-
+null <> null | null
+null is distinct from null | false
+
+```js
+e.isDistinctFrom(3, null).query
+
+{ text: '$1 is distinct from $2',
+  args: [3, null] }
+```
+
+Chain and curry `.isDistinctFrom`.
+
+```js
+e`moo`.isDistinctFrom('moo').query
+
+{ text: 'moom is distinct from $1',
+  args: ['moo'] }
+```
+
+### Is Not Distinct From
+
+* `isNotDistinctFrom: T => T => boolean`
+
+`.isNotDistinctFrom` returns whether its arguments are *not* distinct. It is equivalent to `.eq` except it treats `null` as a value.
+
+Expression | Result
+-|-
+null = null | null
+null is not distinct from null | true
+
+```js
+e.isNotDistinctFrom(3, null).query
+
+{ text: '$1 is not distinct from $2',
+  args: [3, null] }
+```
+
+Chain and curry `.isNotDistinctFrom`.
+
+```js
+e`moo`.isNotDistinctFrom('moo').query
+
+{ text: 'moom is not distinct from $1',
+  args: ['moo'] }
+```
+
+### Is Null
+
+* `isNull: T => boolean`
+
+`.isNull` returns whether its argument is null.
+
+Expression | Result
+-|-
+true is null | false
+false is null | false
+null is null | true
+
+```js
+e.isNull(null).query
+
+{ text: '$1 is null',
+  args: [null] }
+```
+
+Chain `.isNull`.
+```js
+e`moo`.isNull.query
+
+{ text: 'moo is null',
+  args: [] }
+```
+
+### Is Not Null
+
+* `isNotNull: T => boolean`
+
+`.isNull` returns whether its argument is *not* null.
+
+Expression | Result
+-|-
+true is not null | true
+false is not null | true
+null is not null | false
+
+```js
+e.isNotNull(null).query
+
+{ text: '$1 is not null',
+  args: [null] }
+```
+
+Chain `.isNotNull`.
+```js
+e`moo`.isNotNull.query
+
+{ text: 'moo is not null',
+  args: [] }
+```
+
+### Is True
+
+* `isTrue: T => boolean`
+
+`.isTrue` returns whether its argument is true.
+
+Expression | Result
+-|-
+true is true | true
+false is true | false
+null is true | false
+
+```js
+e.isTrue(true).query
+
+{ text: '$1 is true',
+  args: [true] }
+```
+
+Chain `.isTrue`.
+```js
+e`moo`.isTrue.query
+
+{ text: 'moo is true',
+  args: [] }
+```
+
+### Is Not True
+
+* `isNotTrue: T => boolean`
+
+`.isNotTrue` returns whether its argument is *not* true.
+
+Expression | Result
+-|-
+true is not true | false
+false is not true | true
+null is not true | true
+
+```js
+e.isNotTrue(true).query
+
+{ text: '$1 is not true',
+  args: [true] }
+```
+
+Chain `.isNotTrue`.
+```js
+e`moo`.isNotTrue.query
+
+{ text: 'moo is not true',
+  args: [] }
+```
+
+### Is False
+
+* `isFalse: T => boolean`
+
+`.isFalse` returns whether its argument is false.
+
+Expression | Result
+-|-
+true is false | false
+false is false | true
+null is false | false
+
+```js
+e.isFalse(true).query
+
+{ text: '$1 is false',
+  args: [true] }
+```
+
+Chain `.isFalse`.
+```js
+e`moo`.isFalse.query
+
+{ text: 'moo is false',
+  args: [] }
+```
+
+### Is Not False
+
+* `isNotFalse: T => boolean`
+
+`.isNotFalse` returns whether its argument is *not* false.
+
+Expression | Result
+-|-
+true is not false | true
+false is not false | false
+null is not false | true
+
+```js
+e.isNotFalse(true).query
+
+{ text: '$1 is not false',
+  args: [true] }
+```
+
+Chain `.isNotFalse`.
+```js
+e`moo`.isNotFalse.query
+
+{ text: 'moo is not false',
+  args: [] }
+```
+
+### Is Unknown
+
+* `isUnknown: boolean => boolean`
+
+`.isUnknown` returns whether its argument is unknown. It is equivalent to `.isNull`, except its arguments must be booleans.
+
+Expression | Result
+-|-
+true is unknown | false
+false is unknown | false
+null is unknown | true
+
+```js
+e.isUnknown(true).query
+
+{ text: '$1 is unknown',
+  args: [true] }
+```
+
+Chain `.isUnknown`.
+```js
+e`moo`.isUnknown.query
+
+{ text: 'moo is unknown',
+  args: [] }
+```
+
+### Is Not Unknown
+
+* `isNotUnknown: boolean => boolean`
+
+`.isNotUnknown` returns whether its argument is unknown. It is equivalent to `.isNotNull`, except its arguments must be booleans.
+
+Expression | Result
+-|-
+true is not unknown | true
+false is not unknown | true
+null is not unknown | false
+
+```js
+e.isNotUnknown(true).query
+
+{ text: '$1 is not unknown',
+  args: [true] }
+```
+
+Chain `.isNotUnknown`.
+```js
+e`moo`.isNotUnknown.query
+
+{ text: 'moo is not unknown',
+  args: [] }
+```
+
+## Membership
+
+
+### In
+
+* `in: T => table => boolean`
+* `in: T => T[] => boolean`
+
+### Not In
+
+* `notIn: => T => table => boolean`
+* `notIn: => T => T[] => boolean`
+
+### Any
+
+* `any: T => table => boolean`
+* `any: T => array => boolean`
+
+### Some
+
+* `some: T => table => boolean`
+* `some: T => array => boolean`
+
+### All
+
+* `all: T => table => boolean`
+* `all: T => array => boolean`
+
+## Conditional
+
+TODO
+
+## Math
+
+### Add
+
+* `add: number => number => number`
+
+### Subtract
+
+* `subtract: number => number => number`
+
+### Multiply
+
+* `multiply: number => number => number`
+
+### Divide
+
+* `divide: number => number => number`
+
+### Modulo
+
+TODO
+
+### Exponent
+
+TODO
+
+### Square Root
+
+TODO
+
+### Cube Root
+
+TODO
+
+### Factorial
+
+TODO
+
+## String
+
+### Concatenation Operator
+
+* `cat: string => string  => string`
+* `cat: T => string  => string`
+* `cat: string => T  => string`
+
+See also [Concat Function](#concat-function), [Array Concatenation Operator](#concatenation-operator1) and [Array Cat](#array-cat)
+
+### Concat Function
+
+* `concat: string => ...string  => string`
+
+### Like
+
+* `like: string => string => escape`
+* `like: string => string => .escape => string => boolean`
+
+### Not Like
+
+* `notLike: string => string => boolean`
+* `notlike: string => string => .escape => string => boolean`
+
+### Similar To
+
+* `similarTo: string => string => boolean`
+
+### Not Similar To
+
+* `notSimilarTo: string => string => boolean`
+
+### Lower
+
+* `lower: string => string`
+
+### Upper
+
+* `upper: string => string`
+
+## Array
+
+### Concatenation Operator
+
+* `array => array => array`
+* `array => T => array`
+* `T => array => array`
+
+STATUS: TODO
+
+### Array Get
+
+* `array => number => unknown`
+
+STATUS: TODO
+
+### Array Append
+
+* `array => array => unknown`
+
+STATUS: TODO
+
+### Array Cat
+
+* `concat: array => array  => array`
+
+STATUS: TODO
+
+## Unnest
+
+* `unnest: array => ...array => table`
+
+STATUS: TODO
+
+## JSON
+
+TODO
+
+## Row
+
+TODO
+
+## Table
+
+TODO
+
+## Understanding Expression Types
+
+Each expression type is listed with its compatible types:
+
+* **boolean** - `true`, `false`, boolean expression, `null`, unknown expression, query
+* **number** - number literal, number expression, `null`, unknown expression, query
+* **string** - string literal, string expression, `null`, unknown expression, query
+* **array** - Javascript Array, array expression, `null`, unknown expression, query
+* **json** - Javascript Object, json expression, `null`, unknown expression, query
+* **row** - row expression, `null`, unknown, expression, query
+* **table** - `null`, unknown, expression, query
+* **unknown** - any
+
+### Signatures
+
+The type signatures listed below should be interpreted as follows:
+
+`method_name: arg1_type => arg2_type => return_type`
+
+`T` indicates a generic type.
+
+For example, interpret `eq => T => T => boolean` as method `eq` takes two arguments of the same type and returns a boolean expression.
+
+### Type Safety
+
+Sqorn Expressions offer limited compile time (but not run time) type safety.
+
+Expressions on scalar types like booleans, numbers, and strings are type safe.
+
+Expressions on non-scalar types like arrays, json, rows, and subqueries are not type safe.

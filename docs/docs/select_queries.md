@@ -4,22 +4,21 @@ title: Select Queries
 sidebar_label: Select
 ---
 
-**Reference:** [Postgres](https://www.postgresql.org/docs/current/sql-select.html), [SQLite](https://www.sqlite.org/lang_select.html), 
-[MySQL](https://dev.mysql.com/doc/refman/en/select.html), [T-SQL](https://docs.microsoft.com/en-us/sql/t-sql/queries/select-transact-sql), [Oracle](https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_10002.htm)
-
-## Methods
+## Overview
 
 * **With** [`.with`](#with), [`.recursive`](#recursive-ctes)
 * **Select** [`.return`](#select), [`.distinct`](#distinct), [`.distinctOn`](#distinct-on)
-* **From** [`.from`](#from), [`.join`](#joins), [`.left`](#join-type), [`.right`](#join-type), [`.full`](#join-type), [`.cross`](#join-type), [`.inner`](#join-type), [`.using`](#using), [`.on`](#on), [`.and`](#and-or), [`.or`](#and-or).
-* **Where** [`.where`](#where), [`.and`](#and-or), [`.or`](#and-or)
+* **From** [`.from`](#from), [`.join`](#joins), [`.left`](#join-type), [`.right`](#join-type), [`.full`](#join-type), [`.cross`](#join-type), [`.inner`](#join-type), [`.using`](#using), [`.on`](#on)
+* **Where** [`.where`](#where)
 * **Group By** [`.group`](#group-by), [`.rollup`](#rollup), [`.cube`](#cube), [`.groupingSets`](#grouping-sets)
-* **Having** [`.having`](#having), [`.and`](#and-or), [`.or`](#and-or)
+* **Having** [`.having`](#having)
 * **Sets** [`.union`](#union-intersect-except), [`.intersect`](#union-intersect-except), [`.except`](#union-intersect-except), [`.unionAll`](#union-all-intersect-all-except-all), [`.intersectAll`](#union-all-intersect-all-except-all), [`.exceptAll`](#union-all-intersect-all-except-all)
 * **Order By** [`.order`](#order-by)
 * **Limit** [`.limit`](#limit)
 * **Offset** [`.offset`](#offset)
 
+**Reference:** [Postgres](https://www.postgresql.org/docs/current/sql-select.html), [SQLite](https://www.sqlite.org/lang_select.html), 
+[MySQL](https://dev.mysql.com/doc/refman/en/select.html), [T-SQL](https://docs.microsoft.com/en-us/sql/t-sql/queries/select-transact-sql), [Oracle](https://docs.oracle.com/cd/B19306_01/server.102/b14200/statements_10002.htm)
 
 ## From
 
@@ -41,9 +40,7 @@ sq.from`book`.from`person`.query
   args: [] }
 ```
 
-`.from` accepts strings.
-
-**To prevent SQL injection, never source *strings* from user input.**
+`.from` accepts strings. **To prevent SQL injection, never source *strings* from user input.**
 
 ```js
 sq.from('book', 'author').query
@@ -52,42 +49,70 @@ sq.from('book', 'author').query
   args: [] }
 ```
 
-`.from` accepts fragments.
+<!-- TODO: Consider aliased tables and compatibility with object aliases -->
+
+<!-- ```js -->
+<!-- const b = t('book').as('b')
+const a = t('author').as('a')
+sq.from(b, a).query
+
+{ text: 'select * from book b, author a',
+  args: [] } -->
+<!-- ``` -->
+
+`.from` accepts [Table Expressions](expressions#table-expressions).
+<!-- NOTE: Expressions may not be paranthesized in from clause -->
 
 ```js
 // Postgres-only query
-sq.from(sq.txt`unnest(array[1, 2, 3])`).query
+sq.from(e.unnest([3, 2, 1])).query
+
+{ text: 'select * from unnest($1)',
+  args: [[3, 2, 1]] }
+```
+
+`.from` accepts *Fragments*.
+
+```js
+// Postgres-only query
+sq.from(sq.txt`unnest(${[3, 2, 1]})`).query
 
 { text: 'select * from unnest(array[1, 2, 3])',
   args: [] }
 ```
 
-### Table Objects
-
 Pass `.from` objects in the form `{ alias: table }` to construct *`table as alias`* clauses.
 
-Tables can be strings.
-
-**To prevent SQL injection, never source *strings* from user input.**
+Tables can be strings. **To prevent SQL injection, never source *strings* from user input.**
 
 ```js
 sq.from({ b: 'book', p: 'person' }).query
 
-{ text: 'select * from book as b, person as p',
+{ text: 'select * from book b, person p',
   args: [] }
 ```
 
-Tables can be fragments.
+Tables can be *Table Expressions*.
 
 ```js
-// a Postgres-only query
+// Postgres-only query
+sq.from({ countDown: e.unnest([3, 2, 1]) }).query
+
+{ text: 'select * from unnest($1) as count_down',
+  args: [[3, 2, 1]] }
+```
+
+Tables can be *Fragments*.
+
+```js
+// Postgres-only query
 sq.from({ countDown: sq.txt`unnest(${[3, 2, 1]})` }).query
 
 { text: 'select * from unnest($1) as count_down',
   args: [[3, 2, 1]] }
 ```
 
-Tables can be subqueries.
+Tables can be *Subqueries*.
 
 ```js
 sq.from({ a: sq.sql`select * from author`, b: sq.from`book` }).query
@@ -96,9 +121,9 @@ sq.from({ a: sq.sql`select * from author`, b: sq.from`book` }).query
   args: [] }
 ```
 
-Tables can be arrays of values. Column names are inferred from all keys.
+Tables can be *Arrays of Values*. Column names are inferred from all keys.
 
-Sqorn [converts input object keys](#map-input-keys) to *snake_case* by default.
+Sqorn [converts input object keys](configuration#map-input-keys) to *snake_case* by default.
 
 ```js
 sq.from({
@@ -109,7 +134,21 @@ sq.from({
   args: [7, 'Jo', 9, 'Mo'] }
 ```
 
-Construct join tables manually or learn about [building joins](#join).
+<!-- TODO: Tables can be Values subqueries -->
+
+<!-- ```js -->
+<!-- const values = sq.values(
+    { age: 7, firstName: 'Jo' },
+    { age: 9, firstName: 'Mo' }
+  ).a('people', 'age', 'first_name')
+
+sq.from(sq.values({ age: 7, firstName: 'Jo' }, { age: 9, firstName: 'Mo' }).query
+
+{ text: 'select * from (values ($1, $2), ($3, $4)) as people(age, first_name)',
+  args: [7, 'Jo', 9, 'Mo'] } -->
+<!-- ``` -->
+
+Construct join tables manually or learn about building [joins](#joins).
 
 ```js
 sq.from`book left join author on book.author_id = author.id`.query
@@ -120,7 +159,7 @@ sq.from`book left join author on book.author_id = author.id`.query
 
 ## Where
 
-Filter result rows by adding a *where* clause with `.where`.
+`.where` builds *where* clauses.
 
 ```js
 sq.from`book`.where`genre = ${'Fantasy'}`.query
@@ -129,7 +168,7 @@ sq.from`book`.where`genre = ${'Fantasy'}`.query
   args: ['Fantasy'] }
 ```
 
-Multiple `.where` calls are joined with *`and`*. Calls are parenthesized.
+Multiple `.where` calls are joined with *`and`*.
 
 ```js
 sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`.query
@@ -138,20 +177,16 @@ sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`.query
   args: ['Fantasy', 2000] }
 ```
 
-### And, Or
-
-Chain `.and` and `.or` after `.where`.
+Conditions can be [Boolean Expressions](expressions).
 
 ```js
-sq.from`person`.where`name = ${'Rob'}`.or`name = ${'Bob'}`.and`age = ${7}`.query
+sq.from`book`.where(e`year`.gt(2010)).query
 
-{ text: 'select * from person where (name = $1) or (name = $2) and (age = $3)',
-  args: ['Rob', 'Bob', 7]}
+{ text: 'select * from book where (year > $1)',
+  args: [2010] }
 ```
 
-`.where`, `.and`, and `.or` accept conditions.
-
-Conditions can be fragments.
+Conditions can be [Fragments](manual-queries.html#fragments).
 
 ```js
 sq.from`book`.where(sq.txt`genre = ${'Fantasy'}`).query
@@ -160,22 +195,13 @@ sq.from`book`.where(sq.txt`genre = ${'Fantasy'}`).query
   args: ['Fantasy'] }
 ```
 
-Conditions can be subqueries.
+Conditions can be Subqueries.
 
 ```js
 sq.from`book`.where(sq.sql`select true`).query
 
 { text: 'select * from book where (select true)',
   args: [] }
-```
-
-TODO: Conditions can be [expressions](#expressions).
-
-```js
-sq.from`book`.where(e.gt`year`(2010)).query
-
-{ text: 'select * from book where (year > $1)',
-  args: [2010] }
 ```
 
 ### Condition Objects

@@ -1,4 +1,7 @@
 declare let e: NewExpression;
 
-const r = e.like('asdf')('asdf').escape('')
-const s = e`asdf`.number.eq(23)
+const r = e('asdf').like('asdf').escape('')
+const s = e.number`asdf`.eq(23)
+
+
+e(true)(false)

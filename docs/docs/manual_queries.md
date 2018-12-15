@@ -94,15 +94,17 @@ person.query // { text: 'select * from person', args: [] }
 book.query // { text: 'select * from book', args: [] }
 ```
 
-Sqorn automatically parenthesizes subqueries.
+## Subqueries
+
+Pass subqueries to tagged template literals and function calls. Sqorn parameterizes and parenthesizes subqueries.
 
 ```js
-const One = sq.sql`select ${1}`
-const Two = sq.sql`select ${2}`
-sq.sql`select ${One},`.sql(Two).query
+const Hi = sq.sql`select ${'hi'}`
+const Bye = sq.sql`select ${'bye'}`
+sq.sql`select ${Hi},`.sql(Bye).query
 
 { text: 'select (select $1), (select $2)',
-  args: [1, 2] }
+  args: ['hi', 'bye'] }
 ```
 
 Call `.sql` as a function to parameterize an argument or build a subquery.

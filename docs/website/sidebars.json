@@ -14,7 +14,7 @@
     ],
     "Expressions": [
       "expressions",
-      "expression-types"
+      "operations"
     ],
     "Execution": [
       "executing-queries",
