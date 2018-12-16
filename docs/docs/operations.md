@@ -8,19 +8,18 @@ sidebar_label: Operations
 
 * **Value** [`arg`](#arg), [`unknown`](#unknown), [`boolean`](#boolean), [`number`](#number), [`string`](#string), [`array`](#array), [`json`](#json), [`row`](#row), [`table`](#table)
 * **Logical** [`and`](#and), [`or`](#or), [`not`](#not)
-* **Comparison** [`eq`](#equal), [`neq`](#not-equal), [`lt`](#less-than), [`gt`](#greater-than), [`lte`](#less-than-or-equal), [`gte`](#greater-than-or-equal), [`between`](#between) [`notBetween`](#not-between), [`isDistinctFrom`](#is-distinct-from), [`isNotDistinctFrom`](#is-not-distinct-from), [`isNull`](#is-null), [`isNotNull`](#is-not-null), [`isTrue`](#is-true), [`isNotTrue`](#is-not-true), [`isFalse`](#is-false), [`isNotFalse`](#is-not-false), [`isUnknown`](#is-unknown), [`isNotUnknown`](#is-not-unknown)
-* **Membership** [`in`](#in), [`notIn`](#not-in), [`any`](#any), [`some`](#some), [`all`](#all)
+* **Comparison** [`eq`](#equal), [`neq`](#not-equal), [`lt`](#less-than), [`gt`](#greater-than), [`lte`](#less-than-or-equal), [`gte`](#greater-than-or-equal), [`between`](#between) [`notBetween`](#not-between), [`isDistinctFrom`](#is-distinct-from), [`isNotDistinctFrom`](#is-not-distinct-from), [`isNull`](#is-null), [`isNotNull`](#is-not-null), [`isTrue`](#is-true), [`isNotTrue`](#is-not-true), [`isFalse`](#is-false), [`isNotFalse`](#is-not-false), [`isUnknown`](#is-unknown), [`isNotUnknown`](#is-not-unknown), [`in`](#in), [`notIn`](#not-in)
+* **Quantified Comparison** [`eqAny`](#any), [`neqAny`](#any), [`ltAny`](#any), [`gtAny`](#any), [`lteAny`](#any), [`gteAny`](#any), [`likeAny`](#any), [`notLikeAny`](#any), [`eqAll`](#all), [`neqAll`](#all), [`ltAll`](#all), [`gtAll`](#all), [`lteAll`](#all), [`gteAll`](#all), [`likeAll`](#all), [`notLikeAll`](#all)
 * **Math** [`add`](#add), [`subtract`](#subtract), [`multiply`](#multiply), [`divide`](#divide)
 * **String** [`cat`](#concatenation), [`like`](#like), [`notLike`](#not-like), [`similarTo`](#similar-to), [`notSimilarTo`](#not-similar-to), [`lower`](#lower), [`upper`](#upper)
-* **Row**
-* **Date/Time** [`age`](#age), [`now`](#now), [`extract`](#extract)
+* **Date and Time** [`age`](#age), [`now`](#now), [`extract`](#extract)
 * **Range**
 * **Aggregate** [`count`](#count), [`sum`](#sum), [`avg`](#average), [`min`](#min), [`max`](#max), [`stddev`](#standard-deviation), [`variance`](#variance)
-* **Conditional** [`case`](#case), [`coallesce`](#coallesce), [`nullif`](#nullif), [`greatest`](#greatest), [`least`](#least)
-* **Array** [`arrayGet`](#array-get), [`arrayAppend`](#array-append), [`arrayCat`](#array-cat)
+* **Conditional** [`case`](#case), [`coalesce`](#coalesce), [`nullif`](#nullif), [`greatest`](#greatest), [`least`](#least)
+* **Array** [`cat`](#concatenation-1), [`arrayGet`](#array-get), [`arrayAppend`](#array-append), [`arrayCat`](#array-cat)
 * **JSON**
-* **Table**
-* **Binary** [`binary`](#binary), [`andb`](#binary-and), [`orb`](#binary-or), [`xorb`](#binary-xor), [`notb`](#binary-not), [`shiftLeft`](#shift-left), [`shiftRight`](#shift-right)
+* **Binary** [`and`](#and-1), [`or`](#or-1), [`xor`](#xor-1), [`not`](#not-1), [`shiftLeft`](#shift-left), [`shiftRight`](#shift-right)
+* **Table** [`union`](#union), [`except`](#except), [`except-all`](#except-all) [`unionAll`](#union-all), [`intersect`](#intersect), [`intersectAll`](#intersect-all), 
 
 
 To interpret these type signatures, read [Understanding Expression Types](#understanding-expression-types).
@@ -713,7 +712,7 @@ e`moo`.isNotFalse.query
 
 * `isUnknown: boolean => boolean`
 
-`.isUnknown` returns whether its argument is unknown. It is equivalent to `.isNull`, except its arguments must be booleans.
+`.isUnknown` returns whether its argument is null. It is equivalent to `.isNull`, except its arguments must be boolean.
 
 Expression | Result
 -|-
@@ -740,7 +739,7 @@ e`moo`.isUnknown.query
 
 * `isNotUnknown: boolean => boolean`
 
-`.isNotUnknown` returns whether its argument is unknown. It is equivalent to `.isNotNull`, except its arguments must be booleans.
+`.isNotUnknown` returns whether its argument is *not* null. It is equivalent to `.isNotNull`, except its argument must be boolean.
 
 Expression | Result
 -|-
@@ -763,37 +762,482 @@ e`moo`.isNotUnknown.query
   args: [] }
 ```
 
-## Membership
-
-
 ### In
 
-* `in: T => table => boolean`
 * `in: T => T[] => boolean`
+* `in: T => table => boolean`
+
+Form 1. `.in` returns whether a value is in a *Values List*.
+
+```js
+e.in(7, [5, 6, 7]).query
+
+{ text: '$1 in ($2, $3, $4)',
+  args: [7, 5, 6, 7] }
+```
+
+Form 2. `.in` returns whether a value is in a *Table*.
+
+```js
+e.in(7, sq.sql`select 5 union (select 6) union (select 7)`).query
+
+{ text: '$1 in (select 5 union (select 6) union (select 7))',
+  args: [7] }
+```
+
+`.in` is equivalent to [`.eqAny`](#equal-any) when the second argument is a table, but their overloads are different. `.in` independently parameterizes each entry of its Values List. `.eqAny` generates a single parameter from it Postgres Array.
+
+```js
+e.in(4, [3, 4, 5]).query
+
+{ text: '$1 in ($2, $3, $4)',
+  args: [4, 3, 4, 5] }
+
+e.eqAny(4, [3, 4, 5]).query
+
+{ text: '$1 = any($2)',
+  args: [4, [3, 4, 5]] }
+```
 
 ### Not In
 
 * `notIn: => T => table => boolean`
 * `notIn: => T => T[] => boolean`
 
-### Any
+Form 1. `.notIn` returns whether a value is *not* in a *Values List*.
 
-* `any: T => table => boolean`
-* `any: T => array => boolean`
+```js
+e.notIn(7, [5, 6, 7]).query
 
-### Some
+{ text: '$1 not in ($2, $3, $4)',
+  args: [7, 5, 6, 7] }
+```
 
-* `some: T => table => boolean`
-* `some: T => array => boolean`
+Form 2. `.notIn` returns whether a value is *not* in a *Table*.
 
-### All
+```js
+e.notIn(7, sq.sql`select 5 union (select 6) union (select 7)`).query
 
-* `all: T => table => boolean`
-* `all: T => array => boolean`
+{ text: '$1 not in (select 5 union (select 6) union (select 7))',
+  args: [7] }
+```
 
-## Conditional
+`.notIn` is equivalent to [`.neqAll`](#not-equal-all) when the second argument is a table, but their overloads are different. `.notIn` independently parameterizes each entry of its Values List. `.neqAll` generates a single parameter from it Postgres Array.
 
-TODO
+```js
+e.notIn(4, [3, 4, 5]).query
+
+{ text: '$1 not in ($2, $3, $4)',
+  args: [4, 3, 4, 5] }
+
+e.neqAll(4, [3, 4, 5]).query
+
+{ text: '$1 <> all($2)',
+  args: [4, [3, 4, 5]] }
+```
+
+## Quantified Comparison
+
+### Equal Any
+
+* `eqAny: T => array => boolean`
+* `eqAny: T => table => boolean`
+
+Form 1. `.eqAny` returns whether a value is equal to any member of an *Array*.
+
+```js
+e.eqAny(7, [4, 5, 9]).query
+
+{ text: '$1 = any($2))',
+  args: [7, [4, 5, 9]] }
+```
+
+Form 2. `.eqAny` returns whether a value is equal to any row of a *Table*.
+
+```js
+e.eqAny(6, sq.sql`select 5 union (select 7)`).query
+
+{ text: "$1 = any((select 5 union (select 7)))",
+  args: [6] }
+```
+
+`.eqAny` is equivalent to [`.in`](#in) when the second argument is a table, but their overloads are different. `.eqAny` generates a single parameter from it Postgres Array. `.in` independently parameterizes each entry of its Values List.
+
+```js
+e.eqAny(4, [3, 4, 5]).query
+
+{ text: '$1 = any($2)',
+  args: [4, [3, 4, 5]] }
+
+e.in(4, [3, 4, 5]).query
+
+{ text: '$1 in ($2, $3, $4)',
+  args: [4, 3, 4, 5] }
+```
+
+
+### Equal All
+
+* `eqAll: T => array => boolean`
+* `eqAll: T => table => boolean`
+
+Form 1. `.eqAll` returns whether a value is equal to all members of an *Array*.
+
+```js
+e.eqAll(7, [7, 7, 7]).query
+
+{ text: '$1 = all($2))',
+  args: [7, [7, 7, 7]] }
+```
+
+Form 2. `.eqAll` returns whether a value is equal to all rows of a *Table*.
+
+```js
+e.eqAll(6, sq.sql`select 5 union (select 7)`).query
+
+{ text: "$1 = all((select 5 union (select 7)))",
+  args: [6] }
+```
+
+`.eqAll` is *not* equivalent to [`.in`](#in). Try [`.eqAny`](#equal-any) instead.
+
+### Not Equal Any
+
+* `neqAny: T => array => boolean`
+* `neqAny: T => table => boolean`
+
+Form 1. `.neqAny` returns whether a value is *not* equal to any member of an *Array*.
+
+```js
+e.neqAny(7, [4, 5, 9]).query
+
+{ text: '$1 <> any($2))',
+  args: [7, [4, 5, 9]] }
+```
+
+Form 2. `.neqAny` returns whether a value is equal *not* to any row of a *Table*.
+
+```js
+e.neqAny(6, sq.sql`select 5 union (select 7)`).query
+
+{ text: "$1 <> any((select 5 union (select 7)))",
+  args: [6] }
+```
+
+`.neqAny` is *not* equivalent to [`.notIn`](#in). Try [`.neqAll`](#not-equal-all) instead.
+
+### Not Equal All
+
+* `neqAll: T => array => boolean`
+* `neqAll: T => table => boolean`
+
+Form 1. `.neqAll` returns whether a value is *not* equal to all members of an *Array*.
+
+```js
+e.neqAll(7, [7, 7, 7]).query
+
+{ text: '$1 <> all($2))',
+  args: [7, [7, 7, 7]] }
+```
+
+Form 2. `.neqAll` returns whether a value is *not* equal to all rows of a *Table*.
+
+```js
+e.neqAll(6, sq.sql`select 5 union (select 7)`).query
+
+{ text: "$1 <> all((select 5 union (select 7)))",
+  args: [6] }
+```
+
+`.notEqAll` is equivalent to [`.notIn`](#not-in) when the second argument is a table, but their overloads are different. `.neqAll` generates a single parameter from it Postgres Array. `.notIn` independently parameterizes each entry of its Values List.
+
+```js
+e.neqAll(4, [3, 4, 5]).query
+
+{ text: '$1 <> all($2)',
+  args: [4, [3, 4, 5]] }
+
+e.notIn(4, [3, 4, 5]).query
+
+{ text: '$1 not in ($2, $3, $4)',
+  args: [4, 3, 4, 5] }
+```
+
+### Less Than Any
+
+* `ltAny: T => array => boolean`
+* `ltAny: T => table => boolean`
+
+Form 1. `.ltAny` returns whether a value is less than any member of an *Array*.
+
+```js
+e.ltAny(7, [4, 5, 9]).query
+
+{ text: '$1 < any($2))',
+  args: [7, [4, 5, 9]] }
+```
+
+Form 2. `.ltAny` returns whether a value is less than any row of a *Table*.
+
+```js
+e.ltAny(6, sq.sql`select 5 union (select 7)`).query
+
+{ text: "$1 < any((select 5 union (select 7)))",
+  args: [6] }
+```
+
+### Less Than All
+
+* `ltAll: T => array => boolean`
+* `ltAll: T => table => boolean`
+
+Form 1. `.ltAll` returns whether a value is less than all members of an *Array*.
+
+```js
+e.ltAll(7, [4, 5, 9]).query
+
+{ text: '$1 < all($2))',
+  args: [7, [4, 5, 9]] }
+```
+
+Form 2. `.ltAll` returns whether a value is less than all rows of a *Table*.
+
+```js
+e.ltAll(6, sq.sql`select 5 union (select 7)`).query
+
+{ text: "$1 < all((select 5 union (select 7)))",
+  args: [6] }
+```
+
+### Greater Than Any
+
+* `gtAny: T => array => boolean`
+* `gtAny: T => table => boolean`
+
+Form 1. `.gtAny` returns whether a value is greater than any member of an *Array*.
+
+```js
+e.gtAny(7, [4, 5, 9]).query
+
+{ text: '$1 > any($2))',
+  args: [7, [4, 5, 9]] }
+```
+
+Form 2. `.gtAny` returns whether a value is greater than any row of a *Table*.
+
+```js
+e.gtAny(6, sq.sql`select 5 union (select 7)`).query
+
+{ text: "$1 > any((select 5 union (select 7)))",
+  args: [6] }
+```
+
+### Greater Than All
+
+* `gtAll: T => array => boolean`
+* `gtAll: T => table => boolean`
+
+Form 1. `.gtAll` returns whether a value is greater than all members of an *Array*.
+
+```js
+e.gtAll(7, [4, 5, 9]).query
+
+{ text: '$1 > all($2))',
+  args: [7, [4, 5, 9]] }
+```
+
+Form 2. `.gtAll` returns whether a value is greater than all rows of a *Table*.
+
+```js
+e.gtAll(6, sq.sql`select 5 union (select 7)`).query
+
+{ text: "$1 > all((select 5 union (select 7)))",
+  args: [6] }
+```
+
+### Less Than or Equal Any
+
+* `lteAny: T => array => boolean`
+* `lteAny: T => table => boolean`
+
+Form 1. `.lteAny` returns whether a value is less than or equal to any member of an *Array*.
+
+```js
+e.lteAny(7, [4, 5, 9]).query
+
+{ text: '$1 <= any($2))',
+  args: [7, [4, 5, 9]] }
+```
+
+Form 2. `.lteAny` returns whether a value is less than or equal to any row of a *Table*.
+
+```js
+e.lteAny(6, sq.sql`select 5 union (select 7)`).query
+
+{ text: "$1 <= any((select 5 union (select 7)))",
+  args: [6] }
+```
+
+### Less Than or Equal All
+
+* `lteAll: T => array => boolean`
+* `lteAll: T => table => boolean`
+
+Form 1. `.lteAll` returns whether a value is less than or equal to all members of an *Array*.
+
+```js
+e.lteAll(7, [4, 5, 9]).query
+
+{ text: '$1 <= all($2))',
+  args: [7, [4, 5, 9]] }
+```
+
+Form 2. `.lteAll` returns whether a value is less than or equal to all rows of a *Table*.
+
+```js
+e.lteAll(6, sq.sql`select 5 union (select 7)`).query
+
+{ text: "$1 <= all((select 5 union (select 7)))",
+  args: [6] }
+```
+
+### Greater Than or Equal Any
+
+* `gteAny: T => array => boolean`
+* `gteAny: T => table => boolean`
+
+Form 1. `.gteAny` returns whether a value is greater than or equal to any member of an *Array*.
+
+```js
+e.gteAny(7, [4, 5, 9]).query
+
+{ text: '$1 >= any($2))',
+  args: [7, [4, 5, 9]] }
+```
+
+Form 2. `.gteAny` returns whether a value is greater than or equal to any row of a *Table*.
+
+```js
+e.gteAny(6, sq.sql`select 5 union (select 7)`).query
+
+{ text: "$1 >= any((select 5 union (select 7)))",
+  args: [6] }
+```
+
+### Greater Than or Equal All
+
+* `gteAll: T => array => boolean`
+* `gteAll: T => table => boolean`
+
+Form 1. `.gteAll` returns whether a value is greater than or equal to all members of an *Array*.
+
+```js
+e.gteAll(7, [4, 5, 9]).query
+
+{ text: '$1 >= all($2))',
+  args: [7, [4, 5, 9]] }
+```
+
+Form 2. `.gteAll` returns whether a value is greater than or equal to all rows of a *Table*.
+
+```js
+e.gteAll(6, sq.sql`select 5 union (select 7)`).query
+
+{ text: "$1 >= all((select 5 union (select 7)))",
+  args: [6] }
+```
+
+### Like Any
+
+* `likeAny: T => array => boolean`
+* `likeAny: T => table => boolean`
+
+Form 1. `.likeAny` returns whether a string is like any member of a *String Array*.
+
+```js
+e.likeAny('cat', ['cat', 'dog', 'mouse']).query
+
+{ text: '$1 like any($2))',
+  args: ['cat', ['cat', 'dog', 'mouse']] }
+```
+
+Form 2. `.likeAny` returns whether a string is like any row of a *Table*.
+
+```js
+e.likeAny('cat', sq.sql`select 'cat' union (select 'dog')`).query
+
+{ text: "$1 like any((select 'cat' union (select 'dog')))",
+  args: ['cat'] }
+```
+
+### Like All
+
+* `likeAll: T => array => boolean`
+* `likeAll: T => table => boolean`
+
+Form 1. `.likeAll` returns whether a string is like all members of a *String Array*.
+
+```js
+e.likeAll('cat', ['cat', 'dog', 'mouse']).query
+
+{ text: '$1 like all($2))',
+  args: ['cat', ['cat', 'dog', 'mouse']] }
+```
+
+Form 2. `.likeAll` returns whether a string is like all rows of a *Table*.
+
+```js
+e.likeAll('cat', sq.sql`select 'cat' union (select 'dog')`).query
+
+{ text: "$1 like all((select 'cat' union (select 'dog')))",
+  args: ['cat'] }
+```
+
+### Not Like Any
+
+* `notLikeAny: T => array => boolean`
+* `notLikeAny: T => table => boolean`
+
+Form 1. `.notLikeAny` returns whether a string is *not* like any member of a *String Array*.
+
+```js
+e.notLikeAny('cat', ['cat', 'dog', 'mouse']).query
+
+{ text: '$1 not like any($2))',
+  args: ['cat', ['cat', 'dog', 'mouse']] }
+```
+
+Form 2. `.notLikeAny` returns whether a string is *not* like any row of a *Table*.
+
+```js
+e.notLikeAny('cat', sq.sql`select 'cat' union (select 'dog')`).query
+
+{ text: "$1 not like any((select 'cat' union (select 'dog')))",
+  args: ['cat'] }
+```
+
+### Not Like All
+
+* `notLikeAll: T => array => boolean`
+* `notLikeAll: T => table => boolean`
+
+Form 1. `.notLikeAll` returns whether a string is *not* like all members of a *String Array*.
+
+```js
+e.notLikeAll('cat', ['cat', 'dog', 'mouse']).query
+
+{ text: '$1 not like all($2))',
+  args: ['cat', ['cat', 'dog', 'mouse']] }
+```
+
+Form 2. `.notLikeAll` returns whether a string is *not* like all rows of a *Table*.
+
+```js
+e.notLikeAll('cat', sq.sql`select 'cat' union (select 'dog')`).query
+
+{ text: "$1 not like all((select 'cat' union (select 'dog')))",
+  args: ['cat'] }
+```
 
 ## Math
 
@@ -873,9 +1317,79 @@ See also [Concat Function](#concat-function), [Array Concatenation Operator](#co
 
 * `upper: string => string`
 
+## Date and Time
+
+### Age
+
+TODO
+
+### Now
+
+TODO
+
+### Extract
+
+TODO
+
+## Range
+
+## Aggregate
+
+### Count
+
+TODO
+
+### Sum
+
+TODO
+
+### Average
+
+TODO
+
+### Min
+
+TODO
+
+### Max
+
+TODO
+
+### Standard Deviation
+
+TODO
+
+### Variance
+
+TODO
+
+## Conditional
+
+TODO
+
+### Case
+
+TODO
+
+### Coalesce
+
+TODO
+
+### Nullif
+
+TODO
+
+### Greatest
+
+TODO
+
+### Least
+
+TODO
+
 ## Array
 
-### Concatenation Operator
+### Concatenation
 
 * `array => array => array`
 * `array => T => array`
@@ -901,7 +1415,7 @@ STATUS: TODO
 
 STATUS: TODO
 
-## Unnest
+### Unnest
 
 * `unnest: array => ...array => table`
 
@@ -911,11 +1425,55 @@ STATUS: TODO
 
 TODO
 
-## Row
+## Binary
+
+### And
+
+TODO
+
+### Or
+
+TODO
+
+### Not
+
+TODO
+
+### Exclusive Or
+
+TODO
+
+### Shift Left
+
+TODO
+
+### Shift Right
 
 TODO
 
 ## Table
+
+### Union
+
+TODO
+
+### Union All
+
+TODO
+
+### Except
+
+TODO
+
+### Except All
+
+TODO
+
+### Intersect
+
+TODO
+
+### Intersect All
 
 TODO
 

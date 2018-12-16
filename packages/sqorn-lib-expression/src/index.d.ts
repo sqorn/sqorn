@@ -41,6 +41,7 @@ type PrimitiveTypes = TypePrimitiveMap[Types]
 type ArgTypes = Exclude<Types, 'new'>
 type Arg = TypeExpressionMap[ArgTypes] | PrimitiveTypes
 type Compatible<T extends Types> = TypeCompatibilityMap[T]
+type CompatibleArray<T extends Types> = Compatible<T>[] | null | UnknownExpression | ArrayExpression
 type Infer<T extends Arg> = 
   T extends TypeInferenceMap['new'] ? 'new' :
   T extends TypeInferenceMap['unknown'] ? 'unknown' :
@@ -229,28 +230,39 @@ interface Not {
 //
 
 interface ComparisonOperations<T extends Types> {
-  // binary
+  // binary comparison
   eq: T extends 'new' ? Eq : EqChain<T>
   neq: T extends 'new' ? Neq : NeqChain<T>
   lt: T extends 'new' ? Lt : LtChain<T>
   gt: T extends 'new' ? Gt : GtChain<T>
   lte: T extends 'new' ? Lte : LteChain<T>
   gte: T extends 'new' ? Gte : GteChain<T>
+  // any
+  eqAny: T extends 'new' ? EqAny : EqAnyChain<T>
+  neqAny: T extends 'new' ? NeqAny : NeqAnyChain<T>
+  ltAny: T extends 'new' ? LtAny : LtAnyChain<T>
+  gtAny: T extends 'new' ? GtAny : GtAnyChain<T>
+  lteAny: T extends 'new' ? LteAny : LteAnyChain<T>
+  gteAny: T extends 'new' ? GteAny : GteAnyChain<T>
+  // all
+  eqAll: T extends 'new' ? EqAll : EqAllChain<T>
+  neqAll: T extends 'new' ? NeqAll : NeqAllChain<T>
+  ltAll: T extends 'new' ? LtAll : LtAllChain<T>
+  gtAll: T extends 'new' ? GtAll : GtAllChain<T>
+  lteAll: T extends 'new' ? LteAll : LteAllChain<T>
+  gteAll: T extends 'new' ? GteAll : GteAllChain<T>
   // ternary
   between: T extends 'new' ? Between : BetweenChain1<T>
   notBetween: T extends 'new' ? NotBetween : NotBetweenChain1<T>
   // table / row  / array
   in: T extends 'new' ? In : InChain<T>
   notIn: T extends 'new' ? NotIn : NotInChain<T>
-  any: T extends 'new' ? Any : AnyChain<T>
-  some: T extends 'new' ? Some : SomeChain<T>
-  all: T extends 'new' ? All : AllChain<T>
 }
 
 interface Eq {
   (text: TemplateStringsArray, ...args: any[]): EqChain<'unknown'>
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
   <T extends Arg>(arg1: T): EqChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
 }
 interface EqChain<T extends Types> {
   (text: TemplateStringsArray, ...args: any[]): BooleanExpression
@@ -259,8 +271,8 @@ interface EqChain<T extends Types> {
 
 interface Neq {
   (strings: TemplateStringsArray, ...args: any[]): NeqChain<'unknown'>
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
   <T extends Arg>(arg1: T): NeqChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
 }
 interface NeqChain<T extends Types> {
   (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
@@ -269,8 +281,8 @@ interface NeqChain<T extends Types> {
 
 interface Lt {
   (strings: TemplateStringsArray, ...args: any[]): LtChain<'unknown'>
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
   <T extends Arg>(arg1: T): LtChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
 }
 interface LtChain<T extends Types> {
   (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
@@ -279,8 +291,8 @@ interface LtChain<T extends Types> {
 
 interface Gt {
   (strings: TemplateStringsArray, ...args: any[]): GtChain<'unknown'>
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
   <T extends Arg>(arg1: T): GtChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
 }
 interface GtChain<T extends Types> {
   (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
@@ -289,8 +301,8 @@ interface GtChain<T extends Types> {
 
 interface Lte {
   (strings: TemplateStringsArray, ...args: any[]): LteChain<'unknown'>
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
   <T extends Arg>(arg1: T): LteChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
 }
 interface LteChain<T extends Types> {
   (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
@@ -299,24 +311,240 @@ interface LteChain<T extends Types> {
 
 interface Gte {
   (strings: TemplateStringsArray, ...args: any[]): GteChain<'unknown'>
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
   <T extends Arg>(arg1: T): GteChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
 }
 interface GteChain<T extends Types> {
   (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
   (arg2: Compatible<T>): BooleanExpression
 }
 
+interface EqAny {
+  (text: TemplateStringsArray, ...args: any[]): EqAnyChain<'unknown'>
+  <T extends Arg>(arg1: T): EqAnyChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface EqAnyChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface NeqAny {
+  (text: TemplateStringsArray, ...args: any[]): NeqAnyChain<'unknown'>
+  <T extends Arg>(arg1: T): NeqAnyChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface NeqAnyChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface LtAny {
+  (text: TemplateStringsArray, ...args: any[]): LtAnyChain<'unknown'>
+  <T extends Arg>(arg1: T): LtAnyChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface LtAnyChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface GtAny {
+  (text: TemplateStringsArray, ...args: any[]): GtAnyChain<'unknown'>
+  <T extends Arg>(arg1: T): GtAnyChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface GtAnyChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface LteAny {
+  (text: TemplateStringsArray, ...args: any[]): LteAnyChain<'unknown'>
+  <T extends Arg>(arg1: T): LteAnyChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface LteAnyChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface GteAny {
+  (text: TemplateStringsArray, ...args: any[]): GteAnyChain<'unknown'>
+  <T extends Arg>(arg1: T): GteAnyChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface GteAnyChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface EqSome {
+  (text: TemplateStringsArray, ...args: any[]): EqSomeChain<'unknown'>
+  <T extends Arg>(arg1: T): EqSomeChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface EqSomeChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface NeqSome {
+  (text: TemplateStringsArray, ...args: any[]): NeqSomeChain<'unknown'>
+  <T extends Arg>(arg1: T): NeqSomeChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface NeqSomeChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface LtSome {
+  (text: TemplateStringsArray, ...args: any[]): LtSomeChain<'unknown'>
+  <T extends Arg>(arg1: T): LtSomeChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface LtSomeChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface GtSome {
+  (text: TemplateStringsArray, ...args: any[]): GtSomeChain<'unknown'>
+  <T extends Arg>(arg1: T): GtSomeChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface GtSomeChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface LteSome {
+  (text: TemplateStringsArray, ...args: any[]): LteSomeChain<'unknown'>
+  <T extends Arg>(arg1: T): LteSomeChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface LteSomeChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface GteSome {
+  (text: TemplateStringsArray, ...args: any[]): GteSomeChain<'unknown'>
+  <T extends Arg>(arg1: T): GteSomeChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface GteSomeChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface EqAll {
+  (text: TemplateStringsArray, ...args: any[]): EqAllChain<'unknown'>
+  <T extends Arg>(arg1: T): EqAllChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface EqAllChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface NeqAll {
+  (text: TemplateStringsArray, ...args: any[]): NeqAllChain<'unknown'>
+  <T extends Arg>(arg1: T): NeqAllChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface NeqAllChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface LtAll {
+  (text: TemplateStringsArray, ...args: any[]): LtAllChain<'unknown'>
+  <T extends Arg>(arg1: T): LtAllChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface LtAllChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface GtAll {
+  (text: TemplateStringsArray, ...args: any[]): GtAllChain<'unknown'>
+  <T extends Arg>(arg1: T): GtAllChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface GtAllChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface LteAll {
+  (text: TemplateStringsArray, ...args: any[]): LteAllChain<'unknown'>
+  <T extends Arg>(arg1: T): LteAllChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface LteAllChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface GteAll {
+  (text: TemplateStringsArray, ...args: any[]): GteAllChain<'unknown'>
+  <T extends Arg>(arg1: T): GteAllChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: CompatibleArray<Infer<T>>): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
+}
+interface GteAllChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<T>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
 interface Between {
   (strings: TemplateStringsArray, ...args: any[]): BetweenChain1<'unknown'>
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>, arg3: InferCompatible<T>): BooleanExpression
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BetweenChain2<Infer<T>>
   <T extends Arg>(arg1: T): BetweenChain1<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BetweenChain2<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>, arg3: InferCompatible<T>): BooleanExpression
 }
 interface BetweenChain1<T extends Types> {
   (strings: TemplateStringsArray, ...args: any[]): BetweenChain2<T>
-  (arg2: Compatible<T>, arg3: Compatible<T>): BooleanExpression
   (arg2: Compatible<T>): BetweenChain2<T>
+  (arg2: Compatible<T>, arg3: Compatible<T>): BooleanExpression
 }
 interface BetweenChain2<T extends Types> {
   (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
@@ -325,14 +553,14 @@ interface BetweenChain2<T extends Types> {
 
 interface NotBetween {
   (strings: TemplateStringsArray, ...args: any[]): NotBetweenChain1<'unknown'>
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>, arg3: InferCompatible<T>): BooleanExpression
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): NotBetweenChain2<Infer<T>>
   <T extends Arg>(arg1: T): NotBetweenChain1<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): NotBetweenChain2<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>, arg3: InferCompatible<T>): BooleanExpression
 }
 interface NotBetweenChain1<T extends Types> {
   (strings: TemplateStringsArray, ...args: any[]): NotBetweenChain2<T>
-  (arg2: Compatible<T>, arg3: Compatible<T>): BooleanExpression
   (arg2: Compatible<T>): NotBetweenChain2<T>
+  (arg2: Compatible<T>, arg3: Compatible<T>): BooleanExpression
 }
 interface NotBetweenChain2<T extends Types> {
   (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
@@ -341,83 +569,26 @@ interface NotBetweenChain2<T extends Types> {
 
 interface In {
   (text: TemplateStringsArray, ...args: any[]): InChain<'unknown'>
-  // table
-  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
   <T extends Arg>(arg1: T): InChain<Infer<T>>
-  // Values List
   <T extends Arg>(arg1: T, arg2: InferCompatible<T>[]): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
 }
 interface InChain<T extends Types> {
   (text: TemplateStringsArray, ...args: any[]): BooleanExpression
-  // table
-  (arg2: TableArgument): BooleanExpression
-  // Values List
   (arg2: Compatible<T>[]): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
 }
 
 interface NotIn {
   (text: TemplateStringsArray, ...args: any[]): NotInChain<'unknown'>
-  // table
-  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
   <T extends Arg>(arg1: T): NotInChain<Infer<T>>
-  // Values List
   <T extends Arg>(arg1: T, arg2: InferCompatible<T>[]): BooleanExpression
+  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
 }
 interface NotInChain<T extends Types> {
   (text: TemplateStringsArray, ...args: any[]): BooleanExpression
-  // table
-  (arg2: TableArgument): BooleanExpression
-  // Values List
   (arg2: Compatible<T>[]): BooleanExpression
-}
-
-interface Any {
-  (text: TemplateStringsArray, ...args: any[]): AnyChain<'unknown'>
-  // table
-  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
-  <T extends Arg>(arg1: T): AnyChain<Infer<T>>
-  // Array
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>[]): BooleanExpression
-
-}
-interface AnyChain<T extends Types> {
-  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
-  // table
   (arg2: TableArgument): BooleanExpression
-  // Array
-  (arg2: Compatible<T>[]): BooleanExpression
-}
-
-interface Some {
-  (text: TemplateStringsArray, ...args: Some[]): SomeChain<'unknown'>
-  // table
-  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
-  <T extends Arg>(arg1: T): SomeChain<Infer<T>>
-  // Array
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>[]): BooleanExpression
-}
-interface SomeChain<T extends Types> {
-  (text: TemplateStringsArray, ...args: Some[]): BooleanExpression
-  // table
-  (arg2: TableArgument): BooleanExpression
-  // Array
-  (arg2: Compatible<T>[]): BooleanExpression
-}
-
-interface All {
-  (text: TemplateStringsArray, ...args: All[]): AllChain<'unknown'>
-  // table
-  <T extends Arg>(arg1: T, arg2: TableArgument): BooleanExpression
-  <T extends Arg>(arg1: T): AllChain<Infer<T>>
-  // Array
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>[]): BooleanExpression
-}
-interface AllChain<T extends Types> {
-  (text: TemplateStringsArray, ...args: All[]): BooleanExpression
-  // table
-  (arg2: TableArgument): BooleanExpression
-  // Array
-  (arg2: Compatible<T>[]): BooleanExpression
 }
 
 //
@@ -460,9 +631,17 @@ interface DivideChain extends Divide, NumberExpression {}
 //
 
 interface StringOperations<T extends StringTypes> {
-  concat: T extends 'new' ? Concat : ConcatChain
   like: T extends 'new' ? Like : LikeChain
   notLike: T extends 'new' ? NotLike : NotLikeChain
+  // any
+  likeAny: T extends 'new' ? LikeAny : LikeAnyChain
+  notLikeAny: T extends 'new' ? NotLikeAny : NotLikeAnyChain
+  // all
+  likeAll: T extends 'new' ? LikeAll : LikeAllChain
+  notLikeAll: T extends 'new' ? NotLikeAll : NotLikeAllChain
+
+
+  concat: T extends 'new' ? Concat : ConcatChain
   similarTo: T extends 'new' ? SimilarTo : SimilarToChain
   notSimilarTo: T extends 'new' ? NotSimilarTo : NotSimilarToChain
   lower: T extends 'new' ? Lower : StringExpression
@@ -477,8 +656,8 @@ interface ConcatChain extends Concat, StringExpression {}
 
 interface Like {
   (strings: TemplateStringsArray, ...args: any[]): LikeChain
-  (arg1: StringArgument, arg2: StringArgument): LikeEscape
   (arg1: StringArgument): LikeChain
+  (arg1: StringArgument, arg2: StringArgument): LikeEscape
 }
 interface LikeChain {
   (strings: TemplateStringsArray, ...args: any[]): LikeEscape
@@ -492,18 +671,66 @@ interface LikeEscape extends BooleanExpression {
 
 interface NotLike {
   (strings: TemplateStringsArray, ...args: any[]): NotLikeChain
-  (arg1: StringArgument, arg2: StringArgument): LikeEscape
   (arg1: StringArgument): NotLikeChain
+  (arg1: StringArgument, arg2: StringArgument): LikeEscape
 }
 interface NotLikeChain {
   (strings: TemplateStringsArray, ...args: any[]): LikeEscape
   (arg2: StringArgument): LikeEscape
 }
 
+interface LikeAny {
+  (strings: TemplateStringsArray, ...args: any[]): LikeAnyChain
+  (arg1: StringArgument): LikeAnyChain
+  (arg1: StringArgument, arg2: CompatibleArray<'string'>): BooleanExpression
+  (arg1: StringArgument, arg2: TableArgument): BooleanExpression
+}
+interface LikeAnyChain {
+  (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<'string'>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface LikeAll {
+  (strings: TemplateStringsArray, ...args: any[]): LikeAllChain
+  (arg1: StringArgument): LikeAllChain
+  (arg1: StringArgument, arg2: CompatibleArray<'string'>): BooleanExpression
+  (arg1: StringArgument, arg2: TableArgument): BooleanExpression
+}
+interface LikeAllChain {
+  (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<'string'>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface NotLikeAny {
+  (strings: TemplateStringsArray, ...args: any[]): NotLikeAnyChain
+  (arg1: StringArgument): NotLikeAnyChain
+  (arg1: StringArgument, arg2: CompatibleArray<'string'>): BooleanExpression
+  (arg1: StringArgument, arg2: TableArgument): BooleanExpression
+}
+interface NotLikeAnyChain {
+  (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<'string'>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
+interface NotLikeAll {
+  (strings: TemplateStringsArray, ...args: any[]): NotLikeAllChain
+  (arg1: StringArgument): NotLikeAllChain
+  (arg1: StringArgument, arg2: CompatibleArray<'string'>): BooleanExpression
+  (arg1: StringArgument, arg2: TableArgument): BooleanExpression
+}
+interface NotLikeAllChain {
+  (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: CompatibleArray<'string'>): BooleanExpression
+  (arg2: TableArgument): BooleanExpression
+}
+
 interface SimilarTo {
   (strings: TemplateStringsArray, ...args: any[]): SimilarToChain
-  (arg1: StringArgument, arg2: StringArgument): BooleanExpression
   (arg1: StringArgument): SimilarToChain
+  (arg1: StringArgument, arg2: StringArgument): BooleanExpression
 }
 interface SimilarToChain {
   (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
@@ -512,8 +739,8 @@ interface SimilarToChain {
 
 interface NotSimilarTo {
   (strings: TemplateStringsArray, ...args: any[]): NotSimilarToChain
-  (arg1: StringArgument, arg2: StringArgument): BooleanExpression
   (arg1: StringArgument): NotSimilarToChain
+  (arg1: StringArgument, arg2: StringArgument): BooleanExpression
 }
 interface NotSimilarToChain {
   (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
@@ -548,8 +775,8 @@ interface Unnest {
 
 interface ArrayGet {
   (strings: TemplateStringsArray, ...args: any[]): ArrayGetChain
-  (array: ArrayArgument, index: NumberArgument): UnknownExpression
   (array: ArrayArgument): ArrayGetChain
+  (array: ArrayArgument, index: NumberArgument): UnknownExpression
 }
 interface ArrayGetChain {
   (strings: TemplateStringsArray, ...args: any[]): UnknownExpression
@@ -558,8 +785,8 @@ interface ArrayGetChain {
 
 interface ArrayAppend {
   (strings: TemplateStringsArray, ...args: any[]): ArrayAppendChain
-  (array: ArrayArgument, element: UnknownArgument): ArrayExpression
   (array: ArrayArgument): ArrayAppendChain
+  (array: ArrayArgument, element: UnknownArgument): ArrayExpression
 }
 interface ArrayAppendChain {
   (strings: TemplateStringsArray, ...args: any[]): ArrayExpression
@@ -568,8 +795,8 @@ interface ArrayAppendChain {
 
 interface ArrayCat {
   (strings: TemplateStringsArray, ...args: any[]): ArrayCatChain
-  (array1: ArrayArgument, array2: ArrayArgument): ArrayExpression
   (array1: ArrayArgument): ArrayCatChain
+  (array1: ArrayArgument, array2: ArrayArgument): ArrayExpression
 }
 interface ArrayCatChain {
   (strings: TemplateStringsArray, ...args: any[]): ArrayExpression

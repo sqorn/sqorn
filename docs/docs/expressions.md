@@ -4,33 +4,122 @@ title: Expressions
 sidebar_label: Expressions
 ---
 
-* **Values** [`e`](#data), [`e.raw`](#raw), [`e.array`](#array), [`e.json`](#json)
-* **Logical** [`e.and`](#and), [`e.or`](#or), [`e.not`](#not)
-* **Comparison**
-  * **Operators** [`e.eq`](#operators), [`e.neq`](#operators), [`e.lt`](#operators), [`e.gt`](#operators), [`e.lte`](#operators), [`e.gte`](#operators)
-  * **Between** [`e.between`](#between), [`e.notBetween`](#between)
-  * **Distinct** [`e.isDistinctFrom`](#is-distinct-from), [`e.isNotDistinctFrom`](#is-distinct-from)
-  * **Null** [`e.isNull`](#is-null), [`e.isNotNull`](#is-null)
-  * **Boolean** [`e.isTrue`](#is-true-is-false-is-unknown), [`e.isNotTrue`](#is-true-is-false-is-unknown), [`e.isFalse`](#is-true-is-false-is-unknown), [`e.isNotFalse`](#is-true-is-false-is-unknown), [`e.isUnknown`](#is-true-is-false-is-unknown), [`e.isNotUnknown`](#is-true-is-false-is-unknown)
-* **Subquery** [`e.exists`](#exists), [`e.notExists`](#not-exists), [`e.in`](#in), [`e.notIn`](#not-in), [`e.any`](#any), [`e.some`](#some), [`e.all`](#all)
-* **Row and Array** [`e.in`](#in), [`e.notIn`](#not-in`), [`e.any`](#any), [`e.some`](#some), [`e.all`](#all), [`e.row`](#row), [`e.array`](#array)
-* **Math**
-  * **Operators** [`e.add`](#add), [`e.subtract`](#subtract), [`e.multiply`](#multiply), [`e.divide`](#divide), [`e.mod`](#modulo), [`e.exp`](#exponentiation), [`e.sqrt`](#square-root), [`e.cbrt`](#cube-root), [`e.factorial`](#factorial), [`e.abs`](#absolute-value)
-  * **Binary** [`e.binary`](#binary), [`e.andb`](#binary-and), [`e.orb`](#binary-or), [`e.xorb`](#binary-xor), [`e.notb`](#binary-not), [`e.shiftLeft`](#shift-left), [`e.shiftRight`](#shift-right)
-* **Aggregate** [`e.count`](#count), [`e.sum`](#sum), [`e.avg`](#average), [`e.min`](#min), [`e.max`](#max), [`e.stddev`](#standard-deviation), [`e.variance`](#variance)
-* **Conditional** [`.case`](#case), [`e.coallesce`](#coallesce), [`e.nullif`](#nullif), [`e.greatest`](#greatest), [`e.least`](#least)
-* **String** [`e.concat`](#string-concatenation), [`e.substring`](#substring), [`e.length`](#length), [`e.bitLength`](#bit-length), [`e.charLength`](#charLength), [`e.lower`](#lower), [`e.upper`](#upper), [`e.like`](#like), [`e.notLike`](#not-like), [`e.iLike`](#case-insensitive-like), [`e.notILike`](#case-insensitive-not-like), [`e.similarTo`](#similarTo), [`e.notSimilarTo`](#not-similar-to), [`e.match`](#match), [`e.iMatch`](#case-insensitive-match), [`e.notMatch`](#not-match), [`e.notIMatch`](#case-insensitive-not-match)
-* **Date/Time** [`e.age`](#age), [`e.now`](#now), [`e.extract`](#extract)
-
-## Expressions
+## Introduction
 
 Builds complex expressions with Sqorn's Expression Builder.
 
 Access the expression API at `sq.e`.
 
+Create expressions by applying [Operations](operations) like `.add`, `.and`, and `.eq` to values.
+
+```js
+const { e } = sq
+
+e.add(3, 4).query
+
+{ text: '$1 + $2',
+  args: [3, 4] }
+```
+
+Create an expression from a value with `.arg`.
+
+```js
+e.arg('meow').query
+
+{ text: '$1',
+  args: ['meow'] }
+```
+
+`e` is short hand for `e.arg`.
+
+```js
+e('meow').query
+
+{ text: '$1',
+  args: ['meow'] }
+```
+
+Expressions are values.
+
+```js
+e(e(23)).query
+
+{ text: '$1',
+  args: [23] }
+```
+
+Expressions are immutable and composable.
+
+```js
+e.and(
+  e.or(e.lt(3, 4), e.gt(5, 6)),
+  e.neq(7, 8)
+).query
+
+{ text: '(($1 < $2) or ($3 > $4)) and ($5 <> $6)',
+  args: [3, 4, 5, 6, 7, 8] }
+```
+
+All *Operations* have curried overloads.
+
+```js
+e.add(3)(4).query
+
+{ text: '$1 + $2',
+  args: [3, 4] }
+```
+
+Supply raw arguments with tagged template literals.
+
+```js
+e.eq`lucky_number`(8).query
+
+{ text: 'lucky_number = $1',
+  args: [8] }
+```
+
+A chained operation's first argument is the expression it is called on.
+
+```js
+e(3).add(4).eq(7).and(true).query
+
+{ text: '(($1 + $2) = $3) and $4',
+  args: [3, 4, 7, true] }
+```
+
+Pass multiple arguments to `.arg` to build a row value.
+
+```js
+e.arg(8, true)`meow`.query
+
+{ text: '($1, $2, meow)',
+  args: [8, true]}
+```
+
+Build expressions from [Fragments](manual-queries.html#fragments) and [Subqueries](manual-queries.html#subqueries).
+
+```js
+e(sq.txt`2`), sq.return`3`).query
+
+{ text: '(2, (select 3))',
+  args: [] }
+```
+
 ## Types
 
-**Reference:** [Postgres 1](https://www.postgresql.org/docs/current/datatype.html),  [Postgres 2](https://www.postgresql.org/docs/current/catalog-pg-type.html#CATALOG-TYPCATEGORY-TABLE)
+SQL is strongly typed. Sqorn expressions are somewhat typed.
+
+Typescript users will suffer compilation errors if they try to apply operations to incompatible types. For example, `.add` expects numbers and expressions that resolve to numbers. Supplying a string or boolean instead will not work.
+
+There are limitations to Sqorn's type safety:
+
+* The type of a `null` value cannot be inferred. Creating an expression from a null value will generate an [Unknown Expression](#unknown).
+
+* The type of a tagged template literal cannot be inferred. Creating an expression from a tagged template literal will generate an [Unknown Expression](#unknown).
+
+* Multidimensional types like Array Expression, Row Expression and Table Expression lose all information about their constituent types. Sqorn won't warn you if you build the following expression: `e.eq(e(true, false), e(3, 4))`.
+
+Note that in Typescript, types exist at compile time, not run time.
 
 ### Boolean
 
@@ -101,61 +190,6 @@ Table Expressions represent a table.
 
 ## About Null
 
-
-## Introduction
-
-Builds complex expressions with Sqorn's Expression Builder.
-
-Access the expression API at `sq.e`.
-
-Expressions can be nested.
-
-```js
-const { e } = sq
-
-sq.sql(
-    e.and(
-      e.or(
-        e.lt(3, 4),
-        e.gt(5, 6)
-      ),
-      e.neq(7, 8)
-    )
-  )
-  .query
-
-{ text: '(($1 < $2) or ($3 > $4)) and ($5 <> $6)',
-  args: [3, 4, 5, 6, 7, 8] }
-```
-
-Expressions can be chained, curried and called as tagged templates.
-
-A chained expression's first argument is the previous expression.
-
-```js
-sq.sql(
-    e(3).lt(4).or(e(5).gt(6)).and(e`7`.neq`8`)
-  )
-  .query
-
-{ text: '(($1 < $2) or ($3 > $4)) and (7 <> 8)',
-  args: [3, 4, 5, 6, 7, 8] }
-```
-
-Expressions are functions that accept values, expressions, fragments and subqueries.
-
-```js
-sq.sql(
-    e('hello'),
-    e(e(1)),
-    e(sq.txt`2`),
-    e(sq.return`3`)
-  )
-  .query
-
-{ text: '($1, $2, 2, (select 3))',
-  args: ['hello', 1] }
-```
 
 Unless otherwise noted, all expression function can be curried and called as template tags.
 
