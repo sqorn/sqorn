@@ -573,7 +573,7 @@ sq.from('book').left.join('author')
 // select * from book left join author
 // on (book.author_id = author.id) and (author.status = $1)
 sq.from('book').return('genre', 'avg(book.rating) as r')
-  .group('genre').having(sq.txt`r > 7`).and(sq.txt`r <= 10`)
+  .groupBy('genre').having(sq.txt`r > 7`).and(sq.txt`r <= 10`)
 // select genre, avg(book.rating) as r from book
 // group by genre having (r > 7) and (r <= 10)
 ```
@@ -596,7 +596,7 @@ sq.from`book`.left.join`author`
 // on (book.author_id = author.id) and (author.status = 'active')
 
 sq.from`book`.return`genre, avg(book.rating) as r`
-  .group`genre`.having`r > 7`.and`r <= 10`
+  .groupBy`genre`.having`r > 7`.and`r <= 10`
 // select genre, avg(book.rating) as r from book
 // group by genre having (r > 7) and (r <= 10)
 ```
@@ -622,7 +622,7 @@ sq.from('book').left.join('author')
 // on (book.author_id = author.id) or (book.editor_id = author.id)
 
 sq.from('book').return('genre', 'avg(book.rating) as r')
-  .group('genre').having(sq.txt`r < 2`).or(sq.txt`r > 8`)
+  .groupBy('genre').having(sq.txt`r < 2`).or(sq.txt`r > 8`)
 // select genre, avg(book.rating) as r from book
 // group by genre having (r < 2) or (r > 8)
 ```
@@ -645,7 +645,7 @@ sq.from`book`.left.join`author`
 // on (book.author_id = author.id) or (book.editor_id = author.id)
 
 sq.from`book`.return`genre, avg(book.rating) as r`
-  .group`genre`.having`r < 2`.or`r > 8`
+  .groupBy`genre`.having`r < 2`.or`r > 8`
 // select genre, avg(book.rating) as r from book
 // group by genre having (r < 2) or (r > 8)
 ```
@@ -684,7 +684,7 @@ sq.return('name', 'age').distinct.from('person')
    * 
    * @example
 ```js
-sq.from('person').return('name', 'age').distinctOn('name').order('name')
+sq.from('person').return('name', 'age').distinctOn('name').orderBy('name')
 // select distinct on (name) name, age from person order by name
 
 sq.from('person').distinctOn('name', 'age').distinctOn('gender')
@@ -704,7 +704,7 @@ sq.from('person').distinctOn('name', 'age').distinctOn('gender')
    * 
    * @example
 ```js
-sq.from`person`.return`name, age`.distinctOn`name`.order`name`
+sq.from`person`.return`name, age`.distinctOn`name`.orderBy`name`
 // select distinct on (name) name, age from person order by name
 
 sq.from`person`.distinctOn`name, age`.distinctOn`gender`
@@ -744,7 +744,7 @@ grouping sets ((a, b, c), (a, b), (a), ())
    * 
    * @example
 ```js
-sq.from`t`.group(sq.rollup('a', ['b', sq.txt`c`], 'd'))
+sq.from`t`.groupBy(sq.rollup('a', ['b', sq.txt`c`], 'd'))
 // select * from t group by rollup (a, (b, c)), d
 ```
    */
@@ -763,7 +763,7 @@ grouping sets ((a, b, c), (a, b), (a, c), (a), (b, c), (b), (c), ())
    * 
    * @example
 ```js
-sq.from`t`.group(sq.cube('a', ['b', sq.txt`c`], 'd'))
+sq.from`t`.groupBy(sq.cube('a', ['b', sq.txt`c`], 'd'))
 // select * from t group by cube (a, (b, c)), d
 ```
    */
@@ -772,11 +772,11 @@ sq.from`t`.group(sq.cube('a', ['b', sq.txt`c`], 'd'))
     /**
    * **[Grouping Sets item](https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUPING-SETS)** - creates grouping sets for use in a group by clause
    * 
-   * Accepts the same arguments as `.group`. Grouping sets can be nested.
+   * Accepts the same arguments as `.groupBy`. Grouping sets can be nested.
    * 
    * @example
 ```js
-sq.from`t`.group(
+sq.from`t`.groupBy(
   sq.groupingSets(
     ['a', 'b', 'c'],
     sq.groupingSets(['a', 'b']),
@@ -791,7 +791,7 @@ sq.from`t`.group(
   groupingSets(...args: GroupItems): GroupingSetsItem
 }
 
-export interface Group {
+export interface GroupBy {
   /**
    * **GROUP BY clause** - group items
    * 
@@ -805,29 +805,29 @@ export interface Group {
    * 
    * An expression may be a string or subquery.
    *
-   * Multiple `.group` calls are joined with ', '.
+   * Multiple `.groupBy` calls are joined with ', '.
    * 
    * @example
 ```js
-sq.from('book').return('genre', 'count(*)').group('genre')
+sq.from('book').return('genre', 'count(*)').groupBy('genre')
 // select genre, count(*) from book group by genre
 
-sq.from('book').return('genre', 'year').group('genre', 'year')
+sq.from('book').return('genre', 'year').groupBy('genre', 'year')
 // select genre, year from book group by genre, year
 
-sq.from('book').return('genre', 'year').group('genre').group('year')
+sq.from('book').return('genre', 'year').groupBy('genre').groupBy('year')
 // select genre, year from book group by genre, year
 
-sq.from('book').return('genre', 'year').group(['genre', 'year'])
+sq.from('book').return('genre', 'year').groupBy(['genre', 'year'])
 // select genre, year from book group by (genre, year)
 
-sq.from`t`.group(sq.rollup('a', ['b', sq.txt`c`], 'd'))
+sq.from`t`.groupBy(sq.rollup('a', ['b', sq.txt`c`], 'd'))
 // select * from t group by rollup (a, (b, c)), d
 
-sq.from`t`.group(sq.cube('a', ['b', sq.txt`c`], 'd'))
+sq.from`t`.groupBy(sq.cube('a', ['b', sq.txt`c`], 'd'))
 // select * from t group by cube (a, (b, c)), d
 
-sq.from`t`.group(
+sq.from`t`.groupBy(
   sq.groupingSets(
     ['a', 'b', 'c'],
     sq.groupingSets(['a', 'b']),
@@ -846,26 +846,26 @@ sq.from`t`.group(
 // )
 ```
    */
-  group(...args: GroupItems): this
+  groupBy(...args: GroupItems): this
 
   /**
    * **GROUP BY clause** - template string
    * 
-   * Multiple `.group` calls are joined with ', '.
+   * Multiple `.groupBy` calls are joined with ', '.
    * 
    * @example
 ```js
-sq.from`book`.return`genre, count(*)`.group`genre`
+sq.from`book`.return`genre, count(*)`.groupBy`genre`
 // select genre, count(*) from book group by genre
 
-sq.from`book`.return`genre, year`.group`genre, year`
+sq.from`book`.return`genre, year`.groupBy`genre, year`
 // select genre, year from book group by genre, year
 
-sq.from`book`.return`genre, year`.group`genre`.group`year`
+sq.from`book`.return`genre, year`.groupBy`genre`.groupBy`year`
 // select genre, year from book group by genre, year
 ```
    */
-  group(strings: TemplateStringsArray, ...args: any[]): this
+  groupBy(strings: TemplateStringsArray, ...args: any[]): this
 }
 
 export interface Having {
@@ -881,7 +881,7 @@ export interface Having {
    * @example
 ```js
 sq.from('book').return('genre')
-  .group('genre').having(sq.txt`count(*) > 10`)
+  .groupBy('genre').having(sq.txt`count(*) > 10`)
 // select genre from book group by genre having count(*) > 10
 ```
    */
@@ -893,14 +893,14 @@ sq.from('book').return('genre')
    * @example
 ```js
 sq.from`book`.return`genre`
-  .group`genre`.having`count(*) > 10`
+  .groupBy`genre`.having`count(*) > 10`
 // select genre from book group by genre having count(*) > 10
 ```
    */
   having(strings: TemplateStringsArray, ...args: any[]): this
 }
 
-export interface Order {
+export interface OrderBy {
   /**
    * **ORDER BY clause** - order by items
    * 
@@ -912,24 +912,24 @@ export interface Order {
    *   * `nulls` - `'first'` or `'last'`
    *   * `using` - a sort operator
    * 
-   * Multiple `.order` calls are joined with ', '.
+   * Multiple `.orderBy` calls are joined with ', '.
    * 
    * @example
 ```js
-sq.from('book').order('title desc', sq.txt`sales / ${1000}`)
+sq.from('book').orderBy('title desc', sq.txt`sales / ${1000}`)
 // select * from book order by title desc, sales / 1000
 
-sq.from('book').order(
+sq.from('book').orderBy(
   { by: 'title', sort: 'desc' },
   { by: sq.txt`sales / ${1000}` }
 )
 // select * from book order by title desc, sales / 1000
 
-sq.from('book').order({ by: 'title', using: '~<~', nulls: 'last' })
+sq.from('book').orderBy({ by: 'title', using: '~<~', nulls: 'last' })
 // select * from book order by title using ~<~ nulls last
 ```
    */
-  order(...orderItems: (Expression | {
+  orderBy(...orderItems: (Expression | {
     by: Expression
     sort?: 'asc' | 'desc'
     using?: string
@@ -939,21 +939,21 @@ sq.from('book').order({ by: 'title', using: '~<~', nulls: 'last' })
   /**
    * **ORDER BY clause** - template string
    * 
-   * Multiple `.order` calls are joined with ', '.
+   * Multiple `.orderBy` calls are joined with ', '.
    * 
    * @example
 ```js
-sq.from`book`.order`title desc, sales / ${1000}`
+sq.from`book`.orderBy`title desc, sales / ${1000}`
 // select * from book order by title desc, sales / 1000
 
-sq.from`book`.order`title`.order`sales / 1000`
+sq.from`book`.orderBy`title`.orderBy`sales / 1000`
 // select * from book order by title desc, sales / 1000
 
-sq.from`book`.order`title using ~<~' nulls last`
+sq.from`book`.orderBy`title using ~<~' nulls last`
 // select * from book order by title using ~<~ nulls last
 ```
    */
-  order(strings: TemplateStringsArray, ...args: any[]): this
+  orderBy(strings: TemplateStringsArray, ...args: any[]): this
 }
 
 

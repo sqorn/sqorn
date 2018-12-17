@@ -7,7 +7,7 @@ sidebar_label: Insert
 **Reference:** [Postgres](https://www.postgresql.org/docs/current/sql-insert.html), [SQLite](https://www.sqlite.org/lang_insert.html), 
 [MySQL](https://dev.mysql.com/doc/refman/en/insert.html), [T-SQL](https://docs.microsoft.com/en-us/sql/t-sql/statements/insert-transact-sql), [Oracle](https://docs.oracle.com/database/121/SQLRF/statements_9015.htm)
 
-## Methods
+## Overview
 
 * **With** [`.with`](#with), [`.recursive`](#recursive-ctes)
 * **Insert** [`.from`](#insert), [`.insert`](#insert)
@@ -76,7 +76,25 @@ sq.from('person')
   args: ['Shallan', 'Davar', 'Navani', 'Kholin'] }
 ```
 
-Values may be subqueries.
+Values can be [Expressions](expressions).
+
+```js
+sq.from('person').insert({ firstName: e.upper('moo') }).query
+
+{ text: 'insert into person(first_name) values (upper($1))',
+  args: ['moo'] }
+```
+
+Values can be [Fragments](manual-queries#fragments).
+
+```js
+sq.from('person').insert({ firstName: sq.txt`'moo'` }).query
+
+{ text: "insert into person(first_name) values ('moo')",
+  args: ['moo'] }
+```
+
+Values can be [Subqueries](manual-queries#subqueries).
 
 ```js
 sq.from('person').insert({
@@ -93,13 +111,16 @@ sq.from('person').insert({
 
 ```js
 sq.from('superhero(name)')
-  .insert(sq.return`${'batman'}`
-  .union(sq.return`${'superman'}`))
+  .insert(
+    sq.return`${'batman'}`.union(sq.return`${'superman'}`)
+  )
   .query
 
 { text: "insert into superhero(name) select $1 union (select $2)",
   args: ['batman', 'superman'] }
 ```
+
+TODO: Rework
 
 Call `.insert` without arguments to insert default values.
 
@@ -124,7 +145,7 @@ sq.from('person')
 
 ## Returning
 
-**Postgres Only:** Return the inserted rows with [`.return`](#select).
+**Postgres Only:** Return the inserted rows with [`.return`](select-queries#select).
 
 ```js
 sq.from('book')
@@ -138,7 +159,7 @@ sq.from('book')
 
 ## Express
 
-[Express](#express) syntax works.
+[Express](select-queries#express) syntax works.
 
 ```js
 sq('book')()('id').insert({ title: 'Squirrels and Acorns' }).query

@@ -10,7 +10,7 @@ Builds complex expressions with Sqorn's Expression Builder.
 
 Access the expression API at `sq.e`.
 
-Create expressions by applying [Operations](operations) like `.add`, `.and`, and `.eq` to values.
+Create expressions by applying [Operations](operations) like [`.add`](operations#add), [`.and`](operations#and), and [`.eq`](operations#equal) to values.
 
 ```js
 const { e } = sq
@@ -21,7 +21,7 @@ e.add(3, 4).query
   args: [3, 4] }
 ```
 
-Create an expression from a value with `.arg`.
+Create an expression from a value with [`.arg`](operations#arg).
 
 ```js
 e.arg('meow').query
@@ -140,23 +140,25 @@ sq.return(e.plus`n`(7))
   args: [7, [2, 3, 4, 5], 2, 0] }
 ```
 
-## Types
+## Type Safety
 
 SQL is strongly typed. Sqorn expressions are somewhat typed.
 
-Typescript users will suffer compilation errors if they try to apply operations to incompatible types. For example, `.add` expects numbers and expressions that resolve to numbers. Supplying a string or boolean instead will not work.
+Calling an operation with incompatible arguments is a Typescript compilation error. For example, `.add` expects two number arguments, so supplying string or boolean arguments is invalid. Similarly, passing three arguments when two are expected is invalid.
 
-There are limitations to Sqorn's type safety:
+There are limits to expression type safety:
 
 * The type of a `null` value cannot be inferred. Creating an expression from a null value will generate an [Unknown Expression](#unknown).
 
 * The type of a tagged template literal cannot be inferred. Creating an expression from a tagged template literal will generate an [Unknown Expression](#unknown).
 
-* Multidimensional types like Array Expression, Row Expression and Table Expression lose all information about their constituent types. Sqorn won't warn you if you build the expression `e.eq(e(true, false), e(3, 4))`.
+* Multidimensional types like [Array Expression](#array), [Row Expression](#row) and [Table Expression](#table) lose all information about their constituent types. Sqorn will not warn you if you build the invalid expression `e.eq(e(true, false), e(3, 4))`.
 
-Note that in Typescript, types exist at compile time, not run time.
+* Some [n-ary](https://en.wikipedia.org/wiki/Arity) operations like [`.and`](operations#and) take one or more arguments. Sqorn cannot enforce the argument minimum at compile time. Expression `e.and()` compiles but throws an error at runtime.
 
-Sqorns expression types are listed below:
+## Expression Types
+
+Sqorn's expression types are listed below:
 
 ### Boolean
 
@@ -164,78 +166,143 @@ Boolean Expressions represent values true and false.
 
 They are useful for constructing *where*, *having* and *join* conditions.
 
-**Constructor:** [e.boolean](operations/#boolean)
+**Constructor:** [e.boolean](operations#boolean)
 
 **Compatible Types:** `boolean`, `null`, `BooleanExpression`, `UnknownExpression`
 
-**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Logical](#logical)
+**Supported Operations:** [Comparison](operations#comparison), [Logical](operations#logical)
+
+```js
+// Examples
+e(true)
+e.boolean(null)
+e.and(true, false)
+e.eq(3, 6)
+e.like('moo', 'moomoo')
+e.eqAny(3, [2, 3, 5])
+```
 
 ### Number
 
 Number Expressions represent numbers like `2`, `70.5`, and `-2749.234`.
 
-**Constructor:** [e.number](operations/#number)
+**Constructor:** [e.number](operations#number)
 
 **Compatible Types:** `number`, `null`, `NumberExpression`, `UnknownExpression`
 
-**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Math](#math)
+**Supported Operations:** [Comparison](operations#comparison), [Math](operations#math)
+
+```js
+// Examples
+e(8)
+e.number(null)
+e.add(3, 4)
+e.subtract(9)(6)
+e.divide`moo``moo`
+e`moo`.multiply`moo`
+```
 
 ### String
 
 String Expressions represent character sequences like `'kitty'`, `'Tuxedo cats are best'`, and `''`.
 
-**Constructor:** [e.string](operations/#string)
+**Constructor:** [e.string](operations#string)
 
 **Compatible Types:** `string`, `null`, `StringExpression` and `UnknownExpression`
 
-**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [String](#string)
+**Supported Operations:** [Comparison](operations#comparison), [String](operations#string)
+
+```js
+// Examples
+e('moo')
+e.string(null)
+e.cat('moo', 'moo')
+```
 
 ### Unknown
 
 Unknown Expressions represent values of unknown type. They could be anything from `true`, `null`, and `'meow'`, to `(true, 24)`, `Array[3, 5, 7]`, and `'{ "hello": "world" }'`.
 
-**Constructor:** [e.unknown](operations/#unknown)
+**Constructor:** [e.unknown](operations#unknown)
 
 **Compatible Types:** `any`
 
-**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Logical](#logical), [Math](#math), [String](#string), [Array](#array), [Row](#row), [Table](#table)
+**Supported Operations:** [Comparison](operations#comparison), [Logical](operations#logical), [Math](operations#math), [String](operations#string), [Array](operations#array), [Row](operations#row), [Table](operations#table)
+
+```js
+// Examples
+e(null)
+e.unknown('moo')
+e`moo`
+```
 
 ### Array
 
 Array Expressions represent [Postgres Arrays](https://www.postgresql.org/docs/current/arrays.html).
 
-**Constructor:** [e.array](operations/#array)
+**Constructor:** [e.array](operations#array)
 
 **Compatible Types:** `any[]`, `null`, `Array Expression`, `Unknown Expression` 
 
-**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Array](#array)
+**Supported Operations:** [Comparison](operations#comparison), [Array](operations#array)
+
+```js
+// Examples
+e([3, 4, 5])
+e.array(null)
+e([true false])
+e(['moo', 'moo', 'moo'])
+e(['moo']).cat(['moo'])
+```
 
 ### JSON
 
 JSON Expressions represent JSON values.
 
-**Constructor:** [e.json](operations/#json)
+**Constructor:** [e.json](operations#json)
 
 **Compatible Types:** `null` | `number` | `boolean` | `string` | `[]` |`{}`, `JSONExpression`, `UnknownExpression`
 
-**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [JSON](#json)
+**Supported Operations:** [Comparison](operations#comparison), [JSON](operations#json)
+
+```js
+// Examples
+e({ a: 1 })
+e.json('moo')
+e.json(['moo', 'moo'])
+```
 
 ### Row
 
 Row Expressions represent one or more values of any type.
 
-**Constructor:** [e.row](operations/#row)
+**Constructor:** [e.row](operations#row)
 
 **Compatible Types:** `null`, `Row Expression`, `Unknown Expression`
 
-**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Row](#row)
+**Supported Operations:** [Comparison](operations#comparison), [Row](operations#row)
+
+```js
+// Examples
+e(1, true, 'moo')
+e(1)(true)('moo')
+e.row('moo')
+e.row`moo`('moo')
+```
 
 ### Table
 
 Table Expressions represent a table.
 
-**Constructor:** [e.table](operations/#table)
+**Constructor:** [e.table](operations#table)
 
-**Compatible Types:** `null`, `SQ`, `Table Expression`, `Unknown Expression`
+**Compatible Types:** `SQ`, `Table Expression`, `Unknown Expression`
 
-**Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Table](#table)
+**Supported Operations:** [Comparison](operations#comparison), [Table](operations#table)
+
+```js
+// Examples
+e(sq.from('book'))
+e.unnest([3, 5, 7, 9])
+e(sq.sql`select 'moo moo'`)
+```

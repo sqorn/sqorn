@@ -4,6 +4,8 @@ title: Transactions
 sidebar_label: Transactions
 ---
 
+## Overview
+
 * **Begin** [`.transaction(cb)`](#callback), [`.transaction()`](#value)
 * **End** [`Transaction.commit`](#value), [`Transaction.rollback`](#value)
 

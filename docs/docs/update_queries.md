@@ -7,7 +7,7 @@ sidebar_label: Update
 **Reference:** [Postgres](https://www.postgresql.org/docs/current/sql-update.html), [SQLite](https://www.sqlite.org/lang_update.html), 
 [MySQL](https://dev.mysql.com/doc/refman/en/update.html), [T-SQL](https://docs.microsoft.com/en-us/sql/t-sql/queries/update-transact-sql), [Oracle](https://docs.oracle.com/database/121/SQLRF/statements_10008.htm)
 
-## Methods
+## Overview
 
 * **With** [`.with`](#with), [`.recursive`](#recursive-ctes)
 * **Update** [`.from`](#set)
@@ -18,7 +18,7 @@ sidebar_label: Update
 
 ## Set
 
-`.from` specifies the table to insert into and `.set` specifies the columns to update. [`.from`](#from-1) works as it does in delete queries.
+`.from` specifies the table to modify and `.set` specifies the fields to update. [`.from`](#from) works as it does in [Delete](delete-queries#from) queries.
 
 ```js
 sq.from`person`
@@ -29,7 +29,7 @@ sq.from`person`
   args: ['Sally'] }
 ```
 
-`.set` can be called multiple times.
+Multiple calls to `.set` are joined with `', '`.
 
 ```js
 sq.from`person`
@@ -41,7 +41,7 @@ sq.from`person`
   args: ['Sally'] }
 ```
 
-`.set` accepts update objects.
+`.set` accepts objects in the form `{ field: value }`. Each property generates a `field = value` clause.
 
 ```js
 sq.from('person')
@@ -55,20 +55,43 @@ sq.from('person')
   args: ['Robert', 'Rob', true] }
 ```
 
-Update values may be subqueries.
+Values can be [Expressions](expressions).
 
 ```js
-sq.from('person').set({
-  firstName: sq.sql`'Bob'`,
-  lastName: sq.return`'Smith'`
- })
+sq.from('person')
+  .set({ age: e.add(3, 4) })
+  .query
+
+{ text: 'update person set age = ($1 + $2)',
+  args: [3, 4] }
+```
+
+Values can be [Fragments](manual-queries#fragments).
+
+```js
+sq.from('person')
+  .set({ age: sq.txt`3 + 4` })
+  .query
+
+{ text: 'update person set age = 3 + 4',
+  args: [3, 4] }
+```
+
+Values can be [Subqueries](manual-queries#subqueries).
+
+```js
+sq.from('person')
+  .set({
+    firstName: sq.sql`'Bob'`,
+    lastName: sq.return`'Smith'`
+  })
  .query
 
 { text: "update person set first_name = 'Bob', last_name = (select 'Smith')",
   args: [] }
 ```
 
-Call `.set` multiple times to update additional columns.
+Call `.set` multiple times to update additional fields.
 
 ```js
 sq.from`person`
@@ -94,7 +117,7 @@ sq.from`person`
   args: ['Robert', 'Rob', 'Matt'] }
 ```
 
-[`.where`](#where) works as it does in select queries and can be chained with [`.and`](#and-or) and [`.or`](#and-or).
+`.where` works as it does in [Select](select-queries) queries.
 
 ## From
 
@@ -113,7 +136,7 @@ sq.from`book`
 
 ## Returning
 
-**Postgres Only:** Return the updated rows with [`.return`](#select).
+**Postgres Only:** Return the updated rows with [`.return`](select-queries#select).
 
 ```js
 sq.from`person`
@@ -128,7 +151,7 @@ sq.from`person`
 
 ## Express
 
-[Express](#express) syntax works.
+[Express](select-queries#express) syntax works.
 
 ```js
 sq`person`({ firstName: 'Rob' })`id`.set({ firstName: 'Robert'}).query

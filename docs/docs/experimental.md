@@ -58,7 +58,7 @@ sq.return({ album: 'json_agg(r.*)' })
       .from('album')
       .left.join('track').on('album.id = track.album_id')
       .where({ 'album.year': 2018 })
-      .group('album.id')
+      .groupBy('album.id')
   })
 
 const { Album, Track } =  require('./models')
@@ -128,7 +128,7 @@ From, group, and select are type changing operations
 const a = Person.a.as('a')
 const b = Person.b.as('b')
 
-Person.group(a, b).return(
+Person.groupBy(a, b).return(
   // aggregate expressions, only these are eligible for relatinoships
   a,
   b,
@@ -137,7 +137,7 @@ Person.group(a, b).return(
 )
 
 const name = Person.name.as('name')
-Person.group(name).return(
+Person.groupBy(name).return(
   name,
   name: // umm doesn't really work
 )
@@ -177,7 +177,7 @@ const { sq, book, author, publisher, city } = require('./db')
 
 
 
-post.where({ firstName: 'Jo'}).order(post.id).limit(1).return({
+post.where({ firstName: 'Jo'}).orderBy(post.id).limit(1).return({
   title: 'title',
   body: 'body',
   author: user.where({ status: 'good' }).return({
@@ -219,7 +219,7 @@ sq.return(book.id, book.tile, book.author.firstName, book.author.lastName)
          where book.id = $1`,
   args: [7] }
 
-sq.json(post.title, post.comments.limit(3).order('create_time asc'))
+sq.json(post.title, post.comments.limit(3).orderBy('create_time asc'))
   .where(e(post.id).eq(7).and())
   .query
 
@@ -739,7 +739,7 @@ select age, count(*) from person group by age
 ```
 
 ```javascript
-sq`person`()`age, count(*)`.group`age`
+sq`person`()`age, count(*)`.groupBy`age`
 ```
 
 ### having
@@ -749,7 +749,7 @@ select age, count(*) count from person group by age having age < 18
 ```
 
 ```javascript
-sq`person`()`age, count(*) count`.group`age``age < 18`
+sq`person`()`age, count(*) count`.groupBy`age``age < 18`
 ```
 
 ### order by
@@ -759,7 +759,7 @@ select * from person order by last_name, first_name
 ```
 
 ```javascript
-sq`person`.order`last_name, first_name`
+sq`person`.orderBy`last_name, first_name`
 ```
 
 ### limit
@@ -769,7 +769,7 @@ select * from person order by last_name limit 10 offset 7
 ```
 
 ```javascript
-sq`person`.order`last_name, first_name`.limit(10).offset(7)
+sq`person`.orderBy`last_name, first_name`.limit(10).offset(7)
 ```
 
 ### offset

@@ -6,7 +6,7 @@ sidebar_label: Setup
 
 Sqorn requires Node version 8 or above.
 
-Sqorn is a collection of libraries, one for each SQL dialect. Follow the instructions below to install the Sqorn library for your dialect and connect to your database. For additional options, refer to [Configuration](http://localhost:3002/docs/tutorial.html#configuration).
+Sqorn is a collection of libraries, one for each SQL dialect. Follow the instructions below to install the Sqorn library for your dialect and connect to your database. For additional options, refer to [Configuration](configuration).
 
 ## Postgres
 

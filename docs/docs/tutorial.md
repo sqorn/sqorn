@@ -342,10 +342,10 @@ const createAccount = async (email, password) =>  {
 * **Select** [`.return`](#select), [`.distinct`](#distinct), [`.distinctOn`](#distinct-on)
 * **From** [`.from`](#from), [`.join`](#joins), [`.left`](#join-type), [`.right`](#join-type), [`.full`](#join-type), [`.cross`](#join-type), [`.inner`](#join-type), [`.using`](#using), [`.on`](#on), [`.and`](#and-or), [`.or`](#and-or).
 * **Where** [`.where`](#where), [`.and`](#and-or), [`.or`](#and-or)
-* **Group By** [`.group`](#group-by), [`.rollup`](#rollup), [`.cube`](#cube), [`.groupingSets`](#grouping-sets)
+* **Group By** [`.groupBy`](#group-by), [`.rollup`](#rollup), [`.cube`](#cube), [`.groupingSets`](#grouping-sets)
 * **Having** [`.having`](#having), [`.and`](#and-or), [`.or`](#and-or)
 * **Sets** [`.union`](#union-intersect-except), [`.intersect`](#union-intersect-except), [`.except`](#union-intersect-except), [`.unionAll`](#union-all-intersect-all-except-all), [`.intersectAll`](#union-all-intersect-all-except-all), [`.exceptAll`](#union-all-intersect-all-except-all)
-* **Order By** [`.order`](#order-by)
+* **Order By** [`.orderBy`](#order-by)
 * **Limit** [`.limit`](#limit)
 * **Offset** [`.offset`](#offset)
 
@@ -876,11 +876,11 @@ sq`author`.extend(
 
 ### Group By
 
-`.group` builds *group by* clauses.
+`.groupBy` builds *group by* clauses.
 
 ```js
 sq.from`person`
-  .group`age`
+  .groupBy`age`
   .return`age, count(*)`
   .query
 
@@ -888,11 +888,11 @@ sq.from`person`
   args: [] }
 ```
 
-Multiple `.group` calls are joined with `', '`.
+Multiple `.groupBy` calls are joined with `', '`.
 
 ```js
 sq.from`person`
-  .group`age`.group`last_name`
+  .groupBy`age`.groupBy`last_name`
   .return`age, last_name, count(*)`
   .query
 
@@ -900,11 +900,11 @@ sq.from`person`
   args: [] }
 ```
 
-`.group` accepts strings.
+`.groupBy` accepts strings.
 
 ```js
 sq.from('person')
-  .group('age', 'last_name')
+  .groupBy('age', 'last_name')
   .return('age', 'last_name', 'count(*)')
   .query
 
@@ -912,11 +912,11 @@ sq.from('person')
   args: [] }
 ```
 
-TODO: `.group` accepts fragments.
+TODO: `.groupBy` accepts fragments.
 
 ```js
 sq.from('book')
-  .group(sq.txt`genre`)
+  .groupBy(sq.txt`genre`)
   .return('count(*)')
   .query
 
@@ -924,11 +924,11 @@ sq.from('book')
   args: [] }
 ```
 
-TODO: `.group` accepts subqueries.
+TODO: `.groupBy` accepts subqueries.
 
 ```js
 sq.from('book')
-  .group(sq.return`genre = 'Fantasy'`)
+  .groupBy(sq.return`genre = 'Fantasy'`)
   .return('count(*)')
   .query
 
@@ -936,11 +936,11 @@ sq.from('book')
   args: [] }
 ```
 
-TODO: `.group` accepts [expressions](#expressions).
+TODO: `.groupBy` accepts [expressions](#expressions).
 
 ```js
 sq.from(sq.txt`generate_series(${1}, ${10}) as n`)
-  .group(sq.e.mod`n`(2))
+  .groupBy(sq.e.mod`n`(2))
   .return(sq.e.mod`n`(2), 'sum(n)')
   .query
 
@@ -952,7 +952,7 @@ Parenthesize arguments by wrapping them in arrays. Arrays can be nested.
 
 ```js
 sq.from('person')
-  .group('age', [[sq.sql`last_name`], 'first_name'])
+  .groupBy('age', [[sq.sql`last_name`], 'first_name'])
   .return('count(*)')
   .query
 
@@ -962,10 +962,10 @@ sq.from('person')
 
 #### Rollup
 
-**Postgres Only:** `.group` accepts *rollup* arguments. `.rollup` accepts the same arguments as `.group` except *rollup*, *cube*, or *grouping sets* arguments.
+**Postgres Only:** `.groupBy` accepts *rollup* arguments. `.rollup` accepts the same arguments as `.groupBy` except *rollup*, *cube*, or *grouping sets* arguments.
 
 ```js
-sq.from('t').group(sq.rollup('a', ['b', sq.txt`c`], 'd')).query
+sq.from('t').groupBy(sq.rollup('a', ['b', sq.txt`c`], 'd')).query
 
 // postgres
 { text: 'select * from t group by rollup (a, (b, c)), d',
@@ -974,10 +974,10 @@ sq.from('t').group(sq.rollup('a', ['b', sq.txt`c`], 'd')).query
 
 #### Cube
 
-**Postgres Only:** `.group` accepts *cube* arguments. `.cube` accepts the same arguments as `.rollup`.
+**Postgres Only:** `.groupBy` accepts *cube* arguments. `.cube` accepts the same arguments as `.rollup`.
 
 ```js
-sq.from('t').group(sq.cube('a', ['b', sq.txt`c`], 'd')).query
+sq.from('t').groupBy(sq.cube('a', ['b', sq.txt`c`], 'd')).query
 
 // postgres
 { text: 'select * from t group by cube (a, (b, c)), d',
@@ -986,10 +986,10 @@ sq.from('t').group(sq.cube('a', ['b', sq.txt`c`], 'd')).query
 
 #### Grouping Sets
 
-**Postgres Only:** `.group` accepts *grouping sets* arguments. `.groupingSets` accepts the same arguments as `.group`.
+**Postgres Only:** `.groupBy` accepts *grouping sets* arguments. `.groupingSets` accepts the same arguments as `.groupBy`.
 
 ```js
-sq.from('t').group(sq.groupingSets(['a', 'b', 'c'], sq.groupingSets(['a', 'b']), ['a'], [])).query
+sq.from('t').groupBy(sq.groupingSets(['a', 'b', 'c'], sq.groupingSets(['a', 'b']), ['a'], [])).query
 
 // postgres
 { text: 'select * from t group by grouping sets ((a, b, c), grouping sets ((a, b)), (a), ())',
@@ -1001,7 +1001,7 @@ sq.from('t').group(sq.groupingSets(['a', 'b', 'c'], sq.groupingSets(['a', 'b']),
 Filter groups with `.having`. `.having` accepts the same arguments as [`.where`](#where).
 
 ```js
-sq.from`person`.group`age`.having`age < ${20}`.query
+sq.from`person`.groupBy`age`.having`age < ${20}`.query
 
 { text: 'select * from person group by age having (age < $1',
   args: [20] }
@@ -1010,7 +1010,7 @@ sq.from`person`.group`age`.having`age < ${20}`.query
 `.having` can be called multiple times.
 
 ```js
-sq.from`person`.group`age`.having`age >= ${20}`.having`age < ${30}`.query
+sq.from`person`.groupBy`age`.having`age >= ${20}`.having`age < ${30}`.query
 
 { text: 'select * from person group by age having (age >= $1) and (age < $2)',
   args: [20, 30] }
@@ -1020,7 +1020,7 @@ Chain `.and` and `.or` after `.having`.
 
 ```js
 sq.from('person')
-  .group('age')
+  .groupBy('age')
   .having({ age: 18, c: sq.txt`age < ${19}` })
   .or({ age: 20 })
   .and(sq.txt`count(*) > 10`)
@@ -1034,7 +1034,7 @@ TODO: Build complex *having* conditions with [expressions](#expressions).
 
 ```js
 sq.from('book')
-  .group('genre')
+  .groupBy('genre')
   .having(sq.e.or(
     sq.e.gt`count(*)`(10),
     sq.e.lte`count(*)`(100)
@@ -1048,57 +1048,57 @@ sq.from('book')
 
 ### Order By
 
-Specify row ordering with `.order`.
+Specify row ordering with `.orderBy`.
 
 ```js
-sq.from`book`.order`title asc nulls last`.query
+sq.from`book`.orderBy`title asc nulls last`.query
 
 { text: 'select * from book order by title asc nulls last',
   args: [] }
 ```
 
-Multiple calls to `.order` are joined with `', '`.
+Multiple calls to `.orderBy` are joined with `', '`.
 
 ```js
-sq.from`book`.order`title`.order`year`.query
+sq.from`book`.orderBy`title`.orderBy`year`.query
 
 { text: 'select * from book order by title, year',
   args: [] }
 ```
 
-`.order` accepts strings.
+`.orderBy` accepts strings.
 
 **To prevent SQL injection, never source *strings* from user input.**
 
 ```js
-sq.from('book').order('sales / 1000', 'title').query
+sq.from('book').orderBy('sales / 1000', 'title').query
 
 { text: 'select * from book order by sales / 1000, title',
   args: [] }
 ```
 
-`.order` accepts fragments.
+`.orderBy` accepts fragments.
 
 ```js
-sq.from('book').order(sq.txt`sales / ${1000}`, 'title').query
+sq.from('book').orderBy(sq.txt`sales / ${1000}`, 'title').query
 
 { text: 'select * from book order by sales / $1, title',
   args: [1000] }
 ```
 
-`.order` accepts subqueries.
+`.orderBy` accepts subqueries.
 
 ```js
-sq.from('book').order(sq.sql`sales / ${1000}`, 'title').query
+sq.from('book').orderBy(sq.sql`sales / ${1000}`, 'title').query
 
 { text: 'select * from book order by (select sales / $1), title',
   args: [1000] }
 ```
 
-`.order` accepts [expressions](#expressions).
+`.orderBy` accepts [expressions](#expressions).
 
 ```js
-sq.from('book').order(sq.e.divide`sales`(1000), 'title').query
+sq.from('book').orderBy(sq.e.divide`sales`(1000), 'title').query
 
 { text: 'select * from book order by (sales / $1), title',
   args: [1000] }
@@ -1106,12 +1106,12 @@ sq.from('book').order(sq.e.divide`sales`(1000), 'title').query
 
 #### Order Objects
 
-`.order` accepts objects.
+`.orderBy` accepts objects.
 
 Property `by` is used for ordering. It can be a string, fragment, subquery, or [expression](#expressions).
 
 ```js
-sq.from('book').order({ by: sq.e.divide`sales`(1000) }, { by: 'title' }).query
+sq.from('book').orderBy({ by: sq.e.divide`sales`(1000) }, { by: 'title' }).query
 
 { text: 'select * from book order by sales / $1, title',
   args: [1000] }
@@ -1120,7 +1120,7 @@ sq.from('book').order({ by: sq.e.divide`sales`(1000) }, { by: 'title' }).query
 Set property `sort` to either `'asc'` or `'desc'`. SQL defaults to ascending.
 
 ```js
-sq.from('book').order({ by: 'title', sort: 'desc' }).query
+sq.from('book').orderBy({ by: 'title', sort: 'desc' }).query
 
 { text: 'select * from book order by title desc',
   args: [] }
@@ -1129,7 +1129,7 @@ sq.from('book').order({ by: 'title', sort: 'desc' }).query
 **Postgres Only:** Set property `using` to a comparison operator.
 
 ```js
-sq.from`person`.order({ by: 'first_name', using: '~<~' }).query
+sq.from`person`.orderBy({ by: 'first_name', using: '~<~' }).query
 
 { text: 'select * from person order by first_name using ~<~',
   args: [] }
@@ -1138,7 +1138,7 @@ sq.from`person`.order({ by: 'first_name', using: '~<~' }).query
 **Postgres Only:** Set property `nulls` to `'first'` or `'last'` to select *null* ordering. SQL defaults to nulls first.
 
 ```js
-sq.from('book').order({ by: 'title', nulls: 'last' }).query
+sq.from('book').orderBy({ by: 'title', nulls: 'last' }).query
 
 { text: 'select * from book order by title nulls last',
   args: [] }

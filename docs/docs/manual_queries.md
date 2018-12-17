@@ -4,7 +4,9 @@ title: Manual Queries
 sidebar_label: Manual
 ---
 
-* **Build** [`.sql`](#queries), [`.raw`](#queries), [`.txt`](#fragments), [`.extend`](#extend), [`.link`](#link)
+## Overview
+
+* **Build** [`.sql`](#queries), [`.raw`](#raw-arguments), [`.txt`](#fragments), [`.extend`](#extend), [`.link`](#link)
 * **Compile** [`.query`](#queries), [`.unparameterized`](#queries).
 
 ## Queries
@@ -33,24 +35,6 @@ People.query
 People.unparameterized
 
 'select * from person where age >= 20 and age < 30'
-```
-
-Prefix arguments with `$` to prevent parameterization.
-
-```js
-sq.sql`select * from $${'test_table'} where id = ${7}`.query
-
-{ text: 'select * from test_table where id = $1',
-  args: [7] }
-```
-
-Alternatively, wrap arguments in calls to `.raw`.
-
-```js
-sq.sql`select * from ${sq.raw('test_table')} where id = ${7}`.query
-
-{ text: 'select * from test_table where id = $1',
-  args: [7] }
 ```
 
 Javascript `null` maps to SQL `null`.
@@ -92,6 +76,26 @@ const book = select.sql`from book`
 select.query // { text: 'select *', args: [] }
 person.query // { text: 'select * from person', args: [] }
 book.query // { text: 'select * from book', args: [] }
+```
+
+## Raw Arguments
+
+Prefix arguments with `$` to prevent parameterization. **To prevent SQL injection, do not use raw arguments.**
+
+```js
+sq.sql`select * from $${'test_table'} where id = ${7}`.query
+
+{ text: 'select * from test_table where id = $1',
+  args: [7] }
+```
+
+Alternatively, wrap arguments in calls to `.raw`. **To prevent SQL injection, do not use raw arguments.**
+
+```js
+sq.sql`select * from ${sq.raw('test_table')} where id = ${7}`.query
+
+{ text: 'select * from test_table where id = $1',
+  args: [7] }
 ```
 
 ## Subqueries

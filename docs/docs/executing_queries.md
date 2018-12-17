@@ -9,7 +9,7 @@ sidebar_label: Executing Queries
 
 ## All Rows
 
-`.all` executes a query and returns a Promise for an array of rows. A row is an object where keys are [(camelCase)](#map-output-keys) column names and values are the corresponding data for the given row.
+`.all` executes a query and returns a Promise for an array of rows. A row is an object in the form `{ field: value }`. By default, field names are converted to [camelCase](configuration#map-output-keys).
 
 The query builder is itself *thenable* so `.all` is optional.
 

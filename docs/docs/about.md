@@ -6,13 +6,13 @@ sidebar_label: About
 
 Sqorn is a Javascript library *engineered* for building SQL queries. Its API is fluent, declarative, intuitive and flexibile. Sqorn queries are immutable values, letting you construct complex queries by composing simple parts. Sqorn compiles queries [10x faster](/benchmarks.html) than Knex and [200x faster](/benchmarks.html) than Squel. Sqorn generates parameterized queries safe from SQL injection. Securely integrate raw SQL using Sqorn's [tagged template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates).
 
-Sqorn has Typescript definitions but is not type-safe. You do not define models and relationships. You just write queries. It is your responsibility to ensure the queries are valid.
+Sqorn has Typescript definitions but limited type-safety. You do not define models and relationships. You just write queries. It is your responsibility to ensure the queries are valid.
 
-Sqorn provides three interoperable mechanisms for building queries: a [SQL Query Builder](#sql-query-builder), a [Manual Query Builder](#manual-query-builder) and an [Expression Builder](#expression-builder).
+Sqorn provides three interoperable mechanisms for building queries: a SQL Query Builder, a Manual Query Builder and an Expression Builder.
 
 ## SQL Query Builder
 
-Build [select](#select-queries), [delete](#delete-queries), [insert](#insert-queries), [update](#update-queries) and [values](#values-queries) queries using methods based on SQL clauses.
+Build [Select](select-queries), [Delete](delete-queries), [Insert](insert-queries) and [Update](update-queries) queries using methods based on SQL clauses.
 
 ```js
 sq.return({ authorId: 'a.id', name: 'a.last_name' })
@@ -28,7 +28,7 @@ sq.return({ authorId: 'a.id', name: 'a.last_name' })
 
 ## Manual Query Builder
 
-For maximum flexibility, build queries [manually](#manual-queries) using tagged template literals.
+For maximum flexibility, build queries [manually](manual-queries) using tagged template literals.
 
 ```js
 sq.sql`select a.author_id, json_agg(b.*)`
@@ -45,7 +45,7 @@ sq.sql`select a.author_id, json_agg(b.*)`
 
 ## Expression Builder
 
-Build complex conditions and operations with the fluent, typed, functional [expression builder](#expressions).
+Build complex conditions and operations with the fluent, typed, functional [expression builder](expressions).
 
 ```js
 sq.from('book')

@@ -7,7 +7,7 @@ sidebar_label: Delete
 **Reference:** [Postgres](https://www.postgresql.org/docs/current/sql-delete.html), [SQLite](https://www.sqlite.org/lang_delete.html), 
 [MySQL](https://dev.mysql.com/doc/refman/en/delete.html), [T-SQL](https://docs.microsoft.com/en-us/sql/t-sql/statements/delete-transact-sql), [Oracle](https://docs.oracle.com/database/121/SQLRF/statements_8005.htm)
 
-## Methods
+## Overview
 
 * **With** [`.with`](#with), [`.recursive`](#recursive-ctes)
 * **Delete** [`.delete`](#delete)
@@ -18,7 +18,7 @@ sidebar_label: Delete
 
 ## Delete
 
-Delete queries look like select* queries with an additional call to `.delete`.
+Delete queries look like [Select](select-queries) queries with an additional call to `.delete`.
 
 ```js
 sq.delete.from`person`.query
@@ -39,7 +39,7 @@ sq`book`.delete.delete.delete.query
 
 ## From
 
-[`.from`](#from) works as it does in select queries.
+[`.from`](#from) works as it does in [Select](select-queries) queries.
 
 However, be aware of certain SQL constraints Sqorn does not yet enforce.
 
@@ -79,11 +79,11 @@ sq.delete.from`person`.where`id = ${723}`.query
   args: [723] }
 ```
 
-[`.where`](#where) works as it does in select queries and can be chained with [`.and`](#and-or) and [`.or`](#and-or).
+`.where` works as it does in [Select](select-queries) queries.
 
 ## Returning
 
-**Postgres Only:** Return the deleted rows with [`.return`](#select).
+**Postgres Only:** Return the deleted rows with [`.return`](select-queries#select).
 
 ```js
 sq.delete.from`person`.return`name`.query
@@ -94,7 +94,7 @@ sq.delete.from`person`.return`name`.query
 
 ## Express
 
-[Express](#express) syntax works.
+[Express](select-queries#express) syntax works.
 
 ```js
 sq`person`({ job: 'student' })`name`.delete.query

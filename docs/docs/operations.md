@@ -4,7 +4,7 @@ title: Operations
 sidebar_label: Operations
 ---
 
-## Methods
+## Overview
 
 * **Value** [`arg`](#arg), [`unknown`](#unknown), [`boolean`](#boolean), [`number`](#number), [`string`](#string), [`array`](#array), [`json`](#json), [`row`](#row), [`table`](#table)
 * **Logical** [`and`](#and), [`or`](#or), [`not`](#not)
@@ -53,7 +53,7 @@ e.arg({ hello: 'world' }) // JSONExpression
 e.arg(e.arg(23))          // NumberExpression
 ```
 
-Multiple arguments build a Row Expression.
+Multiple arguments build a [Row Expression](expressions#row).
 
 ```js
 e.arg(23, true)             // RowExpression
@@ -80,7 +80,7 @@ e.arg(e.arg(e(12))(23))(45)  // equivalent to above
 
 * `unknown: any => unknown`
 
-`.unknown` builds an Unknown Expression from its argument.
+`.unknown` builds an [Unknown Expression](expressions#unknown).
 
 ```js
 e.unknown(true)     // UnknownExpression
@@ -100,7 +100,7 @@ e.unknown(true).add(23)
 
 * `boolean: boolean => boolean`
 
-`.boolean` builds a Boolean Expression.
+`.boolean` builds a [Boolean Expression](expressions#boolean).
 
 ```js
 e.boolean(true)    // BooleanExpression
@@ -114,7 +114,7 @@ e.boolean`moo`     // BooleanExpression
 
 * `number: number => number`
 
-`.number` builds a Number Expression.
+`.number` builds a [Number Expression](expressions#number).
 
 ```js
 e.number(23)      // NumberExpression
@@ -128,7 +128,7 @@ e.number`moo`     // NumberExpression
 
 * `string: string => string`
 
-`.string` builds a String Expression.
+`.string` builds a [String Expression](expressions#string).
 
 ```js
 e.string('adsf')    // StringExpression
@@ -142,7 +142,7 @@ e.string`moo`       // StringExpression
 
 * `array: array => array`
 
-`.string` builds an Array Expression.
+`.string` builds an [Array Expression](expressions#array).
 
 ```js
 e.array([])                  // ArrayExpression
@@ -157,7 +157,7 @@ e.array`array['moo', 'moo']` // ArrayExpression
 
 * `json: json => json`
 
-`.json` builds a JSON Expression.
+`.json` builds a [JSON Expression](expressions#json).
 
 ```js
 e.json({ a: 'hi' }) // JSONExpression
@@ -175,7 +175,7 @@ e.json`moo`         // JSONExpression
 * `row: row => row`
 * `row: T1 => T2 => ...Tn => row`
 
-`.row` builds a Row Expression.
+`.row` builds a [Row Expression](expressions#row).
 
 ```js
 e.row(true, 23)       // RowExpression
@@ -194,7 +194,7 @@ e.row`moo`            // RowExpression
 
 * `table: table => table`
 
-`.table` builds a Table Expression.
+`.table` builds a [Table Expression](expressions#table).
 
 ```js
 e.table(null)                // TableExpression
@@ -1476,34 +1476,3 @@ TODO
 ### Intersect All
 
 TODO
-
-## Understanding Expression Types
-
-Each expression type is listed with its compatible types:
-
-* **boolean** - `true`, `false`, boolean expression, `null`, unknown expression, query
-* **number** - number literal, number expression, `null`, unknown expression, query
-* **string** - string literal, string expression, `null`, unknown expression, query
-* **array** - Javascript Array, array expression, `null`, unknown expression, query
-* **json** - Javascript Object, json expression, `null`, unknown expression, query
-* **row** - row expression, `null`, unknown, expression, query
-* **table** - `null`, unknown, expression, query
-* **unknown** - any
-
-### Signatures
-
-The type signatures listed below should be interpreted as follows:
-
-`method_name: arg1_type => arg2_type => return_type`
-
-`T` indicates a generic type.
-
-For example, interpret `eq => T => T => boolean` as method `eq` takes two arguments of the same type and returns a boolean expression.
-
-### Type Safety
-
-Sqorn Expressions offer limited compile time (but not run time) type safety.
-
-Expressions on scalar types like booleans, numbers, and strings are type safe.
-
-Expressions on non-scalar types like arrays, json, rows, and subqueries are not type safe.

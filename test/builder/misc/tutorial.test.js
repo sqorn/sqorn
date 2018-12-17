@@ -339,14 +339,14 @@ describe('tutorial', () => {
     describe('Group By', () => {
       query({
         name: 'tagged template',
-        query: sq.from`person`.return`age, count(*)`.group`age`,
+        query: sq.from`person`.return`age, count(*)`.groupBy`age`,
         text: 'select age, count(*) from person group by age',
         args: []
       })
       query({
         name: 'multiple calls',
-        query: sq.from`person`.return`age, last_name, count(*)`.group`age`
-          .group`last_name`,
+        query: sq.from`person`.return`age, last_name, count(*)`.groupBy`age`
+          .groupBy`last_name`,
         text:
           'select age, last_name, count(*) from person group by age, last_name',
         args: []
@@ -356,26 +356,26 @@ describe('tutorial', () => {
         query: sq
           .from('person')
           .return('count(*)')
-          .group('age', [sq.txt`last_name`, 'first_name']),
+          .groupBy('age', [sq.txt`last_name`, 'first_name']),
         text:
           'select count(*) from person group by age, (last_name, first_name)',
         args: []
       })
       query({
         name: 'rollup',
-        query: sq.from`t`.group(sq.rollup('a', ['b', sq.txt`c`]), 'd'),
+        query: sq.from`t`.groupBy(sq.rollup('a', ['b', sq.txt`c`]), 'd'),
         text: 'select * from t group by rollup (a, (b, c)), d',
         args: []
       })
       query({
         name: 'cube',
-        query: sq.from`t`.group(sq.cube('a', ['b', sq.txt`c`]), 'd'),
+        query: sq.from`t`.groupBy(sq.cube('a', ['b', sq.txt`c`]), 'd'),
         text: 'select * from t group by cube (a, (b, c)), d',
         args: []
       })
       query({
         name: 'grouping sets',
-        query: sq.from`t`.group(
+        query: sq.from`t`.groupBy(
           sq.groupingSets(
             ['a', 'b', 'c'],
             sq.groupingSets(['a', 'b']),
@@ -389,7 +389,10 @@ describe('tutorial', () => {
       })
       query({
         name: 'expression args',
-        query: sq.from`person`.group('age', [sq.txt`last_name`, 'first_name']),
+        query: sq.from`person`.groupBy('age', [
+          sq.txt`last_name`,
+          'first_name'
+        ]),
         text: 'select * from person group by age, (last_name, first_name)',
         args: []
       })
@@ -397,13 +400,13 @@ describe('tutorial', () => {
     describe('Having', () => {
       query({
         name: 'tagged template',
-        query: sq.from`person`.group`age`.having`age < ${20}`,
+        query: sq.from`person`.groupBy`age`.having`age < ${20}`,
         text: 'select * from person group by age having (age < $1)',
         args: [20]
       })
       query({
         name: 'multiple calls',
-        query: sq.from`person`.group`age`.having`age >= ${20}`
+        query: sq.from`person`.groupBy`age`.having`age >= ${20}`
           .having`age < ${30}`,
         text:
           'select * from person group by age having (age >= $1) and (age < $2)',
@@ -411,7 +414,7 @@ describe('tutorial', () => {
       })
       query({
         name: 'chain .on and .or',
-        query: sq.from`person`.group`age`
+        query: sq.from`person`.groupBy`age`
           .having({ age: 18, c: sq.txt`age < ${19}` })
           .or({ age: 20 }).and`count(*) > 10`,
         text:
@@ -422,25 +425,25 @@ describe('tutorial', () => {
     describe('Order By', () => {
       query({
         name: 'tagged template',
-        query: sq.from`book`.order`title asc nulls last`,
+        query: sq.from`book`.orderBy`title asc nulls last`,
         text: 'select * from book order by title asc nulls last',
         args: []
       })
       query({
         name: 'multiple calls',
-        query: sq.from`book`.order`title`.order`year`,
+        query: sq.from`book`.orderBy`title`.orderBy`year`,
         text: 'select * from book order by title, year',
         args: []
       })
       query({
         name: 'expressions',
-        query: sq.from`book`.order('title', sq.txt`sales / ${1000}`),
+        query: sq.from`book`.orderBy('title', sq.txt`sales / ${1000}`),
         text: 'select * from book order by title, sales / $1',
         args: [1000]
       })
       query({
         name: 'object - by',
-        query: sq.from`book`.order(
+        query: sq.from`book`.orderBy(
           { by: 'title' },
           { by: sq.txt`sales / ${1000}` }
         ),
@@ -449,19 +452,19 @@ describe('tutorial', () => {
       })
       query({
         name: 'object - sort',
-        query: sq.from`book`.order({ by: 'title', sort: 'desc' }),
+        query: sq.from`book`.orderBy({ by: 'title', sort: 'desc' }),
         text: 'select * from book order by title desc',
         args: []
       })
       query({
         name: 'object - using',
-        query: sq.from`person`.order({ by: 'first_name', using: '~<~' }),
+        query: sq.from`person`.orderBy({ by: 'first_name', using: '~<~' }),
         text: 'select * from person order by first_name using ~<~',
         args: []
       })
       query({
         name: 'object - nulls',
-        query: sq.from`book`.order({ by: 'title', nulls: 'last' }),
+        query: sq.from`book`.orderBy({ by: 'title', nulls: 'last' }),
         text: 'select * from book order by title nulls last',
         args: []
       })
