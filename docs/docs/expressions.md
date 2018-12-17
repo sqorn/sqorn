@@ -105,6 +105,41 @@ e(sq.txt`2`), sq.return`3`).query
   args: [] }
 ```
 
+`undefined` arguments are invalid.
+
+```js
+e.arg(undefined).query // throws error
+```
+
+Use `null` instead.
+
+```js
+e.arg(null).query
+
+{ text: '$1',
+  args: [null] }
+```
+
+`.unparameterized` generates an unparameterized string. **To avoid SQL injection, do not use this method.**
+
+```js
+e.eq`genre`('fantasy').unparameterized
+
+"genre = 'fantasy'"
+```
+
+Build queries from expressions.
+
+```js
+sq.return(e.plus`n`(7))
+  .from({ n: e.unnest([2, 3, 4, 5]) })
+  .where(e`n`.mod(2).eq(0))
+  .query
+
+{ text: 'select n + $1 from unnest($2) n where ((n % $3) = $4)',
+  args: [7, [2, 3, 4, 5], 2, 0] }
+```
+
 ## Types
 
 SQL is strongly typed. Sqorn expressions are somewhat typed.
@@ -129,6 +164,8 @@ Boolean Expressions represent values true and false.
 
 They are useful for constructing *where*, *having* and *join* conditions.
 
+**Constructor:** [e.boolean](operations/#boolean)
+
 **Compatible Types:** `boolean`, `null`, `BooleanExpression`, `UnknownExpression`
 
 **Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Logical](#logical)
@@ -136,6 +173,8 @@ They are useful for constructing *where*, *having* and *join* conditions.
 ### Number
 
 Number Expressions represent numbers like `2`, `70.5`, and `-2749.234`.
+
+**Constructor:** [e.number](operations/#number)
 
 **Compatible Types:** `number`, `null`, `NumberExpression`, `UnknownExpression`
 
@@ -145,6 +184,8 @@ Number Expressions represent numbers like `2`, `70.5`, and `-2749.234`.
 
 String Expressions represent character sequences like `'kitty'`, `'Tuxedo cats are best'`, and `''`.
 
+**Constructor:** [e.string](operations/#string)
+
 **Compatible Types:** `string`, `null`, `StringExpression` and `UnknownExpression`
 
 **Supported Operations:** [Comparison](#comparison), [Membership](#membership), [String](#string)
@@ -152,6 +193,8 @@ String Expressions represent character sequences like `'kitty'`, `'Tuxedo cats a
 ### Unknown
 
 Unknown Expressions represent values of unknown type. They could be anything from `true`, `null`, and `'meow'`, to `(true, 24)`, `Array[3, 5, 7]`, and `'{ "hello": "world" }'`.
+
+**Constructor:** [e.unknown](operations/#unknown)
 
 **Compatible Types:** `any`
 
@@ -161,6 +204,8 @@ Unknown Expressions represent values of unknown type. They could be anything fro
 
 Array Expressions represent [Postgres Arrays](https://www.postgresql.org/docs/current/arrays.html).
 
+**Constructor:** [e.array](operations/#array)
+
 **Compatible Types:** `any[]`, `null`, `Array Expression`, `Unknown Expression` 
 
 **Supported Operations:** [Comparison](#comparison), [Membership](#membership), [Array](#array)
@@ -169,13 +214,17 @@ Array Expressions represent [Postgres Arrays](https://www.postgresql.org/docs/cu
 
 JSON Expressions represent JSON values.
 
-**Compatible Types:** `{}`, `null`, `JSONExpression`, `UnknownExpression`
+**Constructor:** [e.json](operations/#json)
+
+**Compatible Types:** `null` | `number` | `boolean` | `string` | `[]` |`{}`, `JSONExpression`, `UnknownExpression`
 
 **Supported Operations:** [Comparison](#comparison), [Membership](#membership), [JSON](#json)
 
 ### Row
 
 Row Expressions represent one or more values of any type.
+
+**Constructor:** [e.row](operations/#row)
 
 **Compatible Types:** `null`, `Row Expression`, `Unknown Expression`
 
@@ -184,6 +233,8 @@ Row Expressions represent one or more values of any type.
 ### Table
 
 Table Expressions represent a table.
+
+**Constructor:** [e.table](operations/#table)
 
 **Compatible Types:** `null`, `SQ`, `Table Expression`, `Unknown Expression`
 
