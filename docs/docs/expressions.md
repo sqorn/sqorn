@@ -4,13 +4,15 @@ title: Expressions
 sidebar_label: Expressions
 ---
 
-## Introduction
+**Reference** [Postgres](https://www.postgresql.org/docs/current/functions.html), [SQLite](https://www.sqlite.org/lang_expr.html), [MySQL](https://dev.mysql.com/doc/refman/en/functions.html), [T-SQL](https://docs.microsoft.com/en-us/sql/t-sql/language-elements/expressions-transact-sql), [Oracle](https://docs.oracle.com/cd/E11882_01/server.112/e41084/operators.htm)
 
-Builds complex expressions with Sqorn's Expression Builder.
+## Introduction
 
 Access the expression API at `sq.e`.
 
 Create expressions by applying [Operations](operations) like [`.add`](operations#add), [`.and`](operations#and), and [`.eq`](operations#equal) to values.
+
+SQL differentiates between operators and functions. Sqorn does not.
 
 ```js
 const { e } = sq
@@ -78,7 +80,7 @@ e.eq`lucky_number`(8).query
   args: [8] }
 ```
 
-A chained operation's first argument is the expression it is called on.
+A chained operation's first argument is the expression it is called on. There is no operator precedence. Expressions are evaluated left to right.
 
 ```js
 e(3).add(4).eq(7).and(true).query
@@ -99,7 +101,7 @@ e.arg(8, true)`meow`.query
 Build expressions from [Fragments](manual-queries.html#fragments) and [Subqueries](manual-queries.html#subqueries).
 
 ```js
-e(sq.txt`2`), sq.return`3`).query
+e(sq.txt`2`, sq.return`3`).query
 
 { text: '(2, (select 3))',
   args: [] }
@@ -160,6 +162,25 @@ There are limits to expression type safety:
 
 Sqorn's expression types are listed below:
 
+### Unknown
+
+Unknown Expressions represent values of unknown type. They could be anything from `true`, `null`, and `'meow'`, to `(true, 24)`, `Array[3, 5, 7]`, and `'{ "hello": "world" }'`.
+
+**Constructor:** [e.unknown](operations#unknown)
+
+**Compatible Types:** `any`
+
+**Supported Operations:** [Comparison](operations#comparison), [Logical](operations#logical), [Math](operations#math), [String](operations#string), [Array](operations#array), [Row](operations#row), [Table](operations#table)
+
+```js
+// Examples
+e(null)
+e`moo`
+e(sq.txt`moo`)
+e(e(null))
+e.unknown('moo')
+```
+
 ### Boolean
 
 Boolean Expressions represent values true and false.
@@ -175,6 +196,7 @@ They are useful for constructing *where*, *having* and *join* conditions.
 ```js
 // Examples
 e(true)
+e(e(false))
 e.boolean(null)
 e.and(true, false)
 e.eq(3, 6)
@@ -195,11 +217,12 @@ Number Expressions represent numbers like `2`, `70.5`, and `-2749.234`.
 ```js
 // Examples
 e(8)
+e(e(8))
 e.number(null)
 e.add(3, 4)
-e.subtract(9)(6)
-e.divide`moo``moo`
-e`moo`.multiply`moo`
+e.sub(9)(6)
+e.div`moo``moo`
+e`moo`.mul`moo`
 ```
 
 ### String
@@ -216,24 +239,8 @@ String Expressions represent character sequences like `'kitty'`, `'Tuxedo cats a
 // Examples
 e('moo')
 e.string(null)
+e(e('moo'))
 e.cat('moo', 'moo')
-```
-
-### Unknown
-
-Unknown Expressions represent values of unknown type. They could be anything from `true`, `null`, and `'meow'`, to `(true, 24)`, `Array[3, 5, 7]`, and `'{ "hello": "world" }'`.
-
-**Constructor:** [e.unknown](operations#unknown)
-
-**Compatible Types:** `any`
-
-**Supported Operations:** [Comparison](operations#comparison), [Logical](operations#logical), [Math](operations#math), [String](operations#string), [Array](operations#array), [Row](operations#row), [Table](operations#table)
-
-```js
-// Examples
-e(null)
-e.unknown('moo')
-e`moo`
 ```
 
 ### Array
@@ -251,6 +258,7 @@ Array Expressions represent [Postgres Arrays](https://www.postgresql.org/docs/cu
 e([3, 4, 5])
 e.array(null)
 e([true false])
+e(e([]))
 e(['moo', 'moo', 'moo'])
 e(['moo']).cat(['moo'])
 ```
@@ -268,6 +276,7 @@ JSON Expressions represent JSON values.
 ```js
 // Examples
 e({ a: 1 })
+e(e({}))
 e.json('moo')
 e.json(['moo', 'moo'])
 ```
@@ -286,6 +295,7 @@ Row Expressions represent one or more values of any type.
 // Examples
 e(1, true, 'moo')
 e(1)(true)('moo')
+e(e(1, 2))
 e.row('moo')
 e.row`moo`('moo')
 ```
@@ -305,4 +315,5 @@ Table Expressions represent a table.
 e(sq.from('book'))
 e.unnest([3, 5, 7, 9])
 e(sq.sql`select 'moo moo'`)
+e(e(sq.return`1`))
 ```

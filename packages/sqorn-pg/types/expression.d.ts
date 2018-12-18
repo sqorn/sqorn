@@ -1,3 +1,7 @@
+export interface ExpressionBuilder {
+  e: NewExpression
+}
+
 type TypeExpressionMap = {
   new: NewExpression
   unknown: UnknownExpression
@@ -597,34 +601,96 @@ interface NotInChain<T extends Types> {
 
 interface MathOperations<T extends NumberTypes> {
   add: T extends 'new' ? Add : AddChain
-  subtract: T extends 'new' ? Subtract : SubtractChain
-  multiply: T extends 'new' ? Multiply : MultiplyChain
-  divide: T extends 'new' ? Divide : DivideChain
+  sub: T extends 'new' ? Sub : SubChain
+  mul: T extends 'new' ? Mul : MulChain
+  div: T extends 'new' ? Div : DivChain
+  mod: T extends 'new' ? Mod : ModChain
+  exp: T extends 'new' ? Exp : ExpChain
+  sqrt: T extends 'new'? Sqrt : NumberExpression
+  cbrt: T extends 'new'? Cbrt : NumberExpression
+  fact: T extends 'new' ? Fact : NumberExpression
+  abs: T extends 'new'? Abs : NumberExpression
 }
 
 interface Add {
-  (strings: TemplateStringsArray, ...args: any[]): AddChain
-  (...args: NumberArgument[]): AddChain
+  (text: TemplateStringsArray, ...args: any[]): AddChain
+  (arg1: NumberArgument): AddChain
+  (arg1: NumberArgument, arg2: NumberArgument): NumberExpression
 }
-interface AddChain extends Add, NumberExpression {}
+interface AddChain {
+  (text: TemplateStringsArray, ...args: any[]): NumberExpression
+  (arg2: NumberArgument): NumberExpression
+}
 
-interface Subtract {
-  (strings: TemplateStringsArray, ...args: any[]): SubtractChain
-  (...args: NumberArgument[]): SubtractChain
+interface Sub {
+  (text: TemplateStringsArray, ...args: any[]): SubChain
+  (arg1: NumberArgument): SubChain
+  (arg1: NumberArgument, arg2: NumberArgument): NumberExpression
 }
-interface SubtractChain extends Subtract, NumberExpression {}
+interface SubChain {
+  (text: TemplateStringsArray, ...args: any[]): NumberExpression
+  (arg2: NumberArgument): NumberExpression
+}
 
-interface Multiply {
-  (strings: TemplateStringsArray, ...args: any[]): MultiplyChain
-  (...args: NumberArgument[]): MultiplyChain
+interface Mul {
+  (text: TemplateStringsArray, ...args: any[]): MulChain
+  (arg1: NumberArgument): MulChain
+  (arg1: NumberArgument, arg2: NumberArgument): NumberExpression
 }
-interface MultiplyChain extends Multiply, NumberExpression {}
+interface MulChain {
+  (text: TemplateStringsArray, ...args: any[]): NumberExpression
+  (arg2: NumberArgument): NumberExpression
+}
 
-interface Divide {
-  (strings: TemplateStringsArray, ...args: any[]): DivideChain
-  (...args: NumberArgument[]): DivideChain
+interface Div {
+  (text: TemplateStringsArray, ...args: any[]): DivChain
+  (arg1: NumberArgument): DivChain
+  (arg1: NumberArgument, arg2: NumberArgument): NumberExpression
 }
-interface DivideChain extends Divide, NumberExpression {}
+interface DivChain {
+  (text: TemplateStringsArray, ...args: any[]): NumberExpression
+  (arg2: NumberArgument): NumberExpression
+}
+
+interface Mod {
+  (text: TemplateStringsArray, ...args: any[]): ModChain
+  (arg1: NumberArgument): ModChain
+  (arg1: NumberArgument, arg2: NumberArgument): NumberExpression
+}
+interface ModChain {
+  (text: TemplateStringsArray, ...args: any[]): NumberExpression
+  (arg2: NumberArgument): NumberExpression
+}
+
+interface Exp {
+  (text: TemplateStringsArray, ...args: any[]): ExpChain
+  (arg1: NumberArgument): ExpChain
+  (arg1: NumberArgument, arg2: NumberArgument): NumberExpression
+}
+interface ExpChain {
+  (text: TemplateStringsArray, ...args: any[]): NumberExpression
+  (arg2: NumberArgument): NumberExpression
+}
+
+interface Sqrt {
+  (text: TemplateStringsArray, ...args: any[]): NumberExpression
+  (arg1: NumberArgument): NumberExpression
+}
+
+interface Cbrt {
+  (text: TemplateStringsArray, ...args: any[]): NumberExpression
+  (arg1: NumberArgument): NumberExpression
+}
+
+interface Fact {
+  (text: TemplateStringsArray, ...args: any[]): NumberExpression
+  (arg1: NumberArgument): NumberExpression
+}
+
+interface Abs {
+  (text: TemplateStringsArray, ...args: any[]): NumberExpression
+  (arg1: NumberArgument): NumberExpression
+}
 
 //
 // String Operations

@@ -69,7 +69,7 @@ const methods = {
       ctx.distinct = []
     }
   },
-  group: {
+  groupBy: {
     updateContext: (ctx, args) => {
       ctx.grp.push(args)
     }
@@ -110,7 +110,7 @@ const methods = {
       ctx.setop.push({ type: 'except all', args })
     }
   },
-  order: {
+  orderBy: {
     updateContext: (ctx, args) => {
       ctx.ord.push(args)
     }

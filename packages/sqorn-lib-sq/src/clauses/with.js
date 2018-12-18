@@ -19,7 +19,6 @@ const buildArg = (ctx, arg) => {
 
 const buildProperty = (ctx, key, value) => {
   if (typeof value === 'function') {
-    console.log('ctx.mapKey', ctx.mapKey)
     return `${ctx.mapKey(key)} as ${ctx.build(value)}`
   }
   if (Array.isArray(value)) {

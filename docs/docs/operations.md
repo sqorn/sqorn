@@ -4,13 +4,15 @@ title: Operations
 sidebar_label: Operations
 ---
 
+**Reference** [Postgres](https://www.postgresql.org/docs/current/functions.html), [SQLite](https://www.sqlite.org/lang_expr.html), [MySQL](https://dev.mysql.com/doc/refman/en/functions.html), [T-SQL](https://docs.microsoft.com/en-us/sql/t-sql/language-elements/expressions-transact-sql), [Oracle](https://docs.oracle.com/cd/E11882_01/server.112/e41084/operators.htm)
+
 ## Overview
 
 * **Value** [`arg`](#arg), [`unknown`](#unknown), [`boolean`](#boolean), [`number`](#number), [`string`](#string), [`array`](#array), [`json`](#json), [`row`](#row), [`table`](#table)
 * **Logical** [`and`](#and), [`or`](#or), [`not`](#not)
 * **Comparison** [`eq`](#equal), [`neq`](#not-equal), [`lt`](#less-than), [`gt`](#greater-than), [`lte`](#less-than-or-equal), [`gte`](#greater-than-or-equal), [`between`](#between) [`notBetween`](#not-between), [`isDistinctFrom`](#is-distinct-from), [`isNotDistinctFrom`](#is-not-distinct-from), [`isNull`](#is-null), [`isNotNull`](#is-not-null), [`isTrue`](#is-true), [`isNotTrue`](#is-not-true), [`isFalse`](#is-false), [`isNotFalse`](#is-not-false), [`isUnknown`](#is-unknown), [`isNotUnknown`](#is-not-unknown), [`in`](#in), [`notIn`](#not-in)
-* **Quantified Comparison** [`eqAny`](#any), [`neqAny`](#any), [`ltAny`](#any), [`gtAny`](#any), [`lteAny`](#any), [`gteAny`](#any), [`likeAny`](#any), [`notLikeAny`](#any), [`eqAll`](#all), [`neqAll`](#all), [`ltAll`](#all), [`gtAll`](#all), [`lteAll`](#all), [`gteAll`](#all), [`likeAll`](#all), [`notLikeAll`](#all)
-* **Math** [`add`](#add), [`subtract`](#subtract), [`multiply`](#multiply), [`divide`](#divide)
+* **Quantified Comparison** [`eqAny`](#equal-any), [`eqAll`](#equal-all), [`neqAny`](#equal-any), [`neqAll`](#not-equal-all), [`ltAny`](#less-than-any), [`ltAll`](#less-than-all), [`gtAny`](#greater-than-any), [`gtAll`](#greater-than-all), [`lteAny`](#less-than-or-equal-any), [`lteAll`](#less-than-or-equal-all), [`gteAny`](#greater-than-or-equal-any), [`gteAll`](#greater-than-or-equal-all), [`likeAny`](#like-any), [`likeAll`](#like-all), [`notLikeAny`](#not-like-any), [`notLikeAll`](#not-like-all)
+* **Math** [`add`](#-add), [`sub`](#subtract), [`mul`](#multiply), [`div`](#divide), [`mod`](#modulo), [`exp`](#exponent), [`sqrt`](#square-root), [`cbrt`](#cube-root), [`fact`](#factorial)
 * **String** [`cat`](#concatenation), [`like`](#like), [`notLike`](#not-like), [`similarTo`](#similar-to), [`notSimilarTo`](#not-similar-to), [`lower`](#lower), [`upper`](#upper)
 * **Date and Time** [`age`](#age), [`now`](#now), [`extract`](#extract)
 * **Range**
@@ -21,9 +23,6 @@ sidebar_label: Operations
 * **Binary** [`and`](#and-1), [`or`](#or-1), [`xor`](#xor-1), [`not`](#not-1), [`shiftLeft`](#shift-left), [`shiftRight`](#shift-right)
 * **Table** [`union`](#union), [`except`](#except), [`except-all`](#except-all) [`unionAll`](#union-all), [`intersect`](#intersect), [`intersectAll`](#intersect-all), 
 
-
-To interpret these type signatures, read [Understanding Expression Types](#understanding-expression-types).
-
 ## Value
 
 ### Arg
@@ -33,10 +32,10 @@ To interpret these type signatures, read [Understanding Expression Types](#under
 
 `.arg` builds an expression from its argument.
 
-```ja
+```js
 e.arg(23).query
 
-{ text: $1,
+{ text: '$1',
   args: [23] }
 ```
 
@@ -1247,35 +1246,35 @@ e.notLikeAll('cat', sq.sql`select 'cat' union (select 'dog')`).query
 
 ### Subtract
 
-* `subtract: number => number => number`
+* `sub: number => number => number`
 
 ### Multiply
 
-* `multiply: number => number => number`
+* `mul: number => number => number`
 
 ### Divide
 
-* `divide: number => number => number`
+* `div: number => number => number`
 
 ### Modulo
 
-TODO
+* `mod: number => number => number`
 
 ### Exponent
 
-TODO
+* `exp: number => number => number`
 
 ### Square Root
 
-TODO
+* `sqrt: number => number`
 
 ### Cube Root
 
-TODO
+* `cbrt: number => number`
 
 ### Factorial
 
-TODO
+* `fact: number => number`
 
 ## String
 

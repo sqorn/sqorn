@@ -1,5 +1,4 @@
-const { sq, query } = require('../tape')
-const { e } = sq
+const { e, query } = require('../tape')
 
 describe('expression', () => {
   describe('value', () => {

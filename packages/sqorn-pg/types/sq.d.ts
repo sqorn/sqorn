@@ -1,7 +1,8 @@
 import * as M from './methods'
+import { ExpressionBuilder } from './expression'
 
 export interface SQ
-  extends Select, Update, Delete, Insert, Values, Manual, Helper, Execute, All {}
+  extends Select, Update, Delete, Insert, Values, Manual, Helper, Execute, All, ExpressionBuilder {}
 
 export interface SQF extends SQ, M.ExpressFrom {}
 export interface SQW extends SQ, M.ExpressWhere {}

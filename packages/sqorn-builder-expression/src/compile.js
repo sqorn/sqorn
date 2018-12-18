@@ -7,7 +7,8 @@ const createExpressionCompiler = expressionTable => {
     const text = callsCompiler(ctx, calls)
     return {
       text,
-      args: ctx.params
+      args: ctx.params,
+      type: 'expression'
     }
   }
 }

@@ -4,7 +4,7 @@ title: About
 sidebar_label: About
 ---
 
-Sqorn is a Javascript library *engineered* for building SQL queries. Its API is fluent, declarative, intuitive and flexibile. Sqorn queries are immutable values, letting you construct complex queries by composing simple parts. Sqorn compiles queries [10x faster](/benchmarks.html) than Knex and [200x faster](/benchmarks.html) than Squel. Sqorn generates parameterized queries safe from SQL injection. Securely integrate raw SQL using Sqorn's [tagged template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates).
+Sqorn is a Javascript library *engineered* for building SQL queries. Its SQL-based API is fluent, declarative, intuitive and flexibile. Sqorn queries are immutable values, letting you construct complex queries by composing simple parts. Sqorn compiles queries [10x faster](/benchmarks.html) than Knex and [200x faster](/benchmarks.html) than Squel. Sqorn generates parameterized queries safe from SQL injection. Securely integrate raw SQL using Sqorn's [tagged template literals](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_templates).
 
 Sqorn has Typescript definitions but limited type-safety. You do not define models and relationships. You just write queries. It is your responsibility to ensure the queries are valid.
 
@@ -28,7 +28,7 @@ sq.return({ authorId: 'a.id', name: 'a.last_name' })
 
 ## Manual Query Builder
 
-For maximum flexibility, build queries [manually](manual-queries) using tagged template literals.
+Build queries [manually](manual-queries) using tagged template literals for maximum flexibility.
 
 ```js
 sq.sql`select a.author_id, json_agg(b.*)`

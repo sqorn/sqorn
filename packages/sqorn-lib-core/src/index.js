@@ -32,14 +32,16 @@ const createSqorn = ({ dialect, adapter }) => (config = {}) => {
   return sq
 }
 
-function build(arg) {
+function build(arg, paren) {
   if (arg === undefined) throw Error('Error: undefined argument')
   if (typeof arg === 'function') {
     if (arg._build) {
       const { type, text } = arg._build(this)
-      return type === 'fragment' ? text : `(${text})`
+      if (type === 'expression') return text
+      if (type === 'fragment') return text
+      return `(${text})`
     }
-    return `(${arg(this)})`
+    return arg(this)
   }
   return this.parameter(arg)
 }
