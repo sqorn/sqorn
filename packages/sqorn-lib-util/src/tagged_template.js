@@ -2,21 +2,11 @@
 const isTaggedTemplate = ([strings]) => Array.isArray(strings) && strings.raw
 
 const buildTaggedTemplate = (ctx, [strings, ...args]) => {
-  let i = 0
-  let txt = ''
-  for (; i < args.length; ++i) {
-    const arg = args[i]
-    const prevString = strings[i]
-    const lastCharIndex = prevString.length - 1
-    if (prevString[lastCharIndex] === '$') {
-      // raw arg
-      txt += prevString.substr(0, lastCharIndex) + args[i]
-    } else {
-      // parameterized arg
-      txt += prevString + ctx.build(arg)
-    }
+  let txt = strings[0]
+  for (let i = 0; i < args.length; ++i) {
+    txt += ctx.build(args[i]) + strings[i + 1]
   }
-  return txt + strings[i]
+  return txt
 }
 
 module.exports = {

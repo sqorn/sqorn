@@ -1,4 +1,4 @@
-const { sq, query } = require('../tape')
+const { sq, e, query } = require('../tape')
 
 describe('tutorial', () => {
   describe('Manual Queries', () => {
@@ -38,8 +38,8 @@ describe('tutorial', () => {
     })
     describe('Raw', () => {
       query({
-        name: '.sql`$${arg}`',
-        query: sq.sql`select * from $${'test_table'}`,
+        name: '.sql`${sq.raw(arg)}`',
+        query: sq.sql`select * from ${sq.raw('test_table')}`,
         text: 'select * from test_table'
       })
       query({
@@ -154,13 +154,13 @@ describe('tutorial', () => {
       query({
         name: '.where(sq.txt``)',
         query: sq.from`book`.where(sq.txt`genre = ${'Fantasy'}`),
-        text: 'select * from book where (genre = $1)',
+        text: 'select * from book where genre = $1',
         args: ['Fantasy']
       })
       query({
         name: '.where({})',
         query: sq.from`book`.where({ genre: 'Fantasy', year: 2000 }),
-        text: 'select * from book where (genre = $1 and year = $2)',
+        text: 'select * from book where (genre = $1) and (year = $2)',
         args: ['Fantasy', 2000]
       })
       query({
@@ -177,18 +177,21 @@ describe('tutorial', () => {
         text: 'select * from book, author where (book.id = author.id)',
         args: []
       })
-      const condMinYear = sq.txt`year >= ${20}`
-      const condMaxYear = sq.txt`year < ${30}`
+      const condMinYear = sq.txt`(year >= ${20})`
+      const condMaxYear = sq.txt`(year < ${30})`
       query({
-        name: '.where({ Builder })',
-        query: sq.from`person`.where({ condMinYear, condMaxYear }),
-        text: 'select * from person where (year >= $1 and year < $2)',
+        name: '.where(sq.txt, sq.txt)',
+        query: sq.from`person`.where(condMinYear, condMaxYear),
+        text: 'select * from person where (year >= $1) and (year < $2)',
         args: [20, 30]
       })
       query({
         name: '.where({}).where({})',
-        query: sq.from`person`.where({ name: 'Rob' }, sq.txt`name = ${'Bob'}`),
-        text: 'select * from person where (name = $1 or name = $2)',
+        query: sq.from`person`.where(
+          { name: 'Rob' },
+          sq.txt`(name = ${'Bob'})`
+        ),
+        text: 'select * from person where (name = $1) and (name = $2)',
         args: ['Rob', 'Bob']
       })
     })
@@ -415,10 +418,10 @@ describe('tutorial', () => {
       query({
         name: 'chain .on and .or',
         query: sq.from`person`.groupBy`age`
-          .having({ age: 18, c: sq.txt`age < ${19}` })
-          .or({ age: 20 }).and`count(*) > 10`,
+          .having({ age: 18 }, sq.txt`age < ${19}`)
+          .having({ age: 20 }).having`count(*) > 10`,
         text:
-          'select * from person group by age having (age = $1 and age < $2) or (age = $3) and (count(*) > 10)',
+          'select * from person group by age having (age = $1) and age < $2 and (age = $3) and (count(*) > 10)',
         args: [18, 19, 20]
       })
     })
@@ -553,19 +556,9 @@ describe('tutorial', () => {
         query: sq
           .from({ b: 'book' })
           .join({ a: 'author' })
-          .on({ 'b.author_id': sq.raw('a.id') })
-          .on({ 'b.genre': 'Fantasy' }),
+          .on({ 'b.author_id': e`a.id` }, { 'b.genre': 'Fantasy' }),
         text:
           'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1)',
-        args: ['Fantasy']
-      })
-      query({
-        name: '.and / .or',
-        query: sq.from({ b: 'book' }).join({ a: 'author' })
-          .on`$${'b.author_id'} = $${'a.id'}`.and({ 'b.genre': 'Fantasy' })
-          .or`b.special = true`,
-        text:
-          'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1) or (b.special = true)',
         args: ['Fantasy']
       })
       query({

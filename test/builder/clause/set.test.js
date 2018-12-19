@@ -16,12 +16,12 @@ describe('set', () => {
   describe('template string args', () => {
     query({
       name: '1 raw arg',
-      query: sq.set`$${'age'} = 7`,
+      query: sq.set`${sq.raw('age')} = 7`,
       text: 'set age = 7'
     })
     query({
       name: '2 raw args',
-      query: sq.set`$${'age'} = 7, $${'name'} = 'Jo'`,
+      query: sq.set`${sq.raw('age')} = 7, ${sq.raw('name')} = 'Jo'`,
       text: `set age = 7, name = 'Jo'`
     })
     query({
@@ -38,7 +38,7 @@ describe('set', () => {
     })
     query({
       name: 'multiple raw and parameterized args',
-      query: sq.set`$${'age'} = ${7}, $${'name'} = ${'Jo'}`,
+      query: sq.set`${sq.raw('age')} = ${7}, ${sq.raw('name')} = ${'Jo'}`,
       text: `set age = $1, name = $2`,
       args: [7, 'Jo']
     })

@@ -29,7 +29,6 @@ const query = (...clauses) => ctx => {
   return { text, args: ctx.params, type: ctx.userType || ctx.type }
 }
 
-const sqlQuery = query(sql)
 const queries = {
   select: query(
     wth,
@@ -46,8 +45,7 @@ const queries = {
   update: query(wth, update, set, where, returning),
   delete: query(wth, del, where, returning),
   insert: query(wth, insert, returning),
-  manual: sqlQuery,
-  arg: sqlQuery
+  manual: query(sql)
 }
 
 module.exports = { query, queries }

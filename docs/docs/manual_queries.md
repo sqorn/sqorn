@@ -6,7 +6,7 @@ sidebar_label: Manual
 
 ## Overview
 
-* **Build** [`.sql`](#queries), [`.raw`](#raw-arguments), [`.txt`](#fragments), [`.extend`](#extend), [`.link`](#link)
+* **Build** [`.sql`](#queries), [`.raw`](#raw-strings), [`.txt`](#fragments), [`.extend`](#extend), [`.link`](#link)
 * **Compile** [`.query`](#queries), [`.unparameterized`](#queries).
 
 ## Queries
@@ -78,18 +78,9 @@ person.query // { text: 'select * from person', args: [] }
 book.query // { text: 'select * from book', args: [] }
 ```
 
-## Raw Arguments
+## Raw Strings
 
-Prefix arguments with `$` to prevent parameterization. **To prevent SQL injection, do not use raw arguments.**
-
-```js
-sq.sql`select * from $${'test_table'} where id = ${7}`.query
-
-{ text: 'select * from test_table where id = $1',
-  args: [7] }
-```
-
-Alternatively, wrap arguments in calls to `.raw`. **To prevent SQL injection, do not use raw arguments.**
+Wrapping a string in a call to `.raw` prevents parameterization. **To prevent SQL injection, never source strings from user input.**
 
 ```js
 sq.sql`select * from ${sq.raw('test_table')} where id = ${7}`.query

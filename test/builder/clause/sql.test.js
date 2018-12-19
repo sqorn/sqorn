@@ -26,12 +26,12 @@ describe('sql', () => {
   describe('template string args', () => {
     query({
       name: '1 raw arg',
-      query: sq.sql`select * from $${'book'}`,
+      query: sq.sql`select * from ${sq.raw('book')}`,
       text: 'select * from book'
     })
     query({
       name: '2 raw args',
-      query: sq.sql`select $${'title'} from $${'book'}`,
+      query: sq.sql`select ${sq.raw('title')} from ${sq.raw('book')}`,
       text: 'select title from book'
     })
     query({
@@ -48,7 +48,9 @@ describe('sql', () => {
     })
     query({
       name: 'multiple raw and parameterized args',
-      query: sq.sql`select year, $${'title'} from $${'book'} where year < ${1980}`,
+      query: sq.sql`select year, ${sq.raw('title')} from ${sq.raw(
+        'book'
+      )} where year < ${1980}`,
       text: 'select year, title from book where year < $1',
       args: [1980]
     })

@@ -243,7 +243,7 @@ sq.from`test`.where({ moo: sq.sql`select true` }).query
   args: [] }
 ```
 
-Values can be [Raw Arguments](manual-queries#raw-arguments).
+Values can be [Raw Arguments](manual-queries#raw-strings).
 
 ```js
 sq.from('book', 'author').where({ 'book.id': sq.raw('author.id') }).query

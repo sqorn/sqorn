@@ -168,8 +168,8 @@ describe('query - tagged template sql arg', () => {
 
 describe('query - tagged template $raw arg', () => {
   query({
-    name: 'select - .from`$${string}`',
-    query: sq.from`$${'person'}`,
+    name: 'select - .from`${sq.raw(string)}`',
+    query: sq.from`${sq.raw('person')}`,
     text: 'select * from person',
     args: []
   })

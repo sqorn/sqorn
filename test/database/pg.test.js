@@ -14,8 +14,8 @@ describe('pg', async () => {
   beforeAll(async () => {
     const pool = new pg.Pool(adminConnection)
     const sq = sqorn({ pg, pool })
-    await sq.sql`drop database if exists $${db_name}`
-    await sq.sql`create database $${db_name}`
+    await sq.sql`drop database if exists ${sq.raw(db_name)}`
+    await sq.sql`create database ${sq.raw(db_name)}`
     await sq.end()
   })
   const pool = new pg.Pool(connection)

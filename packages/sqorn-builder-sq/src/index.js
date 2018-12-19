@@ -1,7 +1,7 @@
 const { camelCase, memoize } = require('@sqorn/lib-util')
 const createNewContext = require('./context')
-
 const createQueryBuilder = ({ defaultContext, query, adapter, e, config }) => {
+  const { escape } = defaultContext
   const { queries, methods, properties } = query
   const newContext = createNewContext(defaultContext)
   const client = adapter(config)
@@ -19,7 +19,14 @@ const createQueryBuilder = ({ defaultContext, query, adapter, e, config }) => {
     ...methodProperties({ methods, chain }),
     ...properties,
     ...(client && client.properties),
-    e: { value: e }
+    e: {
+      value: e
+    },
+    raw: {
+      value: function(arg) {
+        return escape(arg)
+      }
+    }
   })
   return chain()
 }

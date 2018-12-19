@@ -12,8 +12,8 @@ const appConnection = {
 const createTestDatabase = async () => {
   // create test database
   let sq = sqorn({ pg, pool: new pg.Pool(adminConnection) })
-  await sq.sql`drop database if exists $${db_name}`
-  await sq.sql`create database $${db_name}`
+  await sq.sql`drop database if exists ${sq.raw(db_name)}`
+  await sq.sql`create database ${sq.raw(db_name)}`
   await sq.end()
   // populate test database
   sq = sqorn({ pg, pool: new pg.Pool(appConnection) })
@@ -85,7 +85,7 @@ describe('Config', async () => {
         ).toEqual(`with a_b as (select cD), e_f as (select g_h)
 select $1 as w_x, $2 as y_z
 from kL as i_j3, (values ($3, $4)) as m_n(o_p, q_r)
-where (s_t = $5 and u_v = $6)`)
+where (s_t = $5) and (u_v = $6)`)
       } finally {
         await sq.end()
       }
@@ -120,7 +120,7 @@ where (s_t = $5 and u_v = $6)`)
         ).toEqual(`with aB as (select cD), e_f as (select g_h)
 select $1 as wX, $2 as y_z
 from kL as iJ3, (values ($3, $4)) as mN(oP, q_r)
-where (sT = $5 and u_v = $6)`)
+where (sT = $5) and (u_v = $6)`)
       } finally {
         await sq.end()
       }
@@ -142,7 +142,7 @@ where (sT = $5 and u_v = $6)`)
         ).toEqual(`with AB as (select cD), E_F as (select g_h)
 select $1 as WX, $2 as Y_Z
 from kL as IJ3, (values ($3, $4)) as MN(OP, Q_R)
-where (ST = $5 and U_V = $6)`)
+where (ST = $5) and (U_V = $6)`)
       } finally {
         await sq.end()
       }

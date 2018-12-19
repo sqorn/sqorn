@@ -1,4 +1,4 @@
-const { sq, query } = require('../tape')
+const { sq, e, query } = require('../tape')
 
 describe('Having', () => {
   query({
@@ -15,10 +15,11 @@ describe('Having', () => {
     name: 'object args',
     query: sq.from`book`.groupBy`age`.having(
       { age: 7 },
-      { age: 9, c: sq.txt`age < ${10}` }
+      { age: 9 },
+      sq.txt`(age < ${10})`
     ),
     text:
-      'select * from book group by age having (age = $1 or age = $2 and age < $3)',
+      'select * from book group by age having (age = $1) and (age = $2) and (age < $3)',
     args: [7, 9, 10]
   })
   query({
@@ -28,15 +29,9 @@ describe('Having', () => {
     args: [7, 9]
   })
   query({
-    name: '.and/.or',
-    query: sq.from`book`.groupBy`age`.having`age > 7`.and`age < 9`.or`age = 23`,
-    text:
-      'select * from book group by age having (age > 7) and (age < 9) or (age = 23)'
-  })
-  query({
-    name: '.and/.or',
-    query: sq.from`book`.groupBy`age`.having`age > 7`.and`age < 9`.or`age = 23`,
-    text:
-      'select * from book group by age having (age > 7) and (age < 9) or (age = 23)'
+    name: '.multip',
+    query: sq.from`book`.groupBy`age`.having(e`age`.gt(7).or(e`age`.lt(9))),
+    text: 'select * from book group by age having ((age > $1) or (age < $2))',
+    args: [7, 9]
   })
 })

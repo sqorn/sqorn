@@ -12,9 +12,9 @@ async function main() {
   let pool = new pg.Pool(adminConnection)
   let sq = sqorn({ pg, pool })
   // delete app database if it exists
-  await sq.sql`drop database if exists $${appDatabase}`
+  await sq.sql`drop database if exists ${sq.raw(appDatabase)}`
   // create app database
-  await sq.sql`create database $${appDatabase}`
+  await sq.sql`create database ${sq.raw(appDatabase)}`
   // disconnect from admin database
   await sq.end()
   // connect to created database

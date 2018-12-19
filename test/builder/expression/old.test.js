@@ -43,19 +43,19 @@ describe('expression', () => {
     query({
       name: 'eq',
       query: e.eq('jo', 'bob'),
-      text: '$1 = $2',
+      text: '($1 = $2)',
       args: ['jo', 'bob']
     })
     query({
       name: 'neq',
       query: e.neq('jo', 'bob'),
-      text: '$1 <> $2',
+      text: '($1 <> $2)',
       args: ['jo', 'bob']
     })
     query({
       name: 'lt',
       query: e.lt('jo', 'bob'),
-      text: '$1 < $2',
+      text: '($1 < $2)',
       args: ['jo', 'bob']
     })
   })

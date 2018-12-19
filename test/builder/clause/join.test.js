@@ -1,4 +1,4 @@
-const { sq, query } = require('../tape')
+const { sq, e, query } = require('../tape')
 
 describe('join', () => {
   describe('join types', () => {
@@ -77,13 +77,20 @@ describe('join', () => {
       text: 'select * from book join author on (book.author_id = author.id)'
     })
     query({
+      name: 'on expression',
+      query: sq.from`book`.join`author`.on(e`book.author_id`.eq`author.id`),
+      text: 'select * from book join author on (book.author_id = author.id)'
+    })
+    query({
       name: 'on object',
-      query: sq.from`book`.join`author`.on({
-        join: sq.txt`book.author_id = author.id`,
-        'book.genre': 'Fantasy'
-      }),
+      query: sq.from`book`.join`author`.on(
+        sq.txt`(book.author_id = author.id)`,
+        {
+          'book.genre': 'Fantasy'
+        }
+      ),
       text:
-        'select * from book join author on (book.author_id = author.id and book.genre = $1)',
+        'select * from book join author on (book.author_id = author.id) and (book.genre = $1)',
       args: ['Fantasy']
     })
     query({
@@ -100,11 +107,6 @@ describe('join', () => {
         .on`b.id = c.id`,
       text:
         'select * from a join b on (a.id = b.id) join c on (a.id = c.id) and (b.id = c.id)'
-    })
-    query({
-      name: '.and/.or',
-      query: sq.from`a`.join`b`.on`a.id = b.id`.and`true`.or`false`,
-      text: 'select * from a join b on (a.id = b.id) and (true) or (false)'
     })
   })
   describe('join using', () => {

@@ -2,7 +2,7 @@ const { sq } = require('../tape')
 
 describe('unparameterized', () => {
   test('undefined', () => {
-    expect(sq.txt`${undefined}`.unparameterized).toThrow()
+    expect(() => sq.txt`${undefined}`.unparameterized).toThrowError()
   })
   test('null', () => {
     expect(sq.txt`${null}`.unparameterized).toBe('null')

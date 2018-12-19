@@ -1,4 +1,4 @@
-const { sq, query } = require('../tape')
+const { sq, e, query } = require('../tape')
 
 describe('from', () => {
   describe('template string', () => {
@@ -26,12 +26,12 @@ describe('from', () => {
   describe('template string args', () => {
     query({
       name: '1 raw arg',
-      query: sq.from`$${'book'}`,
+      query: sq.from`${sq.raw('book')}`,
       text: 'select * from book'
     })
     query({
       name: '2 raw args',
-      query: sq.from`$${'book'}, $${'author'}`,
+      query: sq.from`${sq.raw('book')}, ${sq.raw('author')}`,
       text: 'select * from book, author'
     })
     query({
@@ -51,10 +51,10 @@ describe('from', () => {
     })
     query({
       name: 'multiple raw and parameterized args',
-      query: sq.from`unnest(${[1, 2]}::integer[]) $${'a'}, unnest(${[
+      query: sq.from`unnest(${[1, 2]}::integer[]) ${sq.raw('a')}, unnest(${[
         3,
         4
-      ]}::integer[]) $${'b'}`,
+      ]}::integer[]) b`,
       text: 'select * from unnest($1::integer[]) a, unnest($2::integer[]) b',
       args: [[1, 2], [3, 4]]
     })
@@ -237,11 +237,12 @@ describe('from', () => {
     })
     query({
       name: 'update, set, from, where',
-      query: sq.from`book`.from`author`.set({ available: false }).where({
-        join: sq.sql`book.author_id = author.id`,
-        'author.contract': 'terminated'
-      }),
-      text: `update book set available = $1 from author where (book.author_id = author.id and author.contract = $2)`,
+      query: sq.from`book`.from`author`
+        .set({ available: false })
+        .where(e`book.author_id`.eq`author.id`, {
+          'author.contract': 'terminated'
+        }),
+      text: `update book set available = $1 from author where (book.author_id = author.id) and (author.contract = $2)`,
       args: [false, 'terminated']
     })
   })

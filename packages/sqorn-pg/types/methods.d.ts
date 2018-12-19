@@ -183,7 +183,7 @@ sq.from`book`.from`author`
 sq.from`book join comment`
 // select * from book join comment
 
-sq.from`$${'book'}`
+sq.from`${sq.raw('book')}`
 // select * from book
 ```
    */
@@ -278,7 +278,7 @@ sq`book`.from`author`
 sq`book join comment`
 // select * from book join comment
 
-sq`$${'book'}`
+sq`${sq.raw('book')}`
 // select * from book
 ```
    */
@@ -1082,7 +1082,7 @@ sq.from({ b: 'book' }).join({ a: 'author'})
   .on({ 'b.author_id': sq.raw('a.id') }).on({ 'b.genre': 'Fantasy' })
 // select * from book as b join author as a on (b.author_id = a.id) and (b.genre = 'Fantasy')
 
-sq.from({ b: 'book' }).join({ a: 'author'}).on`$${'b.author_id'} = $${'a.id'}`
+sq.from({ b: 'book' }).join({ a: 'author'}).on`${sq.raw('b.author_id')} = ${sq.raw('a.id')}`
   .and({ 'b.genre': 'Fantasy' }).or({ 'b.special': true })
 // select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1) or (b.special = true)
 
@@ -1252,7 +1252,7 @@ sq.from({ b: 'book' }).join({ a: 'author'})
   .on({ 'b.author_id': sq.raw('a.id') }).on({ 'b.genre': 'Fantasy' })
 // select * from book as b join author as a on (b.author_id = a.id) and (b.genre = 'Fantasy')
 
-sq.from({ b: 'book' }).join({ a: 'author'}).on`$${'b.author_id'} = $${'a.id'}`
+sq.from({ b: 'book' }).join({ a: 'author'}).on`${sq.raw('b.author_id')} = ${sq.raw('a.id')}`
   .and({ 'b.genre': 'Fantasy' }).or({ 'b.special': true })
 // select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1) or (b.special = true)
 ```
@@ -1677,7 +1677,7 @@ sq.sql`select * from book`
 sq.sql`select * from person`.sql`where age = ${8}`.sql`or name = ${'Jo'}`
 // select * from person where age = $1 or name = $2
 
-sq.sql`select * $${'person'}`
+sq.sql`select * ${sq.raw('person')}`
 // select * from person
 
 sq`person`.where({ min: sq.txt`age < 7` })
@@ -1716,7 +1716,6 @@ sq.return({ safe: sq.txt('Jo'), dangerous: 'Mo' })
    *
    * @example
 ```js
-```
    */
   txt(strings: TemplateStringsArray, ...args: any[]): this
 
@@ -1737,22 +1736,20 @@ sq.return({ safe: sq.txt('Jo'), dangerous: 'Mo' })
 
 export interface Raw {
   /**
-   * Appends a raw, unparameterized argument
+   * Creates a string that is not parameterized when embedded.
    *
-   * Multiple calls to `.raw` are joined with spaces.
-   *
-   * Alternatively prefix an argument with `$` in a call to `.sql`.
+   * Alternatively prefix an argument with `$` in a tagged template literal.
    *
    * @example
 ```js
 sq.sql`select * from`.raw('test_table').sql`where id = ${7}`
 // select * from test_table where id = $1
 
-sq.sql`select * from $${'test_table'} where id = ${7}`
+sq.sql`select * from ${sq.raw('test_table')} where id = ${7}`
 // select * from test_table where id = $1
 ```
    */
-  raw(arg: any): this
+  raw(arg: string): Buildable
 }
 
 export interface Link {

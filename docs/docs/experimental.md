@@ -278,7 +278,7 @@ const getTopPosts = ({ time, topic, user, max = 25 }) => {
     frm`post`,
     user && whr({ user }),
     topic && whr({ topic }),
-    range && whr`create_time >= now() - $${timeRange}`,
+    range && whr`create_time >= now() - ${sq.raw(timeRange)}`,
     ord`score asc`,
     max && lim(max),
     ret`id, name, age`

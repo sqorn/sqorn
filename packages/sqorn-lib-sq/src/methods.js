@@ -44,18 +44,8 @@ const methods = {
   },
   where: {
     updateContext: (ctx, args) => {
-      ctx.whr.push({ type: 'and', args })
+      ctx.whr.push(args)
       ctx.target = ctx.whr
-    }
-  },
-  and: {
-    updateContext: (ctx, args) => {
-      ctx.target.push({ type: 'and', args })
-    }
-  },
-  or: {
-    updateContext: (ctx, args) => {
-      ctx.target.push({ type: 'or', args })
     }
   },
   return: {
@@ -76,7 +66,7 @@ const methods = {
   },
   having: {
     updateContext: (ctx, args) => {
-      ctx.hav.push({ type: 'and', args })
+      ctx.hav.push(args)
       ctx.target = ctx.hav
     }
   },
@@ -167,9 +157,9 @@ const methods = {
     updateContext: (ctx, args) => {
       const { join } = ctx
       if (join.on) {
-        join.on.push({ type: 'and', args })
+        join.on.push(args)
       } else {
-        ctx.target = join.on = [{ type: 'and', args }]
+        ctx.target = join.on = [args]
       }
     }
   },
@@ -208,7 +198,7 @@ const methods = {
         ctx.frm.push({ type: 'from', args })
       } else if (count.id === 1) {
         count.id++
-        ctx.whr.push({ type: 'and', args })
+        ctx.whr.push(args)
       } else if (count.id === 2) {
         count.id++
         ctx.ret.push(args)
