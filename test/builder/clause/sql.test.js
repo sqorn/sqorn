@@ -89,25 +89,6 @@ describe('sql', () => {
       args: ['fantasy', 2000]
     })
   })
-  describe('raw string', () => {
-    query({
-      name: 'simple',
-      query: sq.raw('hi'),
-      text: 'hi'
-    })
-    query({
-      name: '2 calls',
-      query: sq.raw('hi').raw('bye'),
-      text: 'hi bye'
-    })
-    query({
-      name: 'complex',
-      query: sq.sql`select * from`.raw('book').sql`where`.raw('genre')
-        .sql`= ${'fantasy'}`,
-      text: 'select * from book where genre = $1',
-      args: ['fantasy']
-    })
-  })
   describe('join separator', () => {
     query({
       name: 'string',

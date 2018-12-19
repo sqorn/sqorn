@@ -24,7 +24,8 @@ const createQueryBuilder = ({ defaultContext, query, adapter, e, config }) => {
     },
     raw: {
       value: function(arg) {
-        return escape(arg)
+        if (typeof arg === 'string') return () => arg
+        throw Error('Error: raw argument must be string')
       }
     }
   })

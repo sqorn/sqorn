@@ -44,7 +44,7 @@ describe('tutorial', () => {
       })
       query({
         name: '.raw(arg)',
-        query: sq.sql`select * from`.raw('test_table').sql`where id = ${7}`,
+        query: sq.sql`select * from ${sq.raw('test_table')} where id = ${7}`,
         text: 'select * from test_table where id = $1',
         args: [7]
       })

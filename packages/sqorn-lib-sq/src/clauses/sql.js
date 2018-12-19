@@ -1,4 +1,8 @@
-const { isTaggedTemplate, buildTaggedTemplate } = require('@sqorn/lib-util')
+const {
+  isTaggedTemplate,
+  buildTaggedTemplate,
+  mapJoinWrap
+} = require('@sqorn/lib-util')
 
 module.exports = ctx => {
   const calls = ctx.sql
@@ -10,20 +14,10 @@ module.exports = ctx => {
   return txt
 }
 
-const sql = (ctx, { args, raw }) =>
-  raw
-    ? isTaggedTemplate(args)
-      ? unescapedTemplateString(args)
-      : args[0]
-    : isTaggedTemplate(args)
-      ? buildTaggedTemplate(ctx, args)
-      : ctx.build(args[0])
+const buildArg = (ctx, arg) => ctx.build(arg)
 
-const unescapedTemplateString = ([strings, ...args]) => {
-  let txt = ''
-  for (let i = 0; i < strings.length; ++i) {
-    if (i !== 0) txt += args[i - 1]
-    txt += strings[i]
-  }
-  return txt
+const sql = (ctx, args) => {
+  if (isTaggedTemplate(args)) return buildTaggedTemplate(ctx, args)
+  if (args.length === 1) return ctx.build(args[0])
+  return mapJoinWrap(buildArg, args)
 }

@@ -4,14 +4,14 @@ const methods = {
     updateContext: (ctx, args) => {
       ctx.type = 'manual'
       ctx.userType = 'select'
-      ctx.sql.push({ args, raw: false })
+      ctx.sql.push(args)
     }
   },
   txt: {
     updateContext: (ctx, args) => {
       ctx.type = 'manual'
       ctx.userType = 'fragment'
-      ctx.sql.push({ args, raw: false })
+      ctx.sql.push(args)
     }
   },
   raw: {

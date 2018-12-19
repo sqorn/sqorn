@@ -20,7 +20,7 @@ const createNewContext = defaultContext => {
 
       // properties of the current query
       type: 'select',
-      // 'raw' | sql' | 'select' | 'delete' | 'insert' | 'update'
+      // | sql' | 'select' | 'delete' | 'insert' | 'update'
       target: whr,
       // associates condition with previous calls to .where, .join.on, and .having
       nextJoin: { join: 'inner' },
