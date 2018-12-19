@@ -12,7 +12,7 @@ sidebar_label: Select
 * **With** [`.with`](#with), [`.recursive`](#recursive-ctes)
 * **Select** [`.return`](#select)
 * **Distinct** [`.distinct`](#distinct), [`.distinctOn`](#distinct-on)
-* **From** [`.from`](#from), [`.join`](#joins), [`.left`](#join-type), [`.right`](#join-type), [`.full`](#join-type), [`.cross`](#join-type), [`.inner`](#join-type), [`.using`](#using), [`.on`](#on)
+* **From** [`.from`](#from), [`.join`](#joins), [`.leftJoin`](#joins), [`.rightJoin`](#joins), [`.fullJoin`](#joins), [`.crossJoin`](#joins), [`.naturalJoin`](#joins), [`.naturalLeftJoin`](#joins), [`.naturalRightJoin`](#joins), [`.naturalFullJoin`](#joins), [`.on`](#on), [`.using`](#using)
 * **Where** [`.where`](#where)
 * **Group By** [`.groupBy`](#group-by), [`.rollup`](#rollup), [`.cube`](#cube), [`.groupingSets`](#grouping-sets)
 * **Having** [`.having`](#having)
@@ -923,29 +923,76 @@ sq.from('person').offset(sq.return`1 + 7`).query
 
 ## Joins
 
-`.join` builds *join* clauses. It accepts the same arguments as `.from`.
-
-Sqorn builds *natural joins* by default.
+`.join`, `.leftJoin`, `.rightJoin` and `.fullJoin` build inner, left, right and full joins respectively.
 
 ```js
-sq.from`book`.join`author`.query
+sq.from`book`.join`author`.on`book.author_id = author.id`.query
 
-{ text: 'select * from book natural join author',
+{ text: 'select * from book join author on (book.author_id = author.id)',
   args: [] }
+```
+
+Either [`.on`](#on) or [`.using`](#using) must be called immediately after.
+
+```js
+sq.from`book`.leftJoin`author`.query
+
+// throws error
+```
+
+`.naturalJoin`, `.naturalLeftJoin`, `.naturalRightJoin` and `.naturalFullJoin` build natural joins.
+
+```js
+sq.from`book`.naturalRightJoin`author`.query
+
+{ text: 'select * from book natural right join author',
+  args: [] }
+```
+
+Calling [`.on`](#on) or [`.using`](#using) after a natural join is invalid.
+
+```js
+sq.from`book`.naturalFullJoin`author`.on`book.author_id = author.id`.query
+
+// throws error
+```
+
+`.crossJoin` builds a cross join.
+
+```js
+sq.from`book`.crossJoin`author`.query
+
+{ text: 'select * from book cross join author',
+  args: [] }
+```
+
+Join methods accept the same arguments as [`.from`](#from).
+
+```js
+sq.from({ b: 'book' })
+  .naturalFullJoin({ a: 'author' })
+  .naturalRightJoin('publisher')
+  .query
+
+{ text: 'select book b natural full join author a natural right join publisher',
+  args: [] }
+
 ```
 
 ### On
 
-Specify join conditions with `.on`, which accepts the same arguments as [`.where`](#where).
+`.on` specifies join conditions. It accepts the same arguments as [`.where`](#where).
 
 ```js
-sq.from({ b: 'book' }).join({ a: 'author'}).on`b.author_id = a.id`.query
+sq.from({ b: 'book' })
+  .join({ a: 'author'}).on(e`b.author_id`.eq`a.id`)
+  .query
 
-{ text: 'select * from book as b join author as a on (b.author_id = a.id)',
+{ text: 'select * from book b join author a on (b.author_id = a.id)',
   args: [] }
 ```
 
-`.on` can only be called once.
+Call `.on` once at most.
 
 ```js
 sq.from({ b: 'book' })
@@ -959,13 +1006,16 @@ sq.from({ b: 'book' })
 Build complex join conditions with [Expressions](expressions).
 
 ```js
-sq.from('ticket t')
-  .leftJoin('person p')
-  .on(e.and(
+sq.from({ t: 'ticket' })
+  .leftJoin({ p: 'person' })
+  .on(e.or(
     e.eq`p.first_name``t.first_name`,
     e.eq`p.last_name``t.last_name`
   ))
   .query
+
+{ text: 'select * from ticket t left join person p on (p.first_name = t.first_name) or (p.last_name = t.last_name)',
+  args: [] }
 ```
 
 ### Using
@@ -986,26 +1036,6 @@ sq.from('a').join('b').using('x', 'y').using('z').query
 
 { text: 'select * from a join b using (x, y, z)',
   args: [] }
-```
-
-### Join Type
-
-To change the join type, call `.left`, `.right`, `.full` or `.cross` **before** `.join`.
-
-```js
-sq.from`book`.left.join`author`.right.join`publisher`.query
-
-{ text: 'select * from book natural left join author natural right join publisher',
-  args: [] }
-```
-
-The last join type specifier determines the join type. To explicitly perform an *inner join*, call `.inner`. Sqorn never generates the optional *inner* and *outer* keywords.
-
-```js
-sq.from`book`.left.right.join`author`.cross.inner.join`publisher`.query
-
-{ text: 'select * from book natural right join author natural join publisher',
-  query: []}
 ```
 
 ## Sets

@@ -1,16 +1,5 @@
 const { sq, e, query } = require('../tape')
 
-const testOperator = op => {
-  describe(op, () => {
-    query({
-      name: 'e(null)',
-      query: e(null),
-      text: '$1',
-      args: [null]
-    })
-  })
-}
-
 describe('comparison', () => {
   describe('eq', () => {
     describe('invalid', () => {

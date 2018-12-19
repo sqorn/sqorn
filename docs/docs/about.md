@@ -18,7 +18,7 @@ Build [Select](select-queries), [Delete](delete-queries), [Insert](insert-querie
 sq.return({ authorId: 'a.id', name: 'a.last_name' })
   .distinct
   .from({ b: 'book' })
-  .left.join({ a: 'author' }).on`b.author_id = a.id`
+  .leftJoin({ a: 'author' }).on`b.author_id = a.id`
   .where({ title: 'Oathbringer' }, { title: 'The Eye of the World' })
   .query
 
