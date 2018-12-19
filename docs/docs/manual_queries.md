@@ -102,7 +102,7 @@ sq.sql`select ${Hi},`.sql(Bye).query
   args: ['hi', 'bye'] }
 ```
 
-Call `.sql` as a function to parameterize an argument or build a subquery.
+Call `.sql` a function to parameterize an argument or build a subquery.
 
 ```js
 sq.sql`select * from`
@@ -138,7 +138,7 @@ sq.sql`select * from person ${Where}`.query
   args: [20, 30] }
 ```
 
-Like `.sql`, `.txt` can be chained and called as a function.
+Like `.sql`, `.txt` can be chained and called a function.
 
 ```js
 const FromWhere = sq.txt`from person`.txt`where age >=`.txt(20)

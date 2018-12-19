@@ -55,7 +55,7 @@ describe('join', () => {
     query({
       name: 'two joins',
       query: sq.from({ b: 'book' }).naturalJoin({ p: 'publisher' }),
-      text: 'select * from book as b natural join publisher as p'
+      text: 'select * from book b natural join publisher p'
     })
     query({
       name: 'two joins',

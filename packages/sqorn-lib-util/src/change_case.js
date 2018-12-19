@@ -9,7 +9,7 @@ const fourOrMoreConsecutiveCapsRegEx = /([A-Z\u00C0-\u00DC]{4,})/g
 const allCapsRegEx = /^[A-Z\u00C0-\u00DC]+$/
 
 const snakeCase = str => {
-  // HACK: if user enters name with parentheses, return string as is
+  // HACK: if user enters name with parentheses, return string is
   // TODO: intelligently handle snakecasing components
   return str.indexOf('(') === -1
     ? str

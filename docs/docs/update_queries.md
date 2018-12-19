@@ -18,7 +18,7 @@ sidebar_label: Update
 
 ## Set
 
-`.from` specifies the table to modify and `.set` specifies the fields to update. [`.from`](#from) works as it does in [Delete](delete-queries#from) queries.
+`.from` specifies the table to modify and `.set` specifies the fields to update. [`.from`](#from) works it does in [Delete](delete-queries#from) queries.
 
 ```js
 sq.from`person`
@@ -117,7 +117,7 @@ sq.from`person`
   args: ['Robert', 'Rob', 'Matt'] }
 ```
 
-`.where` works as it does in [Select](select-queries) queries.
+`.where` works it does in [Select](select-queries) queries.
 
 ## From
 

@@ -35,9 +35,9 @@ sq.with({ aB: sq.sql`select cD`, e_f: sq.sql`select g_h` })
   .return({ wX: 1, y_z: 1 })
   .link('\n').query.text
 
-`with a_b as (select cD), e_f as (select g_h)
-select $1 as w_x, $2 as y_z
-from kL as i_j3, (values ($3, $4)) as m_n(o_p, q_r)
+`with a_b (select cD), e_f (select g_h)
+select $1 w_x, $2 y_z
+from kL i_j3, (values ($3, $4)) m_n(o_p, q_r)
 where (s_t = $5 and u_v = $6)`
 ```
 
@@ -50,7 +50,7 @@ sq.with({ 'aB(cD, e_f)': sq.sql`select 1, 2`})
   .return({ lM: 'nO' }, 'pQ')
   .query
 
-{ text: 'with aB(cD, e_f) as (select 1, 2) select nO as l_m, pQ from gH, jK',
+{ text: 'with aB(cD, e_f) (select 1, 2) select nO l_m, pQ from gH, jK',
   args: [] }
 ```
 
@@ -61,7 +61,7 @@ const sq = sqorn({ mapInputKeys: key => key.toUpperCase() })
 
 sq.return({ favoriteNumber: 8 }).query
 
-{ text: 'select $1 as FAVORITENUMBER',
+{ text: 'select $1 FAVORITENUMBER',
   args: [8] }
 ```
 

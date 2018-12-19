@@ -101,3 +101,11 @@ const u = e.exp(2, 3)
 const u2 = e.exp(2)(3)
 const u3 = e.sqrt(4)
 const u4 = e.cbrt(4)
+
+
+const t1 = e(null).isNull
+const t2 = e.isNull(null)
+const t3 = e.isUnknown(true)
+const t4 = e.isUnknown(null)
+// const t5 = e.isNotUnknown(23)
+const t5 = e.isFalse(23)

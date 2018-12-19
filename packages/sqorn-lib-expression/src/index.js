@@ -1,24 +1,15 @@
-const { build, unary, unaryFunction, binary, ternary, nary } = require('./util')
-
-const oneValue = {
-  minArgs: 1,
-  maxArgs: 1,
-  build: (ctx, args) => build(ctx, args[0])
-}
-
-const compositeValue = {
-  minArgs: 1,
-  maxArgs: Number.MAX_SAFE_INTEGER,
-  build: (ctx, args) => {
-    if (args.length === 1) return build(ctx, args[0])
-    let txt = ''
-    for (let i = 0; i < args.length; ++i) {
-      if (i !== 0) txt += ', '
-      txt += build(ctx, args[i])
-    }
-    return args.length > 1 ? `(${txt})` : txt
-  }
-}
+const {
+  unaryPre,
+  unaryPost,
+  unaryFunction,
+  binary,
+  ternary,
+  nary,
+  oneValue,
+  compositeValue,
+  membership,
+  quantifiedComparison
+} = require('./util')
 
 // value
 const value = {
@@ -33,24 +24,53 @@ const value = {
   table: oneValue
 }
 
-// logical
-const logical = {
+// boolean
+const boolean = {
+  // logical
   and: nary('and'),
   or: nary('or'),
-  not: unaryFunction('not')
+  not: unaryFunction('not'),
+  // comparison
+  isTrue: unaryPost('is true'),
+  isNotTrue: unaryPost('is not true'),
+  isFalse: unaryPost('is false'),
+  isNotFalse: unaryPost('is not false'),
+  isUnknown: unaryPost('is unknown'),
+  isNotUnknown: unaryPost('is not unknown')
 }
 
 // comparison
 const comparison = {
+  // binary comparison
   eq: binary('='),
   neq: binary('<>'),
   lt: binary('<'),
   gt: binary('>'),
   lte: binary('<='),
   gte: binary('>='),
+  // misc
   between: ternary('between', 'and'),
   notBetween: ternary('not between', 'and'),
-  in: binary('in')
+  isDistinctFrom: binary('is distinct from'),
+  isNotDistinctFrom: binary('is not distinct from'),
+  isNull: unaryPost('is null'),
+  isNotNull: unaryPost('is not null'),
+  in: membership('in'),
+  notIn: membership('not in'),
+  // quantified any
+  eqAny: quantifiedComparison('= any'),
+  neqAny: quantifiedComparison('<> any'),
+  ltAny: quantifiedComparison('< any'),
+  gtAny: quantifiedComparison('> any'),
+  lteAny: quantifiedComparison('<= any'),
+  gteAny: quantifiedComparison('>= any'),
+  // quantified all
+  eqAll: quantifiedComparison('= all'),
+  neqAll: quantifiedComparison('<> all'),
+  ltAll: quantifiedComparison('< all'),
+  gtAll: quantifiedComparison('> all'),
+  lteAll: quantifiedComparison('<= all'),
+  gteAll: quantifiedComparison('>= all')
 }
 
 // math
@@ -61,14 +81,25 @@ const math = {
   div: binary('/'),
   mod: binary('%'),
   exp: binary('%'),
-  sqrt: unary('|/'),
-  cbrt: unary('||/'),
-  cbrt: unary('!!')
+  sqrt: unaryPre('|/'),
+  cbrt: unaryPre('||/'),
+  fact: unaryPre('!!'),
+  abs: unaryFunction('abs')
+}
+
+const string = {
+  like: binary('like'),
+  notLike: binary('not like'),
+  likeAny: binary('like any'),
+  notLikeAny: binary('not like any'),
+  likeAll: binary('like all'),
+  notLikeAll: binary('not like all')
 }
 
 module.exports = {
   ...value,
-  ...logical,
+  ...boolean,
   ...comparison,
-  ...math
+  ...math,
+  ...string
 }

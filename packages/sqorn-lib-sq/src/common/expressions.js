@@ -13,7 +13,7 @@ const buildArg = (ctx, arg) => {
 
 const buildProperty = (ctx, key, value) => {
   const expression = typeof value === 'string' ? value : ctx.build(value)
-  return `${expression} as ${ctx.mapKey(key)}`
+  return `${expression} ${ctx.mapKey(key)}`
 }
 
 const buildObject = objectMapJoin(buildProperty)

@@ -170,7 +170,7 @@ Unknown Expressions represent values of unknown type. They could be anything fro
 
 **Compatible Types:** `any`
 
-**Supported Operations:** [Comparison](operations#comparison), [Logical](operations#logical), [Math](operations#math), [String](operations#string), [Array](operations#array), [Row](operations#row), [Table](operations#table)
+**Supported Operations:** [Comparison](operations#comparison), [Boolean](operations#boolean-1), [Math](operations#math), [String](operations#string), [Array](operations#array), [Row](operations#row), [Table](operations#table)
 
 ```js
 // Examples
@@ -191,7 +191,7 @@ They are useful for constructing *where*, *having* and *join* conditions.
 
 **Compatible Types:** `boolean`, `null`, `BooleanExpression`, `UnknownExpression`
 
-**Supported Operations:** [Comparison](operations#comparison), [Logical](operations#logical)
+**Supported Operations:** [Comparison](operations#comparison), [Boolean](operations#boolean-1)
 
 ```js
 // Examples

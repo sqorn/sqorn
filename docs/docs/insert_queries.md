@@ -15,7 +15,7 @@ sidebar_label: Insert
 
 ## Insert
 
-`.from` specifies the table to insert into and `.insert` specifies the data to insert. [`.from`](#from-1) works as it does in delete queries.
+`.from` specifies the table to insert into and `.insert` specifies the data to insert. [`.from`](#from-1) works it does in delete queries.
 
 ```js
 sq.from`person(first_name, last_name)`
@@ -39,7 +39,7 @@ sq.from('person')
   args: ['Shallan', 'Davar'] }
 ```
 
-`undefined` values are inserted as `default`. `default` cannot be parameterized.
+`undefined` values are inserted `default`. `default` cannot be parameterized.
 
 ```js
 sq.from('test').insert({ a: undefined, b: null }).query

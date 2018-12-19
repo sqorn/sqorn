@@ -35,12 +35,12 @@ const fromArg = (ctx, arg) => {
 }
 
 const buildProperty = (ctx, key, value) => {
-  if (typeof value === 'string') return `${value} as ${ctx.mapKey(key)}`
+  if (typeof value === 'string') return `${value} ${ctx.mapKey(key)}`
   if (typeof value === 'function')
-    return `${ctx.build(value)} as ${ctx.mapKey(key)}`
+    return `${ctx.build(value)} ${ctx.mapKey(key)}`
   if (Array.isArray(value)) {
     const { columns, values } = valuesArray(ctx, value)
-    return `(${values}) as ${ctx.mapKey(key)}(${columns})`
+    return `(${values}) ${ctx.mapKey(key)}(${columns})`
   }
   throw Error('Error: Invalid .from argument')
 }

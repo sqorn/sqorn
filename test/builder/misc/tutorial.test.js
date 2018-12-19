@@ -102,7 +102,7 @@ describe('tutorial', () => {
       query({
         name: '.from object - string table source',
         query: sq.from({ b: 'book', p: 'person' }),
-        text: 'select * from book as b, person as p'
+        text: 'select * from book b, person p'
       })
       query({
         name: '.from object - array of row objects',
@@ -110,25 +110,25 @@ describe('tutorial', () => {
           people: [{ age: 7, firstName: 'Jo' }, { age: 9, firstName: 'Mo' }]
         }),
         text:
-          'select * from (values ($1, $2), ($3, $4)) as people(age, first_name)',
+          'select * from (values ($1, $2), ($3, $4)) people(age, first_name)',
         args: [7, 'Jo', 9, 'Mo']
       })
       query({
         name: '.from object - select subquery',
         query: sq.from({ b: sq.from`book` }),
-        text: 'select * from (select * from book) as b',
+        text: 'select * from (select * from book) b',
         args: []
       })
       query({
         name: '.from object - subquery table source',
         query: sq.from({ countDown: sq.txt`unnest(${[3, 2, 1]})` }),
-        text: 'select * from unnest($1) as count_down',
+        text: 'select * from unnest($1) count_down',
         args: [[3, 2, 1]]
       })
       query({
         name: '.from - mix objects and strings',
         query: sq.from({ b: 'book' }, 'person', sq.txt`author`),
-        text: 'select * from book as b, person, author',
+        text: 'select * from book b, person, author',
         args: []
       })
       query({
@@ -198,8 +198,8 @@ describe('tutorial', () => {
     describe('Select', () => {
       query({
         name: '.return``',
-        query: sq.return`${1} as a, ${2} as b, ${1} + ${2} as sum`,
-        text: 'select $1 as a, $2 as b, $3 + $4 as sum',
+        query: sq.return`${1} a, ${2} b, ${1} + ${2} sum`,
+        text: 'select $1 a, $2 b, $3 + $4 sum',
         args: [1, 2, 1, 2]
       })
       query({
@@ -226,8 +226,7 @@ describe('tutorial', () => {
           firstName: 'person.first_name',
           age: 'person.age'
         }),
-        text:
-          'select person.first_name as first_name, person.age as age from person'
+        text: 'select person.first_name first_name, person.age age from person'
       })
       query({
         name: '.return object - subquery expression',
@@ -235,7 +234,7 @@ describe('tutorial', () => {
           sum: sq.txt`${2} + ${3}`,
           firstName: sq.txt('Bob')
         }),
-        text: 'select $1 + $2 as sum, $3 as first_name',
+        text: 'select $1 + $2 sum, $3 first_name',
         args: [2, 3, 'Bob']
       })
       query({
@@ -278,9 +277,9 @@ describe('tutorial', () => {
       })
       query({
         name: ".distinctOn('', '').return",
-        query: sq.from`generate_series(0, 10) as n`.distinctOn(sq.txt`n / 3`)
+        query: sq.from`generate_series(0, 10) n`.distinctOn(sq.txt`n / 3`)
           .return`n`,
-        text: 'select distinct on (n / 3) n from generate_series(0, 10) as n',
+        text: 'select distinct on (n / 3) n from generate_series(0, 10) n',
         args: []
       })
     })
@@ -547,8 +546,7 @@ describe('tutorial', () => {
         name: 'on',
         query: sq.from({ b: 'book' }).join({ a: 'author' })
           .on`b.author_id = a.id`,
-        text:
-          'select * from book as b join author as a on (b.author_id = a.id)',
+        text: 'select * from book b join author a on (b.author_id = a.id)',
         args: []
       })
       query({
@@ -558,7 +556,7 @@ describe('tutorial', () => {
           .join({ a: 'author' })
           .on({ 'b.author_id': e`a.id` }, { 'b.genre': 'Fantasy' }),
         text:
-          'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1)',
+          'select * from book b join author a on (b.author_id = a.id) and (b.genre = $1)',
         args: ['Fantasy']
       })
       query({
@@ -626,17 +624,16 @@ describe('tutorial', () => {
     describe('With', () => {
       query({
         name: 'template string',
-        query: sq.with`n as (select ${20} as age)`.from`n`.return`age`,
-        text: 'with n as (select $1 as age) select age from n',
+        query: sq.with`n (select ${20} age)`.from`n`.return`age`,
+        text: 'with n (select $1 age) select age from n',
         args: [20]
       })
       query({
         name: 'multiple calls',
-        query: sq.with`width as (select ${10} as n)`
-          .with`height as (select ${20} as n)`
-          .return`width.n * height.n as area`,
+        query: sq.with`width (select ${10} n)`.with`height (select ${20} n)`
+          .return`width.n * height.n area`,
         text:
-          'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
+          'with width (select $1 n), height (select $2 n) select width.n * height.n area',
         args: [10, 20]
       })
       query({
@@ -644,13 +641,13 @@ describe('tutorial', () => {
         query: sq
           .with({
             width: sq.return({ n: 10 }),
-            height: sq.sql`select ${20} as n`
+            height: sq.sql`select ${20} n`
           })
           .return({
             area: sq.txt`width.n * height.n`
           }),
         text:
-          'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
+          'with width (select $1 n), height (select $2 n) select width.n * height.n area',
         args: [10, 20]
       })
       const people = [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }]
@@ -658,7 +655,7 @@ describe('tutorial', () => {
         name: 'object array arg',
         query: sq.with({ people }).return`max(age)`.from`people`,
         text:
-          'with people(age, name) as (values ($1, $2), ($3, $4)) select max(age) from people',
+          'with people(age, name) (values ($1, $2), ($3, $4)) select max(age) from people',
         args: [7, 'Jo', 9, 'Mo']
       })
       const one = sq.return`1`
@@ -668,7 +665,7 @@ describe('tutorial', () => {
         query: sq.withRecursive({ 't(n)': one.unionAll(next) }).from`t`
           .return`sum(n)`,
         text:
-          'with recursive t(n) as (select 1 union all (select n + 1 from t where (n < 100))) select sum(n) from t',
+          'with recursive t(n) (select 1 union all (select n + 1 from t where (n < 100))) select sum(n) from t',
         args: []
       })
     })

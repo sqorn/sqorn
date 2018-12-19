@@ -206,9 +206,17 @@ interface TableChain {
 //
 
 interface LogicalOperations<T extends BooleanTypes> {
+  // logical
   and: T extends 'new' ? And : AndChain
   or: T extends 'new' ? Or : OrChain
   not: T extends 'new' ? Not : BooleanExpression
+  // comparison
+  isTrue: T extends 'new' ? IsTrue : BooleanExpression
+  isNotTrue: T extends 'new' ? IsNotTrue : BooleanExpression
+  isFalse: T extends 'new' ? IsFalse : BooleanExpression
+  isNotFalse: T extends 'new' ? IsNotFalse : BooleanExpression
+  isUnknown: T extends 'new' ? IsUnknown : BooleanExpression
+  isNotUnknown: T extends 'new' ? IsNotUnknown : BooleanExpression
 }
 
 interface And {
@@ -229,6 +237,25 @@ interface Not {
   (arg: BooleanArgument): BooleanExpression
 }
 
+interface IsTrue {
+  (arg1: Arg): BooleanExpression
+}
+interface IsNotTrue {
+  (arg1: Arg): BooleanExpression
+}
+interface IsFalse {
+  (arg1: Arg): BooleanExpression
+}
+interface IsNotFalse {
+  (arg1: Arg): BooleanExpression
+}
+interface IsUnknown {
+  (arg1: BooleanArgument): BooleanExpression
+}
+interface IsNotUnknown {
+  (arg1: BooleanArgument): BooleanExpression
+}
+
 //
 // Comparison Operations
 //
@@ -241,26 +268,29 @@ interface ComparisonOperations<T extends Types> {
   gt: T extends 'new' ? Gt : GtChain<T>
   lte: T extends 'new' ? Lte : LteChain<T>
   gte: T extends 'new' ? Gte : GteChain<T>
-  // any
+  // misc
+  between: T extends 'new' ? Between : BetweenChain1<T>
+  notBetween: T extends 'new' ? NotBetween : NotBetweenChain1<T>
+  isDistinctFrom: T extends 'new' ? IsDistinctFrom : IsDistinctFromChain<T>
+  isNotDistinctFrom: T extends 'new' ? IsNotDistinctFrom : IsNotDistinctFromChain<T>
+  isNull: T extends 'new' ? IsNull : BooleanExpression
+  isNotNull: T extends 'new' ? IsNotNull : BooleanExpression
+  in: T extends 'new' ? In : InChain<T>
+  notIn: T extends 'new' ? NotIn : NotInChain<T>
+  // quantified any
   eqAny: T extends 'new' ? EqAny : EqAnyChain<T>
   neqAny: T extends 'new' ? NeqAny : NeqAnyChain<T>
   ltAny: T extends 'new' ? LtAny : LtAnyChain<T>
   gtAny: T extends 'new' ? GtAny : GtAnyChain<T>
   lteAny: T extends 'new' ? LteAny : LteAnyChain<T>
   gteAny: T extends 'new' ? GteAny : GteAnyChain<T>
-  // all
+  // quantified all
   eqAll: T extends 'new' ? EqAll : EqAllChain<T>
   neqAll: T extends 'new' ? NeqAll : NeqAllChain<T>
   ltAll: T extends 'new' ? LtAll : LtAllChain<T>
   gtAll: T extends 'new' ? GtAll : GtAllChain<T>
   lteAll: T extends 'new' ? LteAll : LteAllChain<T>
   gteAll: T extends 'new' ? GteAll : GteAllChain<T>
-  // ternary
-  between: T extends 'new' ? Between : BetweenChain1<T>
-  notBetween: T extends 'new' ? NotBetween : NotBetweenChain1<T>
-  // table / row  / array
-  in: T extends 'new' ? In : InChain<T>
-  notIn: T extends 'new' ? NotIn : NotInChain<T>
 }
 
 interface Eq {
@@ -321,6 +351,65 @@ interface Gte {
 interface GteChain<T extends Types> {
   (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
   (arg2: Compatible<T>): BooleanExpression
+}
+
+interface Between {
+  (strings: TemplateStringsArray, ...args: any[]): BetweenChain1<'unknown'>
+  <T extends Arg>(arg1: T): BetweenChain1<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BetweenChain2<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>, arg3: InferCompatible<T>): BooleanExpression
+}
+interface BetweenChain1<T extends Types> {
+  (strings: TemplateStringsArray, ...args: any[]): BetweenChain2<T>
+  (arg2: Compatible<T>): BetweenChain2<T>
+  (arg2: Compatible<T>, arg3: Compatible<T>): BooleanExpression
+}
+interface BetweenChain2<T extends Types> {
+  (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg3: Compatible<T>): BooleanExpression
+}
+
+interface NotBetween {
+  (strings: TemplateStringsArray, ...args: any[]): NotBetweenChain1<'unknown'>
+  <T extends Arg>(arg1: T): NotBetweenChain1<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): NotBetweenChain2<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>, arg3: InferCompatible<T>): BooleanExpression
+}
+interface NotBetweenChain1<T extends Types> {
+  (strings: TemplateStringsArray, ...args: any[]): NotBetweenChain2<T>
+  (arg2: Compatible<T>): NotBetweenChain2<T>
+  (arg2: Compatible<T>, arg3: Compatible<T>): BooleanExpression
+}
+interface NotBetweenChain2<T extends Types> {
+  (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg3: Compatible<T>): BooleanExpression
+}
+
+interface IsDistinctFrom {
+  (text: TemplateStringsArray, ...args: any[]): IsDistinctFromChain<'unknown'>
+  <T extends Arg>(arg1: T): IsDistinctFromChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
+}
+interface IsDistinctFromChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: Compatible<T>): BooleanExpression
+}
+
+interface IsNotDistinctFrom {
+  (text: TemplateStringsArray, ...args: any[]): IsNotDistinctFromChain<'unknown'>
+  <T extends Arg>(arg1: T): IsNotDistinctFromChain<Infer<T>>
+  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BooleanExpression
+}
+interface IsNotDistinctFromChain<T extends Types> {
+  (text: TemplateStringsArray, ...args: any[]): BooleanExpression
+  (arg2: Compatible<T>): BooleanExpression
+}
+
+interface IsNull {
+  (arg1: Arg): BooleanExpression
+}
+interface IsNotNull {
+  (arg1: Arg): BooleanExpression
 }
 
 interface EqAny {
@@ -537,38 +626,6 @@ interface GteAllChain<T extends Types> {
   (text: TemplateStringsArray, ...args: any[]): BooleanExpression
   (arg2: CompatibleArray<T>): BooleanExpression
   (arg2: TableArgument): BooleanExpression
-}
-
-interface Between {
-  (strings: TemplateStringsArray, ...args: any[]): BetweenChain1<'unknown'>
-  <T extends Arg>(arg1: T): BetweenChain1<Infer<T>>
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): BetweenChain2<Infer<T>>
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>, arg3: InferCompatible<T>): BooleanExpression
-}
-interface BetweenChain1<T extends Types> {
-  (strings: TemplateStringsArray, ...args: any[]): BetweenChain2<T>
-  (arg2: Compatible<T>): BetweenChain2<T>
-  (arg2: Compatible<T>, arg3: Compatible<T>): BooleanExpression
-}
-interface BetweenChain2<T extends Types> {
-  (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
-  (arg3: Compatible<T>): BooleanExpression
-}
-
-interface NotBetween {
-  (strings: TemplateStringsArray, ...args: any[]): NotBetweenChain1<'unknown'>
-  <T extends Arg>(arg1: T): NotBetweenChain1<Infer<T>>
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>): NotBetweenChain2<Infer<T>>
-  <T extends Arg>(arg1: T, arg2: InferCompatible<T>, arg3: InferCompatible<T>): BooleanExpression
-}
-interface NotBetweenChain1<T extends Types> {
-  (strings: TemplateStringsArray, ...args: any[]): NotBetweenChain2<T>
-  (arg2: Compatible<T>): NotBetweenChain2<T>
-  (arg2: Compatible<T>, arg3: Compatible<T>): BooleanExpression
-}
-interface NotBetweenChain2<T extends Types> {
-  (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
-  (arg3: Compatible<T>): BooleanExpression
 }
 
 interface In {

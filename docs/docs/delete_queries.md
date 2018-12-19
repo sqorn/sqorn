@@ -39,7 +39,7 @@ sq`book`.delete.delete.delete.query
 
 ## From
 
-[`.from`](#from) works as it does in [Select](select-queries) queries.
+[`.from`](#from) works it does in [Select](select-queries) queries.
 
 However, be aware of certain SQL constraints Sqorn does not yet enforce.
 
@@ -79,7 +79,7 @@ sq.delete.from`person`.where`id = ${723}`.query
   args: [723] }
 ```
 
-`.where` works as it does in [Select](select-queries) queries.
+`.where` works it does in [Select](select-queries) queries.
 
 ## Returning
 

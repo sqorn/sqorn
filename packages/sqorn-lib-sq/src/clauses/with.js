@@ -19,11 +19,11 @@ const buildArg = (ctx, arg) => {
 
 const buildProperty = (ctx, key, value) => {
   if (typeof value === 'function') {
-    return `${ctx.mapKey(key)} as ${ctx.build(value)}`
+    return `${ctx.mapKey(key)} ${ctx.build(value)}`
   }
   if (Array.isArray(value)) {
     const { columns, values } = valuesArray(ctx, value)
-    return `${ctx.mapKey(key)}(${columns}) as (${values})`
+    return `${ctx.mapKey(key)}(${columns}) (${values})`
   }
   throw Error(`Error: Invalid .with argument`)
 }

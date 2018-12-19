@@ -82,9 +82,9 @@ describe('Config', async () => {
             .where({ sT: 1, u_v: 1 })
             .return({ wX: 1, y_z: 1 })
             .link('\n').query.text
-        ).toEqual(`with a_b as (select cD), e_f as (select g_h)
-select $1 as w_x, $2 as y_z
-from kL as i_j3, (values ($3, $4)) as m_n(o_p, q_r)
+        ).toEqual(`with a_b (select cD), e_f (select g_h)
+select $1 w_x, $2 y_z
+from kL i_j3, (values ($3, $4)) m_n(o_p, q_r)
 where (s_t = $5) and (u_v = $6)`)
       } finally {
         await sq.end()
@@ -97,7 +97,7 @@ where (s_t = $5) and (u_v = $6)`)
           sq.with({ 'aB(cD, e_f)': sq.sql`select 1, 2` }).from('gH')
             .from`jK`.return({ lM: 'nO' }, 'pQ').query.text
         ).toEqual(
-          'with aB(cD, e_f) as (select 1, 2) select nO as l_m, pQ from gH, jK'
+          'with aB(cD, e_f) (select 1, 2) select nO l_m, pQ from gH, jK'
         )
       } finally {
         await sq.end()
@@ -117,9 +117,9 @@ where (s_t = $5) and (u_v = $6)`)
             .where({ sT: 1, u_v: 1 })
             .return({ wX: 1, y_z: 1 })
             .link('\n').query.text
-        ).toEqual(`with aB as (select cD), e_f as (select g_h)
-select $1 as wX, $2 as y_z
-from kL as iJ3, (values ($3, $4)) as mN(oP, q_r)
+        ).toEqual(`with aB (select cD), e_f (select g_h)
+select $1 wX, $2 y_z
+from kL iJ3, (values ($3, $4)) mN(oP, q_r)
 where (sT = $5) and (u_v = $6)`)
       } finally {
         await sq.end()
@@ -139,9 +139,9 @@ where (sT = $5) and (u_v = $6)`)
             .where({ sT: 1, u_v: 1 })
             .return({ wX: 1, y_z: 1 })
             .link('\n').query.text
-        ).toEqual(`with AB as (select cD), E_F as (select g_h)
-select $1 as WX, $2 as Y_Z
-from kL as IJ3, (values ($3, $4)) as MN(OP, Q_R)
+        ).toEqual(`with AB (select cD), E_F (select g_h)
+select $1 WX, $2 Y_Z
+from kL IJ3, (values ($3, $4)) MN(OP, Q_R)
 where (ST = $5) and (U_V = $6)`)
       } finally {
         await sq.end()

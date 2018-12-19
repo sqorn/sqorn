@@ -82,7 +82,7 @@ sq.from(sq.txt`unnest(${[3, 2, 1]})`).query
   args: [] }
 ```
 
-Pass `.from` objects in the form `{ alias: table }` to construct *`table as alias`* clauses.
+Pass `.from` objects in the form `{ alias: table }` to construct *`table alias`* clauses.
 
 Tables can be strings. **To prevent SQL injection, never source *strings* from user input.**
 
@@ -99,7 +99,7 @@ Tables can be [Table Expressions](expressions#table).
 // Postgres-only query
 sq.from({ countDown: e.unnest([3, 2, 1]) }).query
 
-{ text: 'select * from unnest($1) as count_down',
+{ text: 'select * from unnest($1) count_down',
   args: [[3, 2, 1]] }
 ```
 
@@ -109,7 +109,7 @@ Tables can be [Fragments](manual-queries#fragments).
 // Postgres-only query
 sq.from({ countDown: sq.txt`unnest(${[3, 2, 1]})` }).query
 
-{ text: 'select * from unnest($1) as count_down',
+{ text: 'select * from unnest($1) count_down',
   args: [[3, 2, 1]] }
 ```
 
@@ -118,7 +118,7 @@ Tables can be [Subqueries](manual-queries#subqueries).
 ```js
 sq.from({ a: sq.sql`select * from author`, b: sq.from`book` }).query
 
-{ text: 'select * from (select * from author) as a, (select * from book) as b',
+{ text: 'select * from (select * from author) a, (select * from book) b',
   args: [] }
 ```
 
@@ -131,7 +131,7 @@ sq.from({
   people: [{ age: 7, firstName: 'Jo' }, { age: 9, firstName: 'Mo' }]
 }).query
 
-{ text: 'select * from (values ($1, $2), ($3, $4)) as people(age, first_name)',
+{ text: 'select * from (values ($1, $2), ($3, $4)) people(age, first_name)',
   args: [7, 'Jo', 9, 'Mo'] }
 ```
 
@@ -145,7 +145,7 @@ sq.from({
 
 sq.from(sq.values({ age: 7, firstName: 'Jo' }, { age: 9, firstName: 'Mo' }).query
 
-{ text: 'select * from (values ($1, $2), ($3, $4)) as people(age, first_name)',
+{ text: 'select * from (values ($1, $2), ($3, $4)) people(age, first_name)',
   args: [7, 'Jo', 9, 'Mo'] } -->
 <!-- ``` -->
 
@@ -314,9 +314,9 @@ sq.from('person').where(
 `.return` builds *select* clauses.
 
 ```js
-sq.return`${1} as a, ${2} as b, ${1} + ${2} as sum`.query
+sq.return`${1} a, ${2} b, ${1} + ${2} sum`.query
 
-{ text: 'select $1 as a, $2 as b, $3 + $4 as sum',
+{ text: 'select $1 a, $2 b, $3 + $4 sum',
   args: [1, 2, 1, 2] }
 ```
 
@@ -365,14 +365,14 @@ sq.return(e`genre`.eq('fantasy')).from('book').query
   args: ['fantasy'] }
 ```
 
-`.return` accepts objects in the form `{ alias: value }`. Each property generates a `value as alias` clause.
+`.return` accepts objects in the form `{ alias: value }`. Each property generates a `value alias` clause.
 
 Values can be strings. **To prevent SQL injection, never source strings from user input.**
 
 ```js
 sq.return({ name: 'person.name' , age: 'person.age' }).from('person').query
 
-{ text: 'select person.name as name, person.age as age from person',
+{ text: 'select person.name name, person.age age from person',
   args: [] }
 ```
 
@@ -381,7 +381,7 @@ Values can be [Expressions](expressions).
 ```js
 sq.return({ hello: e('world'), sum: e.plus(1, 2) }).query
 
-{ text: 'select $1 as hello, ($2 + $3) as sum',
+{ text: 'select $1 hello, ($2 + $3) sum',
   args: ['world', 1, 2] }
 ```
 
@@ -390,7 +390,7 @@ Values can be [Fragments](manual-queries#fragments).
 ```js
 sq.return({ sum: sq.txt`${2} + ${3}`, firstName: sq.txt('Bob') }).query
 
-{ text: 'select $1 + $2 as sum, $3 as first_name',
+{ text: 'select $1 + $2 sum, $3 first_name',
   args: [2, 3, 'Bob'] }
 ```
 
@@ -402,7 +402,7 @@ sq.return({
   eight: sq.return(e(8))
 }).query
 
-{ text: 'select (select now()) as time, (select $1) as eight',
+{ text: 'select (select now()) time, (select $1) eight',
   args: [8] }
 ```
 
@@ -480,24 +480,24 @@ sq.return`n`
 `.distinctOn` accepts [Fragments](manual-queries#fragments).
 
 ```js
-sq.from('generate_series(0, 10) as n')
+sq.from('generate_series(0, 10) n')
   .return('n')
   .distinctOn(sq.txt`n / 3`)
   .query
 
-{ text: 'select distinct on (n / 3) n from generate_series(0, 10) as n',
+{ text: 'select distinct on (n / 3) n from generate_series(0, 10) n',
   args: [] }
 ```
 
 `.distinctOn` accepts [Subqueries](manual-queries#subqueries).
 
 ```js
-sq.from('generate_series(0, 10) as n')
+sq.from('generate_series(0, 10) n')
   .return('n')
   .distinctOn(sq.return`n / 3`)
   .query
 
-{ text: 'select distinct on ((select n / 3)) n from generate_series(0, 10) as n',
+{ text: 'select distinct on ((select n / 3)) n from generate_series(0, 10) n',
   args: [] }
 ```
 
@@ -600,12 +600,12 @@ sq.from('person')
 `.groupBy` accepts [Expressions](expressions).
 
 ```js
-sq.from(sq.txt`generate_series(${1}, ${10}) as n`)
+sq.from(sq.txt`generate_series(${1}, ${10}) n`)
   .groupBy(e.mod`n`(2))
   .return(e.mod`n`(2), 'sum(n)')
   .query
 
-{ text: "select n % $1, sum(n) from generate_series($2, $3) as n group by (n % $4);",
+{ text: "select n % $1, sum(n) from generate_series($2, $3) n group by (n % $4);",
   args: [2, 1, 10, 2] }
 ```
 
@@ -647,7 +647,7 @@ sq.from('person')
 
 ### Rollup
 
-**Postgres Only:** `.groupBy` accepts *rollup* arguments. `.rollup` accepts the same arguments as `.groupBy` except *rollup*, *cube* or *grouping sets* arguments.
+**Postgres Only:** `.groupBy` accepts *rollup* arguments. `.rollup` accepts the  same arguments as `.groupBy` except *rollup*, *cube* or *grouping sets* arguments.
 
 ```js
 sq.from('t').groupBy(sq.rollup('a', ['b', sq.txt`c`], 'd')).query
@@ -659,7 +659,7 @@ sq.from('t').groupBy(sq.rollup('a', ['b', sq.txt`c`], 'd')).query
 
 ### Cube
 
-**Postgres Only:** `.groupBy` accepts *cube* arguments. `.cube` accepts the same arguments as `.rollup`.
+**Postgres Only:** `.groupBy` accepts *cube* arguments. `.cube` accepts the  same arguments as `.rollup`.
 
 ```js
 sq.from('t').groupBy(sq.cube('a', ['b', sq.txt`c`], 'd')).query
@@ -671,7 +671,7 @@ sq.from('t').groupBy(sq.cube('a', ['b', sq.txt`c`], 'd')).query
 
 ### Grouping Sets
 
-**Postgres Only:** `.groupBy` accepts *grouping sets* arguments. `.groupingSets` accepts the same arguments as [`.groupBy`](#group-by).
+**Postgres Only:** `.groupBy` accepts *grouping sets* arguments. `.groupingSets` accepts the  same arguments as [`.groupBy`](#group-by).
 
 ```js
 sq.from('t').groupBy(sq.groupingSets(['a', 'b', 'c'], sq.groupingSets(['a', 'b']), ['a'], [])).query
@@ -683,7 +683,7 @@ sq.from('t').groupBy(sq.groupingSets(['a', 'b', 'c'], sq.groupingSets(['a', 'b']
 
 ## Having
 
-Filter groups with `.having`. `.having` accepts the same arguments as [`.where`](#where).
+Filter groups with `.having`. `.having` accepts the  same arguments as [`.where`](#where).
 
 ```js
 sq.from`person`.groupBy`age`.having`age < ${20}`.query
@@ -831,7 +831,7 @@ sq.from('person').limit(7).limit(5).query
   args: [5] }
 ```
 
-`.limit` can be called as a template tag.
+`.limit` can be called a template tag.
 
 ```js
 sq.from`person`.limit`1 + 7`.query
@@ -886,7 +886,7 @@ sq.from('person').offset(7).offset(5).query
   args: [5] }
 ```
 
-`.offset` can be called as a template tag.
+`.offset` can be called a template tag.
 
 ```js
 sq.from`person`.offset`1 + 7`.query
@@ -966,7 +966,7 @@ sq.from`book`.crossJoin`author`.query
   args: [] }
 ```
 
-Join methods accept the same arguments as [`.from`](#from).
+Join methods accept the  same arguments as [`.from`](#from).
 
 ```js
 sq.from({ b: 'book' })
@@ -981,7 +981,7 @@ sq.from({ b: 'book' })
 
 ### On
 
-`.on` specifies join conditions. It accepts the same arguments as [`.where`](#where).
+`.on` specifies join conditions. It accepts the  same arguments as [`.where`](#where).
 
 ```js
 sq.from({ b: 'book' })
@@ -999,7 +999,7 @@ sq.from({ b: 'book' })
   .join({ a: 'author'}).on({ 'b.author_id': sq.raw('a.id') })
   .query
 
-{ text: 'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1)',
+{ text: 'select * from book b join author a on (b.author_id = a.id) and (b.genre = $1)',
   args: ['Fantasy'] }
 ```
 
@@ -1029,7 +1029,7 @@ sq.from`book`.join`author`.using`author_id`.query
   args: [] }
 ```
 
-`.using` accepts column names as string arguments. Multiple calls are joined with `', '`.
+`.using` accepts column names string arguments. Multiple calls are joined with `', '`.
 
 ```js
 sq.from('a').join('b').using('x', 'y').using('z').query
@@ -1086,21 +1086,21 @@ Person.except(Young).intersect(Person.except(Old)).query
 Construct CTEs (Common Table Expressions) with `.with`.
 
 ```js
-sq.with`n as (select ${20} as age)`.from`n`.return`age`.query
+sq.with`n (select ${20} age)`.from`n`.return`age`.query
 
-{ text: 'with n as (select $1 as age) select age from n',
+{ text: 'with n (select $1 age) select age from n',
   args: [20] }
 ```
 
 `.with` can be called multiple times.
 
 ```js
-sq.with`width as (select ${10} as n)`
-  .with`height as (select ${20} as n)`
-  .return`width.n * height.n as area`
+sq.with`width (select ${10} n)`
+  .with`height (select ${20} n)`
+  .return`width.n * height.n area`
   .query
 
-{ text: 'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
+{ text: 'with width (select $1 n), height (select $2 n) select width.n * height.n area',
   args: [10, 20] }
 ```
 
@@ -1109,12 +1109,12 @@ sq.with`width as (select ${10} as n)`
 ```js
 sq.with({
     width: sq.return({ n: 10 }),
-    height: sq.sql`select ${20} as n`
+    height: sq.sql`select ${20} n`
   })
   .return({ area: sq.sql`width.n * height.n` })
   .query
 
-{ text: 'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
+{ text: 'with width (select $1 n), height (select $2 n) select width.n * height.n area',
   args: [10, 20] }
 ```
 
@@ -1124,7 +1124,7 @@ Tables can be arrays of row objects. A *values* clause is generated. Column name
 const people = [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }]
 sq.with({ people }).return`max(age)`.from`people`.query
 
-{ text: 'with people(age, name) as (values ($1, $2), ($3, $4)) select max(age) from people',
+{ text: 'with people(age, name) (values ($1, $2), ($3, $4)) select max(age) from people',
   args: [7, 'Jo', 9, 'Mo'] }
 ```
 
@@ -1140,6 +1140,6 @@ sq.withRecursive({ 't(n)': one.unionAll(next) })
   .return('sum(n)')
   .query
 
-{ text: 'with recursive t(n) as (select 1 union all (select n + 1 from t where (n < 100))) select sum(n) from t',
+{ text: 'with recursive t(n) (select 1 union all (select n + 1 from t where (n < 100))) select sum(n) from t',
   args: [] }
 ```

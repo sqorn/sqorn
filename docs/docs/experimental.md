@@ -36,8 +36,8 @@ sq.from('users')
 
 SELECT json_agg(r.*) FROM (
   SELECT
-    album.title as title,
-    json_agg(track.*) as tracks
+    album.title title,
+    json_agg(track.*) tracks
   FROM
     album
   LEFT OUTER JOIN
@@ -70,11 +70,11 @@ const res = await Album({ year: 2018 })(
 
 `
 select json_agg(r.*) from (
-  select album.title as title, json_agg(track.*) as tracks
+  select album.title title, json_agg(track.*) tracks
   from album
        join track on album.track_id = track.id
   group by album.id
-) as r`
+) r`
                
 const albums await
 
@@ -471,7 +471,7 @@ sq`book`
 
 `.from` specifies the table to query and `.return` specifies the selected columns. If `.return` isn't called, select queries implicitly request all columns (`*`).
 
-Using `sq` as a template literal tag is shorthand for calling `.from`.
+Using `sq` a template literal tag is shorthand for calling `.from`.
 
 ### Where
 
@@ -721,7 +721,7 @@ sq.inj`p.employer_id = c.id`(`person p`, `company c`))`p.id = ${23}``c.name`
 ### with
 
 ```sql
-with `with_alias` as (
+with `with_alias` (
   select * from "book" where "author" = 'Moby Dick'
 )
 select * from `with_alias`
@@ -952,7 +952,7 @@ sq`person p join company c on p.employer_id = c.id`
 // select c.name from person p join company c on p.employer_id = c.id
 // where p.id = 23
 sq.wit`children`(sq`person``age < ${18}`)`children`()`first_name`
-// with children as (select * from "person" where age < 18)
+// with children (select * from "person" where age < 18)
 // select first_name from children`
 sq.l`name = ${firstName}`
 // name = 'John' -- builds escaped SQL string
@@ -1009,7 +1009,7 @@ Person.insert({ name: 'Ed' })
 Person.delete({ name: 'Ed' })
 
 sq.wit`children`(sq`person``age < ${18}`)`children`()`first_name`
-// with children as (select * from "person" where age < 18)
+// with children (select * from "person" where age < 18)
 // select first_name from children`
 sq.l`name = ${firstName}`
 // name = 'John' -- builds escaped SQL string

@@ -36,14 +36,14 @@ describe('sql', () => {
     })
     query({
       name: '1 parameterized arg',
-      query: sq.sql`select ${8} * 2 as twice`,
-      text: 'select $1 * 2 as twice',
+      query: sq.sql`select ${8} * 2 twice`,
+      text: 'select $1 * 2 twice',
       args: [8]
     })
     query({
       name: '2 parameterized args',
-      query: sq.sql`select ${8} * ${7} as product`,
-      text: 'select $1 * $2 as product',
+      query: sq.sql`select ${8} * ${7} product`,
+      text: 'select $1 * $2 product',
       args: [8, 7]
     })
     query({

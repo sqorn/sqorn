@@ -50,20 +50,20 @@ describe('return', () => {
     })
     query({
       name: '1 parameterized arg',
-      query: sq.return`${7} as age, name`,
-      text: 'select $1 as age, name',
+      query: sq.return`${7} age, name`,
+      text: 'select $1 age, name',
       args: [7]
     })
     query({
       name: '2 parameterized args',
-      query: sq.return`${7} as age, ${'Jo'} as name`,
-      text: 'select $1 as age, $2 as name',
+      query: sq.return`${7} age, ${'Jo'} name`,
+      text: 'select $1 age, $2 name',
       args: [7, 'Jo']
     })
     query({
       name: 'multiple raw and parameterized args',
-      query: sq.return`${7} as ${sq.raw('age')}, ${'Jo'} as ${sq.raw('name')}`,
-      text: 'select $1 as age, $2 as name',
+      query: sq.return`${7} ${sq.raw('age')}, ${'Jo'} ${sq.raw('name')}`,
+      text: 'select $1 age, $2 name',
       args: [7, 'Jo']
     })
   })
