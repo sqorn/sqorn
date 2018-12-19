@@ -567,7 +567,7 @@ export interface And {
 ```js
 sq.from('person').where({ age: 20 }).and({ name: 'Jo' })
 // select * from person where (age > $1) and (name = $2)
-sq.from('book').left.join('author')
+sq.from('book').leftJoin('author')
   .on({ 'book.author_id': sq.raw('author.id') })
   .and({ 'author.status': 'active' })
 // select * from book left join author
@@ -590,7 +590,7 @@ sq.from('book').return('genre', 'avg(book.rating) as r')
 sq.from`person`.where`age > 20`.and`age < 30`
 // select * from person where (age > 20) and (age < 30)
 
-sq.from`book`.left.join`author`
+sq.from`book`.leftJoin`author`
   .on`book.author_id = author.id`.and`author.status = 'active'`
 // select * from book left join author
 // on (book.author_id = author.id) and (author.status = 'active')
@@ -615,7 +615,7 @@ interface Or {
 sq.from('person').where(sq.txt`age < 20`).or(sq.txt`age > 30`)
 // select * from person where (age < 20) or (age > 30)
 
-sq.from('book').left.join('author')
+sq.from('book').leftJoin('author')
   .on({ 'book.author_id': sq.raw('author.id') })
   .or({ 'book.editor_id': sq.raw('author.id') })
 // select * from book left join author
@@ -639,7 +639,7 @@ sq.from('book').return('genre', 'avg(book.rating) as r')
 sq.from`person`.where`age < 20`.or`age > 30`
 // select * from person where (age < 20) or (age > 30)
 
-sq.from`book`.left.join`author`
+sq.from`book`.leftJoin`author`
   .on`book.author_id = author.id`.or`book.editor_id = author.id`
 // select * from book left join author
 // on (book.author_id = author.id) or (book.editor_id = author.id)
@@ -1092,10 +1092,10 @@ sq.from('book').join('author').using('author_id')
 sq.from('a').join('b').using('x', 'y').using('z')
 // select * from a join b using (x, y, z)
 
-sq.from('book').left.join('author').right.join`publisher`
+sq.from('book').leftJoin('author').rightJoin`publisher`
 // select * from book natural left join author natural right join publisher
 
-sq.from('book').left.right.join('author').cross.inner.join`publisher`
+sq.from('book').naturalRightJoin('author').crossjoin`publisher`
 // select * from book natural right join author natural join publisher
 ```
    */
@@ -1134,10 +1134,10 @@ sq.from`book`.join`author`.using`author_id`
 sq.from`a`.join`b`.using`x, y`.using`z`
 // select * from a join b using (x, y, z)
 
-sq.from`book`.left.join`author`.right.join`publisher`
+sq.from`book`.leftJoin`author`.rightJoin`publisher`
 // select * from book natural left join author natural right join publisher
 
-sq.from`book`.left.right.join`author`.cross.inner.join`publisher`
+sq.from`book`.naturalRightJoin`author`.crossjoin`publisher`
 // select * from book natural right join author natural join publisher
 ```
    */
@@ -1150,13 +1150,13 @@ sq.from`book`.left.right.join`author`.cross.inner.join`publisher`
    * 
    * @example
 ```js
-sq.from`book`.inner.join`author`
+sq.from`book`.join`author`
 // select * from book natural join author
 
 sq.from`book`.join`author`
 // select * from book natural join author
 
-sq.from`book`.inner.join`author`.on`book.author_id = author.id`
+sq.from`book`.join`author`.on`book.author_id = author.id`
 // select * from book join author on book.author_id = author.id
 ```
    */
@@ -1169,10 +1169,10 @@ sq.from`book`.inner.join`author`.on`book.author_id = author.id`
    * 
    * @example
 ```js
-sq.from`book b`.left.join`author a`
+sq.from`book b`.leftJoin`author a`
 // select * from book natural left join author
 
-sq.from`book b`.left.join`author a`.on`b.author_id = a.id`
+sq.from`book b`.leftJoin`author a`.on`b.author_id = a.id`
 // select * from book b left join author a on b.author_id = a.id
 ```
    */
@@ -1185,10 +1185,10 @@ sq.from`book b`.left.join`author a`.on`b.author_id = a.id`
    * 
    * @example
 ```js
-sq.from`book b`.right.join`author a`
+sq.from`book b`.rightJoin`author a`
 // select * from book natural right join author
 
-sq.from`book b`.right.join`author a`.on`b.author_id = a.id`
+sq.from`book b`.rightJoin`author a`.on`b.author_id = a.id`
 // select * from book b right join author a on b.author_id = a.id
 ```
    */
@@ -1201,10 +1201,10 @@ sq.from`book b`.right.join`author a`.on`b.author_id = a.id`
    * 
    * @example
 ```js
-sq.from`book b`.full.join`author a`
+sq.from`book b`.fullJoin`author a`
 // select * from book natural full join author
 
-sq.from`book b`.full.join`author a`.on`b.author_id = a.id`
+sq.from`book b`.fullJoin`author a`.on`b.author_id = a.id`
 // select * from book b full join author a on b.author_id = a.id
 ```
    */
@@ -1217,10 +1217,10 @@ sq.from`book b`.full.join`author a`.on`b.author_id = a.id`
    * 
    * @example
 ```js
-sq.from`book b`.cross.join`author a`
-// select * from book natural cross join author
+sq.from`book b`.crossJoin`author a`
+// select * from book cross join author
 
-sq.from`book b`.cross.join`author a`.on`b.author_id = a.id`
+sq.from`book b`.crossJoin`author a`.on`b.author_id = a.id`
 // select * from book b cross join author a on b.author_id = a.id
 ```
    */

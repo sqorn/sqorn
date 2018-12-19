@@ -992,7 +992,7 @@ sq.from({ b: 'book' })
   args: [] }
 ```
 
-Call `.on` once at most.
+`.on` must be called exactly once.
 
 ```js
 sq.from({ b: 'book' })

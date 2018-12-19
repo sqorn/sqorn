@@ -10,20 +10,20 @@ sq.from({ u: 'users' })
 // introduce .and and .or that selectively build either .where, .having, or .long
 
 sq.from({ u: 'users' })
-  .join({ a: 'accounts' }).left.on({ 'u.id': 'a.user_id' })
-  .join({ a: 'accounts' }).right.on({ 'u.id': 'a.user_id' })
+  .join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
+  .join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
 
 sq.from({ u: 'users' })
-  .left.join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
-  .right.join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
-  .lateral.right.join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
-  .natural.right.join({ a: 'accounts' })
+  leftJoin({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
+  rightJoin({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
+  .lateralrightJoin({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
+  .naturalrightJoin({ a: 'accounts' })
 
 sq.from({ u: 'users' })
-  .join({ a: 'accounts' }).left.on({ 'u.id': 'a.user_id' })
+  .join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
   .wrap(
-    sq.right.join({ a: 'accounts' }).using('meow')
-      .natural.full.join({ a: 'accounts' })
+    sqrightJoin({ a: 'accounts' }).using('meow')
+      .naturalfullJoin({ a: 'accounts' })
   )
 
 sq.from('users')
@@ -56,7 +56,7 @@ sq.return({ album: 'json_agg(r.*)' })
   .from({
     r: sq.return({ title: 'album.title', tracks: 'json_agg(track.*)' })
       .from('album')
-      .left.join('track').on('album.id = track.album_id')
+      leftJoin('track').on('album.id = track.album_id')
       .where({ 'album.year': 2018 })
       .groupBy('album.id')
   })

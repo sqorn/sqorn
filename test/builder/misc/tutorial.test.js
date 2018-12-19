@@ -132,7 +132,7 @@ describe('tutorial', () => {
         args: []
       })
       query({
-        name: '.from`join`',
+        name: '.from`.join`',
         query: sq.from`book left join author on book.author_id = author.id`,
         text:
           'select * from book left join author on book.author_id = author.id'
@@ -539,7 +539,7 @@ describe('tutorial', () => {
     describe('Join', () => {
       query({
         name: 'natural join',
-        query: sq.from`book`.join`author`,
+        query: sq.from`book`.naturalJoin`author`,
         text: 'select * from book natural join author',
         args: []
       })
@@ -575,17 +575,17 @@ describe('tutorial', () => {
       })
       query({
         name: 'join type',
-        query: sq.from`book`.left.join`author`.right.join`publisher`,
+        query: sq.from`book`.naturalLeftJoin`author`
+          .naturalRightJoin`publisher`,
         text:
           'select * from book natural left join author natural right join publisher',
         args: []
       })
       query({
         name: 'multiple join type',
-        query: sq.from`book`.left.right.join`author`.cross.inner
-          .join`publisher`,
+        query: sq.from`book`.naturalRightJoin`author`.crossJoin`publisher`,
         text:
-          'select * from book natural right join author natural join publisher',
+          'select * from book natural right join author cross join publisher',
         args: []
       })
     })

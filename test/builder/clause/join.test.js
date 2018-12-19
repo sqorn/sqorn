@@ -4,69 +4,62 @@ describe('join', () => {
   describe('join types', () => {
     query({
       name: 'natural join',
-      query: sq.from`book`.join`publisher`,
-      text: 'select * from book natural join publisher'
-    })
-    query({
-      name: 'natural inner join',
-      query: sq.from`book`.inner.join`publisher`,
+      query: sq.from`book`.naturalJoin`publisher`,
       text: 'select * from book natural join publisher'
     })
     query({
       name: 'natural left join',
-      query: sq.from`book`.left.join`publisher`,
+      query: sq.from`book`.naturalLeftJoin`publisher`,
       text: 'select * from book natural left join publisher'
     })
     query({
       name: 'natural right join',
-      query: sq.from`book`.right.join`publisher`,
+      query: sq.from`book`.naturalRightJoin`publisher`,
       text: 'select * from book natural right join publisher'
     })
     query({
       name: 'natural full join',
-      query: sq.from`book`.full.join`publisher`,
+      query: sq.from`book`.naturalFullJoin`publisher`,
       text: 'select * from book natural full join publisher'
     })
     query({
-      name: 'natural cross join',
-      query: sq.from`book`.cross.join`publisher`,
-      text: 'select * from book natural cross join publisher'
+      name: 'cross join',
+      query: sq.from`book`.crossJoin`publisher`,
+      text: 'select * from book cross join publisher'
     })
   })
   describe('multiple joins', () => {
     query({
       name: 'two joins',
-      query: sq.from`book`.join`author`.join`publisher`,
+      query: sq.from`book`.naturalJoin`author`.naturalJoin`publisher`,
       text: 'select * from book natural join author natural join publisher'
     })
     query({
       name: 'three joins',
-      query: sq.from`a`.join`b`.join`c`.join`d`,
+      query: sq.from`a`.naturalJoin`b`.naturalJoin`c`.naturalJoin`d`,
       text: 'select * from a natural join b natural join c natural join d'
     })
     query({
       name: 'multiple mixed join types',
-      query: sq.from`a`.left.join`b`.right.join`c`.cross.join`d`,
+      query: sq.from`a`.naturalLeftJoin`b`.naturalRightJoin`c`.crossJoin`d`,
       text:
-        'select * from a natural left join b natural right join c natural cross join d'
+        'select * from a natural left join b natural right join c cross join d'
     })
     query({
       name: 'repeat join types',
-      query: sq.from`a`.left.right.cross.join`b`.cross.full.join`c`.full.inner
-        .join`d`,
-      text:
-        'select * from a natural cross join b natural full join c natural join d'
+      query: sq.from`a`.crossJoin`b`.naturalFullJoin`c`.naturalJoin`d`,
+      text: 'select * from a cross join b natural full join c natural join d'
     })
   })
   describe('join overloads', () => {
     query({
       name: 'two joins',
-      query: sq.from({ b: 'book' }).join({ p: 'publisher' }),
+      query: sq.from({ b: 'book' }).naturalJoin({ p: 'publisher' }),
       text: 'select * from book as b natural join publisher as p'
     })
     query({
       name: 'two joins',
-      query: sq.from('book').join('publisher'),
+      query: sq.from('book').naturalJoin('publisher'),
       text: 'select * from book natural join publisher'
     })
   })

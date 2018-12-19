@@ -22,8 +22,6 @@ const createNewContext = defaultContext => {
       type: 'select',
       // | sql' | 'select' | 'delete' | 'insert' | 'update'
       target: whr,
-      // associates condition with previous calls to .where, .join.on, and .having
-      nextJoin: { join: 'inner' },
       join: undefined,
       separator: ' ',
       sql: [],

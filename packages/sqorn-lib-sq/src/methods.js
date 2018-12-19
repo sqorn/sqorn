@@ -14,13 +14,6 @@ const methods = {
       ctx.sql.push(args)
     }
   },
-  raw: {
-    updateContext: (ctx, args) => {
-      // ctx.type = ctx.type === 'select' ? 'arg' : 'manual'
-      ctx.type = 'manual'
-      ctx.sql.push({ args, raw: true })
-    }
-  },
   link: {
     updateContext: (ctx, args) => {
       ctx.separator = args[0]
@@ -39,7 +32,7 @@ const methods = {
   },
   from: {
     updateContext: (ctx, args) => {
-      ctx.frm.push({ args })
+      ctx.frm.push({ args, join: ', ' })
     }
   },
   where: {
@@ -117,40 +110,47 @@ const methods = {
   },
   join: {
     updateContext: (ctx, args) => {
-      ctx.join = ctx.nextJoin
-      ctx.join.args = args
-      ctx.nextJoin = { join: 'inner' }
-      ctx.frm.push(ctx.join)
+      ctx.frm.push((ctx.join = { args, join: ' join ' }))
     }
   },
-  left: {
-    getter: true,
-    updateContext: ctx => {
-      ctx.nextJoin.join = 'left'
+  leftJoin: {
+    updateContext: (ctx, args) => {
+      ctx.frm.push((ctx.join = { args, join: ' left join ' }))
     }
   },
-  right: {
-    getter: true,
-    updateContext: ctx => {
-      ctx.nextJoin.join = 'right'
+  rightJoin: {
+    updateContext: (ctx, args) => {
+      ctx.frm.push((ctx.join = { args, join: ' right join ' }))
     }
   },
-  full: {
-    getter: true,
-    updateContext: ctx => {
-      ctx.nextJoin.join = 'full'
+  fullJoin: {
+    updateContext: (ctx, args) => {
+      ctx.frm.push((ctx.join = { args, join: ' full join ' }))
     }
   },
-  cross: {
-    getter: true,
-    updateContext: ctx => {
-      ctx.nextJoin.join = 'cross'
+  crossJoin: {
+    updateContext: (ctx, args) => {
+      ctx.frm.push((ctx.join = { args, join: ' cross join ' }))
     }
   },
-  inner: {
-    getter: true,
-    updateContext: ctx => {
-      ctx.nextJoin.join = 'inner'
+  naturalJoin: {
+    updateContext: (ctx, args) => {
+      ctx.frm.push((ctx.join = { args, join: ' natural join ' }))
+    }
+  },
+  naturalLeftJoin: {
+    updateContext: (ctx, args) => {
+      ctx.frm.push((ctx.join = { args, join: ' natural left join ' }))
+    }
+  },
+  naturalRightJoin: {
+    updateContext: (ctx, args) => {
+      ctx.frm.push((ctx.join = { args, join: ' natural right join ' }))
+    }
+  },
+  naturalFullJoin: {
+    updateContext: (ctx, args) => {
+      ctx.frm.push((ctx.join = { args, join: ' natural full join ' }))
     }
   },
   on: {
@@ -195,7 +195,7 @@ const methods = {
     updateContext: (ctx, args, count) => {
       if (count.id === 0) {
         count.id++
-        ctx.frm.push({ type: 'from', args })
+        ctx.frm.push((ctx.join = { type: 'from', args, join: ', ' }))
       } else if (count.id === 1) {
         count.id++
         ctx.whr.push(args)
