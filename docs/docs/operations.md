@@ -8,20 +8,20 @@ sidebar_label: Operations
 
 ## Overview
 
-* **Value** [`arg`](#arg), [`unknown`](#unknown), [`boolean`](#boolean), [`number`](#number), [`string`](#string), [`array`](#array), [`json`](#json), [`row`](#row), [`table`](#table)
-* **Logical** [`and`](#and), [`or`](#or), [`not`](#not)
-* **Comparison** [`eq`](#equal), [`neq`](#not-equal), [`lt`](#less-than), [`gt`](#greater-than), [`lte`](#less-than-or-equal), [`gte`](#greater-than-or-equal), [`between`](#between) [`notBetween`](#not-between), [`isDistinctFrom`](#is-distinct-from), [`isNotDistinctFrom`](#is-not-distinct-from), [`isNull`](#is-null), [`isNotNull`](#is-not-null), [`isTrue`](#is-true), [`isNotTrue`](#is-not-true), [`isFalse`](#is-false), [`isNotFalse`](#is-not-false), [`isUnknown`](#is-unknown), [`isNotUnknown`](#is-not-unknown), [`in`](#in), [`notIn`](#not-in)
-* **Quantified Comparison** [`eqAny`](#equal-any), [`eqAll`](#equal-all), [`neqAny`](#equal-any), [`neqAll`](#not-equal-all), [`ltAny`](#less-than-any), [`ltAll`](#less-than-all), [`gtAny`](#greater-than-any), [`gtAll`](#greater-than-all), [`lteAny`](#less-than-or-equal-any), [`lteAll`](#less-than-or-equal-all), [`gteAny`](#greater-than-or-equal-any), [`gteAll`](#greater-than-or-equal-all), [`likeAny`](#like-any), [`likeAll`](#like-all), [`notLikeAny`](#not-like-any), [`notLikeAll`](#not-like-all)
-* **Math** [`add`](#-add), [`sub`](#subtract), [`mul`](#multiply), [`div`](#divide), [`mod`](#modulo), [`exp`](#exponent), [`sqrt`](#square-root), [`cbrt`](#cube-root), [`fact`](#factorial)
-* **String** [`cat`](#concatenation), [`like`](#like), [`notLike`](#not-like), [`similarTo`](#similar-to), [`notSimilarTo`](#not-similar-to), [`lower`](#lower), [`upper`](#upper)
-* **Date and Time** [`age`](#age), [`now`](#now), [`extract`](#extract)
+* **Value** [`arg`](#arg) [`unknown`](#unknown) [`boolean`](#boolean) [`number`](#number) [`string`](#string) [`array`](#array) [`json`](#json) [`row`](#row) [`table`](#table)
+* **Logical** [`and`](#and) [`or`](#or) [`not`](#not)
+* **Comparison** [`eq`](#equal) [`neq`](#not-equal) [`lt`](#less-than) [`gt`](#greater-than) [`lte`](#less-than-or-equal) [`gte`](#greater-than-or-equal) [`between`](#between) [`notBetween`](#not-between) [`isDistinctFrom`](#is-distinct-from) [`isNotDistinctFrom`](#is-not-distinct-from) [`isNull`](#is-null) [`isNotNull`](#is-not-null) [`isTrue`](#is-true) [`isNotTrue`](#is-not-true) [`isFalse`](#is-false) [`isNotFalse`](#is-not-false) [`isUnknown`](#is-unknown) [`isNotUnknown`](#is-not-unknown) [`in`](#in) [`notIn`](#not-in)
+* **Quantified Comparison** [`eqAny`](#equal-any) [`eqAll`](#equal-all) [`neqAny`](#equal-any) [`neqAll`](#not-equal-all) [`ltAny`](#less-than-any) [`ltAll`](#less-than-all) [`gtAny`](#greater-than-any) [`gtAll`](#greater-than-all) [`lteAny`](#less-than-or-equal-any) [`lteAll`](#less-than-or-equal-all) [`gteAny`](#greater-than-or-equal-any) [`gteAll`](#greater-than-or-equal-all) [`likeAny`](#like-any) [`likeAll`](#like-all) [`notLikeAny`](#not-like-any) [`notLikeAll`](#not-like-all)
+* **Math** [`add`](#-add) [`sub`](#subtract) [`mul`](#multiply) [`div`](#divide) [`mod`](#modulo) [`exp`](#exponent) [`sqrt`](#square-root) [`cbrt`](#cube-root) [`fact`](#factorial)
+* **String** [`cat`](#concatenation) [`like`](#like) [`notLike`](#not-like) [`similarTo`](#similar-to) [`notSimilarTo`](#not-similar-to) [`lower`](#lower) [`upper`](#upper)
+* **Date and Time** [`age`](#age) [`now`](#now) [`extract`](#extract)
 * **Range**
-* **Aggregate** [`count`](#count), [`sum`](#sum), [`avg`](#average), [`min`](#min), [`max`](#max), [`stddev`](#standard-deviation), [`variance`](#variance)
-* **Conditional** [`case`](#case), [`coalesce`](#coalesce), [`nullif`](#nullif), [`greatest`](#greatest), [`least`](#least)
-* **Array** [`cat`](#concatenation-1), [`arrayGet`](#array-get), [`arrayAppend`](#array-append), [`arrayCat`](#array-cat)
+* **Aggregate** [`count`](#count) [`sum`](#sum) [`avg`](#average) [`min`](#min) [`max`](#max) [`stddev`](#standard-deviation) [`variance`](#variance)
+* **Conditional** [`case`](#case) [`coalesce`](#coalesce) [`nullif`](#nullif) [`greatest`](#greatest) [`least`](#least)
+* **Array** [`cat`](#concatenation-1) [`arrayGet`](#array-get) [`arrayAppend`](#array-append) [`arrayCat`](#array-cat)
 * **JSON**
-* **Binary** [`and`](#and-1), [`or`](#or-1), [`xor`](#xor-1), [`not`](#not-1), [`shiftLeft`](#shift-left), [`shiftRight`](#shift-right)
-* **Table** [`union`](#union), [`except`](#except), [`except-all`](#except-all) [`unionAll`](#union-all), [`intersect`](#intersect), [`intersectAll`](#intersect-all), 
+* **Binary** [`and`](#and-1) [`or`](#or-1) [`xor`](#xor-1) [`not`](#not-1) [`shiftLeft`](#shift-left) [`shiftRight`](#shift-right)
+* **Table** [`union`](#union) [`except`](#except) [`except-all`](#except-all) [`unionAll`](#union-all) [`intersect`](#intersect) [`intersectAll`](#intersect-all) 
 
 ## Value
 

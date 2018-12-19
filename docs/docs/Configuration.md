@@ -4,7 +4,7 @@ title: Configuration
 sidebar_label: Configuration
 ---
 
-[`thenable`](#thenable), [`mapInputKeys`](#map-input-keys), [`mapOutputKeys`](#map-output-keys)
+[`thenable`](#thenable) [`mapInputKeys`](#map-input-keys) [`mapOutputKeys`](#map-output-keys)
 
 ### Thenable
 

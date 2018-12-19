@@ -9,11 +9,11 @@ sidebar_label: Delete
 
 ## Overview
 
-* **With** [`.with`](#with), [`.recursive`](#recursive-ctes)
+* **With** [`.with`](select-queries#with) [`.withRecursive`](select-queries#recursive-ctes)
 * **Delete** [`.delete`](#delete)
 * **From** [`.from`](#from-1)
 * **Using** [`.from`](#using-1)
-* **Where** [`.where`](#where-1), [`.and`](#and-or), [`.or`](#and-or)
+* **Where** [`.where`](#where-1)
 * **Returning** [`.return`](#returning)
 
 ## Delete

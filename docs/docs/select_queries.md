@@ -9,14 +9,14 @@ sidebar_label: Select
 
 ## Overview
 
-* **With** [`.with`](#with), [`.recursive`](#recursive-ctes)
+* **With** [`.with`](#with) [`.withRecursive`](#recursive-ctes)
 * **Select** [`.return`](#select)
-* **Distinct** [`.distinct`](#distinct), [`.distinctOn`](#distinct-on)
-* **From** [`.from`](#from), [`.join`](#joins), [`.leftJoin`](#joins), [`.rightJoin`](#joins), [`.fullJoin`](#joins), [`.crossJoin`](#joins), [`.naturalJoin`](#joins), [`.naturalLeftJoin`](#joins), [`.naturalRightJoin`](#joins), [`.naturalFullJoin`](#joins), [`.on`](#on), [`.using`](#using)
+* **Distinct** [`.distinct`](#distinct) [`.distinctOn`](#distinct-on)
+* **From** [`.from`](#from) [`.join`](#joins) [`.leftJoin`](#joins) [`.rightJoin`](#joins) [`.fullJoin`](#joins) [`.crossJoin`](#joins) [`.naturalJoin`](#joins) [`.naturalLeftJoin`](#joins) [`.naturalRightJoin`](#joins) [`.naturalFullJoin`](#joins) [`.on`](#on) [`.using`](#using)
 * **Where** [`.where`](#where)
-* **Group By** [`.groupBy`](#group-by), [`.rollup`](#rollup), [`.cube`](#cube), [`.groupingSets`](#grouping-sets)
+* **Group By** [`.groupBy`](#group-by) [`.rollup`](#rollup) [`.cube`](#cube) [`.groupingSets`](#grouping-sets)
 * **Having** [`.having`](#having)
-* **Sets** [`.union`](#union-intersect-except), [`.intersect`](#union-intersect-except), [`.except`](#union-intersect-except), [`.unionAll`](#union-all-intersect-all-except-all), [`.intersectAll`](#union-all-intersect-all-except-all), [`.exceptAll`](#union-all-intersect-all-except-all)
+* **Sets** [`.union`](#union-intersect-except) [`.intersect`](#union-intersect-except) [`.except`](#union-intersect-except) [`.unionAll`](#union-all-intersect-all-except-all) [`.intersectAll`](#union-all-intersect-all-except-all) [`.exceptAll`](#union-all-intersect-all-except-all)
 * **Order By** [`.orderBy`](#order-by)
 * **Limit** [`.limit`](#limit)
 * **Offset** [`.offset`](#offset)
@@ -671,7 +671,7 @@ sq.from('t').groupBy(sq.cube('a', ['b', sq.txt`c`], 'd')).query
 
 ### Grouping Sets
 
-**Postgres Only:** `.groupBy` accepts *grouping sets* arguments. `.groupingSets` accepts the same arguments as `.groupBy`.
+**Postgres Only:** `.groupBy` accepts *grouping sets* arguments. `.groupingSets` accepts the same arguments as [`.groupBy`](#group-by).
 
 ```js
 sq.from('t').groupBy(sq.groupingSets(['a', 'b', 'c'], sq.groupingSets(['a', 'b']), ['a'], [])).query
@@ -1130,13 +1130,12 @@ sq.with({ people }).return`max(age)`.from`people`.query
 
 ### Recursive CTEs
 
-Create *recursive* CTE with `.recursive`.
+`.withRecursive` creates a *recursive* CTE.
 
 ```js
 const one = sq.return`1`
 const next = sq.return`n + 1`.from`t`.where`n < 100`
-sq.recursive
-  .with({ 't(n)': one.unionAll(next) })
+sq.withRecursive({ 't(n)': one.unionAll(next) })
   .from('t')
   .return('sum(n)')
   .query

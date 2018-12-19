@@ -9,8 +9,8 @@ sidebar_label: Insert
 
 ## Overview
 
-* **With** [`.with`](#with), [`.recursive`](#recursive-ctes)
-* **Insert** [`.from`](#insert), [`.insert`](#insert)
+* **With** [`.with`](select-queries#with) [`.withRecursive`](select-queries#recursive-ctes)
+* **Insert** [`.from`](#insert) [`.insert`](#insert)
 * **Returning** [`.return`](#returning)
 
 ## Insert

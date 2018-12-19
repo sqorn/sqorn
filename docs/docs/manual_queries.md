@@ -6,8 +6,8 @@ sidebar_label: Manual
 
 ## Overview
 
-* **Build** [`.sql`](#queries), [`.raw`](#raw-strings), [`.txt`](#fragments), [`.extend`](#extend), [`.link`](#link)
-* **Compile** [`.query`](#queries), [`.unparameterized`](#queries).
+* **Build** [`.sql`](#queries) [`.raw`](#raw-strings) [`.txt`](#fragments) [`.extend`](#extend) [`.link`](#link)
+* **Compile** [`.query`](#queries) [`.unparameterized`](#queries)
 
 ## Queries
 

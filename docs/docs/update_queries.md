@@ -9,11 +9,11 @@ sidebar_label: Update
 
 ## Overview
 
-* **With** [`.with`](#with), [`.recursive`](#recursive-ctes)
+* **With** [`.with`](select-queries#with) [`.withRecursive`](select-queries#recursive-ctes)
 * **Update** [`.from`](#set)
 * **Set** [`.set`](#set)
 * **From** [`.from`](#from-2)
-* **Where** [`.where`](#where-1), [`.and`](#and-or), [`.or`](#and-or)
+* **Where** [`.where`](#where-1)
 * **Returning** [`.return`](#returning)
 
 ## Set

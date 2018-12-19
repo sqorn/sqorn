@@ -24,10 +24,10 @@ const methods = {
       ctx.with.push(args)
     }
   },
-  recursive: {
-    getter: true,
-    updateContext: ctx => {
+  withRecursive: {
+    updateContext: (ctx, args) => {
       ctx.recursive = true
+      ctx.with.push(args)
     }
   },
   from: {

@@ -665,7 +665,7 @@ describe('tutorial', () => {
       const next = sq.return`n + 1`.from`t`.where`n < 100`
       query({
         name: 'recursive cte',
-        query: sq.recursive.with({ 't(n)': one.unionAll(next) }).from`t`
+        query: sq.withRecursive({ 't(n)': one.unionAll(next) }).from`t`
           .return`sum(n)`,
         text:
           'with recursive t(n) as (select 1 union all (select n + 1 from t where (n < 100))) select sum(n) from t',

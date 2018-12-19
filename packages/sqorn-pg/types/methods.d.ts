@@ -16,7 +16,7 @@ export interface With {
    *   * a subquery
    *   * an array of data values
    * 
-   * Call `.recursive` to make the CTE recursive.
+   * Call `.withRecursive` to make the CTE recursive.
    * 
    * Multiple calls to `.with` are joined with ', '.
    * 
@@ -43,7 +43,7 @@ sq.with({ people }).return('max(age)').from('people')
    * 
    * Constructs a Common Table Expression (CTE)
    * 
-   * Call `.recursive` to make the CTE recursive.
+   * Call `.withRecursive` to make the CTE recursive.
    * 
    * Multiple calls to `.with` are joined with ', '.
    *
@@ -68,14 +68,13 @@ sq.with`width as (select ${10} as n)`
    * 
    * Makes the Common Table Expression recursive.
    * 
-   * `.recursive` is idempotent. 
+   * `.withRecursive` is idempotent. 
    * 
    * @example
 ```js
 const one = sq.return`1`
 const next = sq.return`n + 1`.from`t`.where`n < 100`
-sq.recursive
-  .with({ 't(n)': one.unionAll(next) })
+sq.withRecursive({ 't(n)': one.unionAll(next) })
   .from`t`
   .return`sum(n)`
 ```
@@ -90,7 +89,8 @@ with recursive t(n) as (
 select sum(n) from t'
 ```
    */
-  recursive: this
+  withRecursive(...tables: { [table: string]: SQ |  Value[] }[]): this
+  withRecursive(strings: TemplateStringsArray, ...args: any[]): this
 }
 
 export interface From {

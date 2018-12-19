@@ -93,7 +93,7 @@ describe('with', () => {
   describe('recursive', () => {
     query({
       name: 'one',
-      query: sq.recursive.with({
+      query: sq.withRecursive({
         't(n)': sq.return`1`.unionAll(sq.sql`select n + 1 from t where n < 100`)
       }).return`sum(n)`,
       text:
