@@ -19,7 +19,7 @@ const { e } = sq
 
 e.add(3, 4).query
 
-{ text: '$1 + $2',
+{ text: '($1 + $2)',
   args: [3, 4] }
 ```
 
@@ -58,7 +58,7 @@ e.and(
   e.neq(7, 8)
 ).query
 
-{ text: '(($1 < $2) or ($3 > $4)) and ($5 <> $6)',
+{ text: '((($1 < $2) or ($3 > $4)) and ($5 <> $6))',
   args: [3, 4, 5, 6, 7, 8] }
 ```
 
@@ -67,7 +67,7 @@ All *Operations* have curried overloads.
 ```js
 e.add(3)(4).query
 
-{ text: '$1 + $2',
+{ text: '($1 + $2)',
   args: [3, 4] }
 ```
 
@@ -76,7 +76,7 @@ Supply raw arguments with tagged template literals.
 ```js
 e.eq`lucky_number`(8).query
 
-{ text: 'lucky_number = $1',
+{ text: '(lucky_number = $1)',
   args: [8] }
 ```
 
@@ -85,7 +85,7 @@ A chained operation's first argument is the expression it is called on. There is
 ```js
 e(3).add(4).eq(7).and(true).query
 
-{ text: '(($1 + $2) = $3) and $4',
+{ text: '((($1 + $2) = $3) and $4)',
   args: [3, 4, 7, true] }
 ```
 
@@ -95,7 +95,7 @@ Pass multiple arguments to `.arg` to build a row value.
 e.arg(8, true)`meow`.query
 
 { text: '($1, $2, meow)',
-  args: [8, true]}
+  args: [8, true] }
 ```
 
 Build expressions from [Fragments](manual-queries.html#fragments) and [Subqueries](manual-queries.html#subqueries).
@@ -127,18 +127,18 @@ e.arg(null).query
 ```js
 e.eq`genre`('fantasy').unparameterized
 
-"genre = 'fantasy'"
+"(genre = 'fantasy')"
 ```
 
 Build queries from expressions.
 
 ```js
-sq.return(e.plus`n`(7))
+sq.return(e.add`n`(7))
   .from({ n: e.unnest([2, 3, 4, 5]) })
   .where(e`n`.mod(2).eq(0))
   .query
 
-{ text: 'select n + $1 from unnest($2) n where ((n % $3) = $4)',
+{ text: 'select (n + $1) from unnest($2) n where ((n % $3) = $4)',
   args: [7, [2, 3, 4, 5], 2, 0] }
 ```
 

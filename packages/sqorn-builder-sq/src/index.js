@@ -91,7 +91,7 @@ const builderProperties = ({ chain, newContext, updateContext, queries }) => ({
   },
   unparameterized: {
     get: function() {
-      return this._build({ parameterize: false }).text
+      return this._build({ unparameterized: true }).text
     }
   },
   extend: {

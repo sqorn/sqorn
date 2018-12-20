@@ -786,12 +786,12 @@ describe('tutorial', () => {
       })
       query({
         name: '.insert default values',
-        query: sq.from`person`.insert(),
+        query: sq.from`person`.insert(undefined),
         text: 'insert into person default values',
         args: []
       })
       query({
-        name: '.insert default values',
+        name: '.insert multiple',
         query: sq.from`person`
           .insert({ firstName: 'Shallan', lastName: 'Davar' })
           .insert({ firstName: 'Navani', lastName: 'Kholin' }),

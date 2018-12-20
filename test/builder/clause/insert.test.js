@@ -17,7 +17,7 @@ describe('insert', () => {
   describe('misc', () => {
     query({
       name: 'default values',
-      query: sq.from('person').insert(),
+      query: sq.from('person').insert(undefined),
       text: 'insert into person default values'
     })
     query({

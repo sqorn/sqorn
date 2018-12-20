@@ -74,7 +74,7 @@ sq.from('person')
   .query
 
 { text: 'update person set age = 3 + 4',
-  args: [3, 4] }
+  args: [] }
 ```
 
 Values can be [Subqueries](manual-queries#subqueries).
@@ -82,25 +82,13 @@ Values can be [Subqueries](manual-queries#subqueries).
 ```js
 sq.from('person')
   .set({
-    firstName: sq.sql`'Bob'`,
+    firstName: sq.sql`select 'Bob'`,
     lastName: sq.return`'Smith'`
   })
  .query
 
-{ text: "update person set first_name = 'Bob', last_name = (select 'Smith')",
+{ text: "update person set first_name = (select 'Bob'), last_name = (select 'Smith')",
   args: [] }
-```
-
-Call `.set` multiple times to update additional fields.
-
-```js
-sq.from`person`
-  .set({ firstName: 'Robert' })
-  .set({ nickname: 'Rob' })
-  .query
-
-{ text: 'update person set first_name = $1, nickname = $2',
-  args: ['Robert', 'Rob'] }
 ```
 
 ## Where

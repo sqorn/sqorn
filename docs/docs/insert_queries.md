@@ -39,7 +39,7 @@ sq.from('person')
   args: ['Shallan', 'Davar'] }
 ```
 
-`undefined` values are inserted `default`. `default` cannot be parameterized.
+`undefined` values are inserted as `default`. `default` is a keyword, not a paraemeter.
 
 ```js
 sq.from('test').insert({ a: undefined, b: null }).query
@@ -91,7 +91,7 @@ Values can be [Fragments](manual-queries#fragments).
 sq.from('person').insert({ firstName: sq.txt`'moo'` }).query
 
 { text: "insert into person(first_name) values ('moo')",
-  args: ['moo'] }
+  args: [] }
 ```
 
 Values can be [Subqueries](manual-queries#subqueries).
@@ -99,7 +99,7 @@ Values can be [Subqueries](manual-queries#subqueries).
 ```js
 sq.from('person').insert({
     firstName: sq.return`${'Shallan'}`,
-    lastName: sq.sql('Davar')
+    lastName: sq.txt('Davar')
   })
   .query
 
@@ -116,16 +116,14 @@ sq.from('superhero(name)')
   )
   .query
 
-{ text: "insert into superhero(name) select $1 union (select $2)",
+{ text: "insert into superhero(name) (select $1 union (select $2))",
   args: ['batman', 'superman'] }
 ```
 
-TODO: Rework
-
-Call `.insert` without arguments to insert default values.
+Pass `undefined` to insert default values.
 
 ```js
-sq.from('person').insert().query
+sq.from('person').insert(undefined).query
 
 { text: 'insert into person default values',
   args: [] }
@@ -153,7 +151,7 @@ sq.from('book')
 .return('id')
 .query
 
-{ text: 'insert into book (title) values ($1) returning id',
+{ text: 'insert into book(title) values ($1) returning id',
   args: ['Squirrels and Acorns'] }
 ```
 
@@ -164,6 +162,6 @@ sq.from('book')
 ```js
 sq('book')()('id').insert({ title: 'Squirrels and Acorns' }).query
 
-{ text: 'insert into book (title) values ($1) returning id',
+{ text: 'insert into book(title) values ($1) returning id',
   args: ['Squirrels and Acorns'] }
 ```

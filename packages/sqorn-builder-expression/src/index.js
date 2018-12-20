@@ -23,23 +23,28 @@ const builderProperties = ({ compile, newContext }) => ({
     get: function() {
       return this._build()
     }
+  },
+  unparameterized: {
+    get: function() {
+      return this._build({ unparameterized: true }).text
+    }
   }
 })
 
 const createNewContext = defaultContext => {
-  const { build, parameter, escape, mapKey } = defaultContext
+  const { build, parameterize, escape, mapKey } = defaultContext
   return inherit => {
-    const { params = [], parameterize = true } = inherit || {}
+    const { params = [], unparameterized = false } = inherit || {}
     return {
       // sqorn instance properties
       build,
-      parameter,
+      parameterize,
       escape,
       mapKey,
 
       // inherited properties
       params,
-      parameterize
+      unparameterized
     }
   }
 }

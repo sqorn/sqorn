@@ -75,7 +75,7 @@ Filter the rows to delete with `.where`.
 ```js
 sq.delete.from`person`.where`id = ${723}`.query
 
-{ text: 'delete from person where id = $1',
+{ text: 'delete from person where (id = $1)',
   args: [723] }
 ```
 

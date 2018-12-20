@@ -10,7 +10,7 @@ module.exports = ctx => {
 
 const buildCall = (ctx, args) => {
   if (isTaggedTemplate(args)) return ' ' + buildTaggedTemplate(ctx, args)
-  if (args.length === 0) return ' default values'
+  if (args.length === 1 && args[0] === undefined) return ' default values'
   if (Array.isArray(args[0])) return buildValuesArray(ctx, args[0])
   if (typeof args[0] === 'function') return ' ' + ctx.build(args[0])
   return buildValuesArray(ctx, args)

@@ -1,10 +1,10 @@
 const query = require('./query')
 const expression = require('./expression')
-const { parameter, escape } = require('./parameter')
+const { parameterize, escape } = require('./parameterize')
 
 module.exports = {
   query,
   expression,
-  parameter,
+  parameterize,
   escape
 }

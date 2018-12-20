@@ -1,22 +1,21 @@
 /** Returns a function the creates a new context */
 const createNewContext = defaultContext => {
-  const { parameter, escape, mapKey, build } = defaultContext
+  const { parameterize, escape, mapKey, build } = defaultContext
 
   return (inherit = {}) => {
-    const { params = [], parameterize = true } = inherit
+    const { params = [], unparameterized = false } = inherit
 
     const whr = []
     return {
       // properties set by the sqorn instance
-      parameter,
+      parameterize,
       escape,
       mapKey,
       build,
 
       // properties inherited from the parent query
       params,
-      parameterize,
-      parameter: parameterize ? parameter : escape,
+      unparameterized,
 
       // properties of the current query
       type: 'select',

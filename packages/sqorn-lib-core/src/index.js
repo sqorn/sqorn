@@ -14,11 +14,11 @@ const { snakeCase, memoize } = require('@sqorn/lib-util')
  */
 
 const createSqorn = ({ dialect, adapter }) => (config = {}) => {
-  const { query, expression, parameter, escape } = dialect
+  const { query, expression, parameterize, escape } = dialect
 
   // 1. Create default context properties passed through build tree
   const mapKey = memoize(config.mapInputKeys || snakeCase)
-  const defaultContext = { parameter, escape, mapKey, build }
+  const defaultContext = { parameterize, escape, mapKey, build }
 
   // 2. Create Expression Builder
   const e = createExpressionBuilder({ defaultContext, expression, config })
@@ -32,7 +32,7 @@ const createSqorn = ({ dialect, adapter }) => (config = {}) => {
   return sq
 }
 
-function build(arg, paren) {
+function build(arg) {
   if (arg === undefined) throw Error('Error: undefined argument')
   if (typeof arg === 'function') {
     if (arg._build) {
@@ -43,7 +43,7 @@ function build(arg, paren) {
     }
     return arg(this)
   }
-  return this.parameter(arg)
+  return this.unparameterized ? this.escape(arg) : this.parameterize(arg)
 }
 
 module.exports = createSqorn

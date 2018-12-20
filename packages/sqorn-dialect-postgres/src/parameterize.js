@@ -1,5 +1,5 @@
 // parameterizes given argument, function should be attached to ctx
-function parameter(arg) {
+function parameterize(arg) {
   if (arg === undefined) throw Error('Error: parameter is undefined')
   return `$${this.params.push(arg)}`
 }
@@ -44,6 +44,6 @@ const escapeLiteral = str => {
 }
 
 module.exports = {
-  parameter,
+  parameterize,
   escape
 }
