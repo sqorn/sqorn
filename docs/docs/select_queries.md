@@ -662,7 +662,7 @@ sq.from('person')
 sq.from('t').groupBy(sq.rollup('a', ['b', sq.txt`c`], 'd')).query
 
 // postgres
-{ text: 'select * from t group by rollup (a, (b, c)), d',
+{ text: 'select * from t group by rollup (a, (b, c), d)',
   args: [] }
 ```
 
@@ -674,7 +674,7 @@ sq.from('t').groupBy(sq.rollup('a', ['b', sq.txt`c`], 'd')).query
 sq.from('t').groupBy(sq.cube('a', ['b', sq.txt`c`], 'd')).query
 
 // postgres
-{ text: 'select * from t group by cube (a, (b, c)), d',
+{ text: 'select * from t group by cube (a, (b, c), d)',
   args: [] }
 ```
 
@@ -697,7 +697,7 @@ Filter groups with `.having`. `.having` accepts the  same arguments as [`.where`
 ```js
 sq.from`person`.groupBy`age`.having`age < ${20}`.query
 
-{ text: 'select * from person group by age having (age < $1',
+{ text: 'select * from person group by age having (age < $1)',
   args: [20] }
 ```
 
@@ -758,7 +758,7 @@ sq.from('book').orderBy('sales / 1000', 'title').query
 `.orderBy` accepts [Expressions](expressions).
 
 ```js
-sq.from('book').orderBy(e`sales`.divide(1000), 'title').query
+sq.from('book').orderBy(e`sales`.div(1000), 'title').query
 
 { text: 'select * from book order by (sales / $1), title',
   args: [1000] }
@@ -787,9 +787,9 @@ sq.from('book').orderBy(sq.return`sales / ${1000}`, 'title').query
 Property `by` is used for ordering. It can be a string, [Expression](expressions), [Fragment](manual-queries#fragments) or [Subqueries](manual-queries#subqueries).
 
 ```js
-sq.from('book').orderBy({ by: e`sales`.divide(1000) }, { by: 'title' }).query
+sq.from('book').orderBy({ by: e`sales`.div(1000) }, { by: 'title' }).query
 
-{ text: 'select * from book order by sales / $1, title',
+{ text: 'select * from book order by (sales / $1), title',
   args: [1000] }
 ```
 
@@ -852,7 +852,7 @@ sq.from`person`.limit`1 + 7`.query
 `.limit` accepts [Number Expressions](expressions#number).
 
 ```js
-sq.from('person').limit(e(1).plus(7)).query
+sq.from('person').limit(e(1).add(7)).query
 
 { text: 'select * from person limit ($1 + $2)',
   args: [1, 7] }
@@ -907,7 +907,7 @@ sq.from`person`.offset`1 + 7`.query
 `.offset` accepts [Number Expressions](expressions#number).
 
 ```js
-sq.from('person').offset(e.plus(1, 7)).query
+sq.from('person').offset(e(1).add(7)).query
 
 { text: 'select * from person offset ($1 + $2)',
   args: [1, 7] }
@@ -932,7 +932,7 @@ sq.from('person').offset(sq.return`1 + 7`).query
 
 ## Joins
 
-`.join`, `.leftJoin`, `.rightJoin` and `.fullJoin` build inner, left, right and full joins respectively.
+`.join`, `.leftJoin`, `.rightJoin` and `.fullJoin` build inner, left, right and full joins respectively. Either [`.on`](#on) or [`.using`](#using) must be called immediately after.
 
 ```js
 sq.from`book`.join`author`.on`book.author_id = author.id`.query
@@ -941,29 +941,13 @@ sq.from`book`.join`author`.on`book.author_id = author.id`.query
   args: [] }
 ```
 
-Either [`.on`](#on) or [`.using`](#using) must be called immediately after.
-
-```js
-sq.from`book`.leftJoin`author`.query
-
-// throws error
-```
-
-`.naturalJoin`, `.naturalLeftJoin`, `.naturalRightJoin` and `.naturalFullJoin` build natural joins.
+`.naturalJoin`, `.naturalLeftJoin`, `.naturalRightJoin` and `.naturalFullJoin` build natural joins. Calling [`.on`](#on) or [`.using`](#using) after a natural join is invalid.
 
 ```js
 sq.from`book`.naturalRightJoin`author`.query
 
 { text: 'select * from book natural right join author',
   args: [] }
-```
-
-Calling [`.on`](#on) or [`.using`](#using) after a natural join is invalid.
-
-```js
-sq.from`book`.naturalFullJoin`author`.on`book.author_id = author.id`.query
-
-// throws error
 ```
 
 `.crossJoin` builds a cross join.
@@ -990,26 +974,15 @@ sq.from({ b: 'book' })
 
 ### On
 
-`.on` specifies join conditions. It accepts the  same arguments as [`.where`](#where).
-
-```js
-sq.from({ b: 'book' })
-  .join({ a: 'author'}).on(e`b.author_id`.eq`a.id`)
-  .query
-
-{ text: 'select * from book b join author a on (b.author_id = a.id)',
-  args: [] }
-```
-
-`.on` must be called exactly once.
+`.on` specifies join conditions. It accepts the  same arguments as [`.where`](#where). `.on` must be called exactly once.
 
 ```js
 sq.from({ b: 'book' })
   .join({ a: 'author'}).on({ 'b.author_id': sq.raw('a.id') })
   .query
 
-{ text: 'select * from book b join author a on (b.author_id = a.id) and (b.genre = $1)',
-  args: ['Fantasy'] }
+{ text: 'select * from book b join author a on (b.author_id = a.id)',
+  args: [] }
 ```
 
 Build complex join conditions with [Expressions](expressions).
@@ -1023,13 +996,13 @@ sq.from({ t: 'ticket' })
   ))
   .query
 
-{ text: 'select * from ticket t left join person p on (p.first_name = t.first_name) or (p.last_name = t.last_name)',
+{ text: 'select * from ticket t left join person p on ((p.first_name = t.first_name) or (p.last_name = t.last_name))',
   args: [] }
 ```
 
 ### Using
 
-Alternatively, specify join columns with `.using`.
+Alternatively, specify join columns with `.using`. `.using` must be called exactly once.
 
 ```js
 sq.from`book`.join`author`.using`author_id`.query
@@ -1038,10 +1011,10 @@ sq.from`book`.join`author`.using`author_id`.query
   args: [] }
 ```
 
-`.using` accepts column names string arguments. Multiple calls are joined with `', '`.
+`.using` accepts strings.
 
 ```js
-sq.from('a').join('b').using('x', 'y').using('z').query
+sq.from('a').join('b').using('x', 'y', 'z').query
 
 { text: 'select * from a join b using (x, y, z)',
   args: [] }
@@ -1120,7 +1093,7 @@ sq.with({
     width: sq.return({ n: 10 }),
     height: sq.sql`select ${20} n`
   })
-  .return({ area: sq.sql`width.n * height.n` })
+  .return({ area: sq.txt`width.n * height.n` })
   .query
 
 { text: 'with width (select $1 n), height (select $2 n) select width.n * height.n area',
