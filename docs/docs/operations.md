@@ -18,7 +18,7 @@ sidebar_label: Operations
 * **Range**
 * **Aggregate** [`count`](#count) [`sum`](#sum) [`avg`](#average) [`min`](#min) [`max`](#max) [`stddev`](#standard-deviation) [`variance`](#variance)
 * **Conditional** [`case`](#case) [`coalesce`](#coalesce) [`nullif`](#nullif) [`greatest`](#greatest) [`least`](#least)
-* **Array** [`cat`](#concatenation-1) [`arrayGet`](#array-get) [`arrayAppend`](#array-append) [`arrayCat`](#array-cat)
+* **Array** [`cat`](#concatenation-operator-1) [`arrayCat`](#array-cat) [`arrayGet`](#array-get) [`arrayAppend`](#array-append) [`unnest`](#unnest) 
 * **JSON**
 * **Binary** [`and`](#and-1) [`or`](#or-1) [`xor`](#xor-1) [`not`](#not-1) [`shiftLeft`](#shift-left) [`shiftRight`](#shift-right)
 * **Table** [`union`](#union) [`except`](#except) [`except-all`](#except-all) [`unionAll`](#union-all) [`intersect`](#intersect) [`intersectAll`](#intersect-all) 
@@ -1392,11 +1392,17 @@ TODO
 
 ## Array
 
-### Concatenation
+### Concatenation Operator
 
 * `array => array => array`
 * `array => T => array`
 * `T => array => array`
+
+STATUS: TODO
+
+### Array Cat
+
+* `concat: array => array  => array`
 
 STATUS: TODO
 
@@ -1412,17 +1418,40 @@ STATUS: TODO
 
 STATUS: TODO
 
-### Array Cat
-
-* `concat: array => array  => array`
-
-STATUS: TODO
-
 ### Unnest
+
+**Reference** [Postgres](https://www.postgresql.org/docs/current/functions-array.html#ARRAY-FUNCTIONS-TABLE)
 
 * `unnest: array => ...array => table`
 
-STATUS: TODO
+`.unnest` builds a table from arrays. 
+
+```js
+e.unnest([1, 2, 3]).query
+// equivalent to (select 1 union all select 2 union all select 3) as unnest(unnest)
+
+{ text: 'unnest($1)',
+  args: [[1, 2, 3]] }
+```
+
+`.unnest` accepts one or more arrays.
+
+```js
+e.unnest([1, 2, 3], ['cat', 'dog'], [true]).query
+
+{ text: 'unnest($1, $2, $3)',
+  args: [[1, 2, 3], ['cat', 'dog'], [true]] }
+```
+
+This table is generated:
+
+unnest|unnest|unnest
+--|-------|-----
+1 | 'cat' | true
+2 | 'dog' | null
+3 | null  | null
+
+
 
 ## JSON
 

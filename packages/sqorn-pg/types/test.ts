@@ -109,3 +109,5 @@ const t3 = e.isUnknown(true)
 const t4 = e.isUnknown(null)
 // const t5 = e.isNotUnknown(23)
 const t5 = e.isFalse(23)
+
+const u1 = e([]).unnest

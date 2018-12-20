@@ -57,6 +57,19 @@ const nary = op => ({
   }
 })
 
+const naryFunction = fn => ({
+  minArgs: 1,
+  maxArgs: Number.MAX_SAFE_INTEGER,
+  build: (ctx, args) => {
+    let txt = `${fn}(`
+    for (let i = 0; i < args.length; ++i) {
+      if (i !== 0) txt += `, `
+      txt += build(ctx, args[i])
+    }
+    return txt + ')'
+  }
+})
+
 const oneValue = {
   minArgs: 1,
   maxArgs: 1,
@@ -112,6 +125,7 @@ module.exports = {
   binary,
   ternary,
   nary,
+  naryFunction,
   oneValue,
   compositeValue,
   membership,

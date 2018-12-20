@@ -76,7 +76,7 @@ sq.from(e.unnest([3, 2, 1])).query
 
 ```js
 // Postgres-only query
-sq.from(sq.txt`unnest(${[3, 2, 1]})`).query
+sq.from(sq.txt`unnest(array[1, 2, 3])`).query
 
 { text: 'select * from unnest(array[1, 2, 3])',
   args: [] }
@@ -181,10 +181,10 @@ sq.from`book`.where`genre = ${'Fantasy'}`.where`year = ${2000}`.query
 Conditions can be [Boolean Expressions](expressions#boolean).
 
 ```js
-sq.from`book`.where(e`year`.gt(2010)).query
+sq.from`book`.where(e`year`.gt(2010).or(e`year`.lt(2018))).query
 
-{ text: 'select * from book where (year > $1)',
-  args: [2010] }
+{ text: 'select * from book where ((year > $1) or (year < $2))',
+  args: [2010, 2018] }
 ```
 
 Conditions can be [Fragments](manual-queries#fragments).
@@ -267,6 +267,15 @@ sq.from`book`.where({ author: null }).query
 sq.from`oops`.where({ field: undefined }).query // throws error
 ```
 
+`array` arguments generate a `field in values` expression.
+
+```js
+sq.from`book`.where({ id: [7, 8, 9] }).query
+
+{ text: 'select * from book where (id in ($1, $2, $3))',
+  args: [7, 8, 9] }
+```
+
 Sqorn [converts input object keys](#map-input-keys) to *snake_case* by default.
 
 ```js
@@ -279,9 +288,9 @@ sq.from('person').where({ firstName: 'Kaladin' }).query
 Multiple arguments passed to `.where` are joined with `' and '`.
 
 ```js
-sq.from('person').where({ name: 'Rob' }, sq.txt`name = ${'Bob'}`).query
+sq.from('person').where({ name: 'Rob' }, sq.txt`(name = ${'Bob'})`).query
 
-{ text: 'select * from person where ((name = $1) or (name = $2))',
+{ text: 'select * from person where (name = $1) and (name = $2)',
   args: ['Rob', 'Bob'] }
 ```
 
@@ -305,7 +314,7 @@ sq.from('person').where(
   )
 ).query
 
-{ 'select * from person where ((first_name = $1) and (last_name = $2) and (not (age > $3))',
+{ text: 'select * from person where ((first_name = $1) and (last_name = $2) and not((age > $3)))',
   args: ['Mohammed', 'Ali', 30] }
 ```
 
@@ -350,7 +359,7 @@ sq.return(sq.txt('moo'), sq.txt`now()`).query
 `.return` accepts [Subqueries](manual-queries#subqueries).
 
 ```js
-sq.from('book').return(sq.sql`select now()`, sq.return(e(8)).query
+sq.return(sq.sql`select now()`, sq.return(e(8))).query
 
 { text: 'select (select now()), (select $1)',
   args: [8] }
@@ -379,7 +388,7 @@ sq.return({ name: 'person.name' , age: 'person.age' }).from('person').query
 Values can be [Expressions](expressions).
 
 ```js
-sq.return({ hello: e('world'), sum: e.plus(1, 2) }).query
+sq.return({ hello: e('world'), sum: e.add(1, 2) }).query
 
 { text: 'select $1 hello, ($2 + $3) sum',
   args: ['world', 1, 2] }
@@ -470,11 +479,11 @@ sq.from('weather')
 ```js
 sq.return`n`
   .distinctOn(e`n`.mod`2`)
-  .from(e.unnest([1, 2, 3, 4, 5]))
+  .from({ n: e.unnest([1, 2, 3, 4, 5]) })
   .query
 
-{ text: 'select distinct on (n % 2) n from unnest($1)',
-  args: [[1, 2, 3, 4, 5]]}
+{ text: 'select distinct on ((n % 2)) n from unnest($1) n',
+  args: [[1, 2, 3, 4, 5]] }
 ```
 
 `.distinctOn` accepts [Fragments](manual-queries#fragments).
@@ -605,7 +614,7 @@ sq.from(sq.txt`generate_series(${1}, ${10}) n`)
   .return(e.mod`n`(2), 'sum(n)')
   .query
 
-{ text: "select n % $1, sum(n) from generate_series($2, $3) n group by (n % $4);",
+{ text: "select (n % $1), sum(n) from generate_series($2, $3) n group by (n % $4)",
   args: [2, 1, 10, 2] }
 ```
 
@@ -637,7 +646,7 @@ Parenthesize arguments by wrapping them in arrays. Arrays can be nested.
 
 ```js
 sq.from('person')
-  .groupBy('age', [[sq.sql`last_name`], 'first_name'])
+  .groupBy('age', [[sq.txt`last_name`], 'first_name'])
   .return('count(*)')
   .query
 

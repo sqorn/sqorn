@@ -885,16 +885,17 @@ interface Upper {
 //
 
 interface ArrayOperations<T extends ArrayTypes> {
-  unnest: T extends 'new' ? Unnest : TableExpression
+  unnest: T extends 'new' ? Unnest : UnnestChain
   arrayGet: T extends 'new' ? ArrayGet : ArrayGetChain
   arrayAppend: T extends 'new' ? ArrayAppend : ArrayAppendChain
   arrayCat: T extends 'new' ? ArrayCat : ArrayCatChain
 }
 
 interface Unnest {
-  (strings: TemplateStringsArray, ...args: any[]): BooleanExpression
-  (arg: ArrayArgument): TableExpression
+  (text: TemplateStringsArray, ...args: any[]): UnnestChain
+  (...args: ArrayArgument[]): UnnestChain
 }
+interface UnnestChain extends Unnest, TableExpression {}
 
 interface ArrayGet {
   (strings: TemplateStringsArray, ...args: any[]): ArrayGetChain

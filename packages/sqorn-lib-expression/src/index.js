@@ -5,6 +5,7 @@ const {
   binary,
   ternary,
   nary,
+  naryFunction,
   oneValue,
   compositeValue,
   membership,
@@ -96,10 +97,15 @@ const string = {
   notLikeAll: binary('not like all')
 }
 
+const array = {
+  unnest: naryFunction('unnest')
+}
+
 module.exports = {
   ...value,
   ...boolean,
   ...comparison,
   ...math,
-  ...string
+  ...string,
+  ...array
 }
