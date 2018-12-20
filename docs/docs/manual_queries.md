@@ -115,14 +115,25 @@ sq.sql`select * from`
   args: [20] }
 ```
 
-TODO: Pass `.sql` multiple arguments to build a row.
+Pass `.sql` multiple arguments to build a row.
 
 ```js
-sq.sql`select`.sql(2, 4, 8).query
+sq.sql`select`.sql(1, true, 'moo').query
 
 { text: 'select ($1, $2, $3)',
-  args: [2, 4, 8] }
+  args: [1, true, 'moo'] }
 ```
+
+Or a values list.
+
+```js
+const values = [3, 30, 20]
+sq.sql`select * from book where id in`.sql(...values).query
+
+{ text: 'select * from book where id in ($1, $2, $3)',
+  args: [3, 30, 20] }
+```
+
 
 Use `.sql` to build *complete* queries, not fragments.
 
@@ -138,13 +149,13 @@ sq.sql`select * from person ${Where}`.query
   args: [20, 30] }
 ```
 
-Like `.sql`, `.txt` can be chained and called a function.
+Like `.sql`, `.txt` can be chained and called as a function.
 
 ```js
 const FromWhere = sq.txt`from person`.txt`where age >=`.txt(20)
 sq.sql`select * ${FromWhere}`.query
 
-{ text: 'select * from person where age = $1',
+{ text: 'select * from person where age >= $1',
   args: [20] }
 ```
 
@@ -165,11 +176,11 @@ sq.extend(
   args: [20, 30] }
 ```
 
-TODO: `.extend` also accepts an array of queries.
+`.extend` also accepts an array of queries.
 
 ```js
 sq.extend([
-  sq.sql`select * from person where age >= ${20}`
+  sq.sql`select * from person where age >= ${20}`,
   sq.sql`and age < ${30}`
 ]).query
 
@@ -183,9 +194,13 @@ sq.extend([
 
 ```js
 const books = [{ id: 1, title: '1984' }, { id: 2, title: 'Dracula' }]
-const value = book => sq.txt`(${book.id}, ${book.title})`
-const values = sq.extend(books.map(value)).link(', ')
-sq.sql`insert into book(id, title)`.sql`values ${values}`.link('\n').query
+const b = books.map(book => sq.txt(book.id, book.title))
+const values = sq.extend(b).link(', ')
+
+sq.sql`insert into book(id, title)`
+  .sql`values ${values}`
+  .link('\n')
+  .query
 
 { text: 'insert into book(id, title)\nvalues ($1, $2), ($3, $4)',
   args: [1, '1984', 2, 'Dracula'] }

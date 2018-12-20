@@ -63,6 +63,23 @@ describe('sql', () => {
       args: ['cat']
     })
     query({
+      name: 'two args',
+      query: sq.txt('cat', 'rat'),
+      text: '($1, $2)',
+      args: ['cat', 'rat']
+    })
+    query({
+      name: 'three args',
+      query: sq.txt(23, false, []),
+      text: '($1, $2, $3)',
+      args: [23, false, []]
+    })
+    query({
+      name: 'undefined arg 2',
+      query: sq.txt(2, undefined),
+      error: true
+    })
+    query({
       name: 'number args',
       query: sq
         .txt('cat')

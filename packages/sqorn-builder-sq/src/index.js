@@ -8,7 +8,10 @@ const createQueryBuilder = ({ defaultContext, query, adapter, e, config }) => {
   const reducers = createReducers(methods)
   const updateContext = applyReducers(reducers)
   reducers.extend = (ctx, args) => {
-    for (const arg of args) updateContext(arg.method, ctx)
+    const arr = Array.isArray(args[0]) ? args[0] : args
+    for (let i = 0; i < arr.length; ++i) {
+      updateContext(arr[i].method, ctx)
+    }
   }
   const builder = () => {} // must not be object literal
   const chain = createChain(builder)
