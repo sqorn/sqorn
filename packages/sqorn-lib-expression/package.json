@@ -1,6 +1,6 @@
 {
   "name": "@sqorn/lib-expression",
-  "version": "0.0.41",
+  "version": "0.0.44",
   "description": "Sqorn Expression Library",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -14,6 +14,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@sqorn/lib-util": "^0.0.41"
+    "@sqorn/lib-util": "^0.0.44"
   }
 }

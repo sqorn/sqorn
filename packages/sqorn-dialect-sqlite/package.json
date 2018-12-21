@@ -1,6 +1,6 @@
 {
   "name": "@sqorn/dialect-sqlite",
-  "version": "0.0.41",
+  "version": "0.0.44",
   "description": "Sqorn SQLite Dialect",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
