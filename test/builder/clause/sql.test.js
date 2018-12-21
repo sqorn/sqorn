@@ -4,51 +4,53 @@ describe('sql', () => {
   describe('template string', () => {
     query({
       name: 'raw select',
-      query: sq.l`select 7`,
+      query: sq.sql`select 7`,
       text: 'select 7'
     })
     query({
       name: 'raw delete',
-      query: sq.l`delete from book where id = 7`,
+      query: sq.sql`delete from book where id = 7`,
       text: 'delete from book where id = 7'
     })
     query({
       name: 'raw insert',
-      query: sq.l`insert into book (title) values ('Oathbringer')`,
+      query: sq.sql`insert into book (title) values ('Oathbringer')`,
       text: `insert into book (title) values ('Oathbringer')`
     })
     query({
       name: 'raw update',
-      query: sq.l`update person set age = age + 1`,
+      query: sq.sql`update person set age = age + 1`,
       text: 'update person set age = age + 1'
     })
   })
   describe('template string args', () => {
     query({
       name: '1 raw arg',
-      query: sq.l`select * from $${'book'}`,
+      query: sq.sql`select * from ${sq.raw('book')}`,
       text: 'select * from book'
     })
     query({
       name: '2 raw args',
-      query: sq.l`select $${'title'} from $${'book'}`,
+      query: sq.sql`select ${sq.raw('title')} from ${sq.raw('book')}`,
       text: 'select title from book'
     })
     query({
       name: '1 parameterized arg',
-      query: sq.l`select ${8} * 2 as twice`,
-      text: 'select $1 * 2 as twice',
+      query: sq.sql`select ${8} * 2 twice`,
+      text: 'select $1 * 2 twice',
       args: [8]
     })
     query({
       name: '2 parameterized args',
-      query: sq.l`select ${8} * ${7} as product`,
-      text: 'select $1 * $2 as product',
+      query: sq.sql`select ${8} * ${7} product`,
+      text: 'select $1 * $2 product',
       args: [8, 7]
     })
     query({
       name: 'multiple raw and parameterized args',
-      query: sq.l`select year, $${'title'} from $${'book'} where year < ${1980}`,
+      query: sq.sql`select year, ${sq.raw('title')} from ${sq.raw(
+        'book'
+      )} where year < ${1980}`,
       text: 'select year, title from book where year < $1',
       args: [1980]
     })
@@ -56,18 +58,35 @@ describe('sql', () => {
   describe('function argument', () => {
     query({
       name: 'string arg',
-      query: sq.l('cat'),
+      query: sq.txt('cat'),
       text: '$1',
       args: ['cat']
     })
     query({
+      name: 'two args',
+      query: sq.txt('cat', 'rat'),
+      text: '($1, $2)',
+      args: ['cat', 'rat']
+    })
+    query({
+      name: 'three args',
+      query: sq.txt(23, false, []),
+      text: '($1, $2, $3)',
+      args: [23, false, []]
+    })
+    query({
+      name: 'undefined arg 2',
+      query: sq.txt(2, undefined),
+      error: true
+    })
+    query({
       name: 'number args',
       query: sq
-        .l('cat')
-        .l(12)
-        .l(true)
-        .l([])
-        .l({}),
+        .txt('cat')
+        .txt(12)
+        .txt(true)
+        .txt([])
+        .txt({}),
       text: '$1 $2 $3 $4 $5',
       args: ['cat', 12, true, [], {}]
     })
@@ -75,46 +94,27 @@ describe('sql', () => {
   describe('multiple calls', () => {
     query({
       name: '2 calls',
-      query: sq.l`select * from book`.l`where id = ${7}`,
+      query: sq.sql`select * from book`.sql`where id = ${7}`,
       text: 'select * from book where id = $1',
       args: [7]
     })
     query({
       name: '3 calls',
-      query: sq.l`select * from book`.l`where genre = ${'fantasy'}`
-        .l`or year = ${2000}`,
+      query: sq.sql`select * from book`.sql`where genre = ${'fantasy'}`
+        .sql`or year = ${2000}`,
       text: 'select * from book where genre = $1 or year = $2',
       args: ['fantasy', 2000]
-    })
-  })
-  describe('raw string', () => {
-    query({
-      name: 'simple',
-      query: sq.raw('hi'),
-      text: 'hi'
-    })
-    query({
-      name: '2 calls',
-      query: sq.raw('hi').raw('bye'),
-      text: 'hi bye'
-    })
-    query({
-      name: 'complex',
-      query: sq.l`select * from`.raw('book').l`where`.raw('genre')
-        .l`= ${'fantasy'}`,
-      text: 'select * from book where genre = $1',
-      args: ['fantasy']
     })
   })
   describe('join separator', () => {
     query({
       name: 'string',
-      query: sq.l`hi`.l`bye`.link(', '),
+      query: sq.txt`hi`.txt`bye`.link(', '),
       text: 'hi, bye'
     })
     query({
       name: 'template string',
-      query: sq.l`hi`.l`bye`.link`, `,
+      query: sq.txt`hi`.txt`bye`.link`, `,
       text: 'hi, bye'
     })
   })

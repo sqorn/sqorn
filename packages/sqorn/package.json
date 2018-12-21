@@ -24,6 +24,6 @@
     "postgresql"
   ],
   "dependencies": {
-    "sqorn-pg": "^0.0.40"
+    "@sqorn/pg": "^0.0.40"
   }
 }

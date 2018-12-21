@@ -1,5 +1,4 @@
 import { SQ, SQF, SQW, SQR } from './sq'
-import { or, not } from 'ip';
 
 type Expression = string | SQ
 type Value = { [column: string]: any }
@@ -17,7 +16,7 @@ export interface With {
    *   * a subquery
    *   * an array of data values
    * 
-   * Call `.recursive` to make the CTE recursive.
+   * Call `.withRecursive` to make the CTE recursive.
    * 
    * Multiple calls to `.with` are joined with ', '.
    * 
@@ -25,9 +24,9 @@ export interface With {
 ```js
 sq.with({
     width: sq.return({ n: 10 }),
-    height: sq.l`select ${20} as n`
+    height: sq.sql`select ${20} as n`
   })
-  .return({ area: sq.l`width.n * height.n`})
+  .return({ area: sq.txt`width.n * height.n`})
 // with width as (select 10 as n), height as (select 20 as n)
 // select width.n * height.n as area
 
@@ -44,7 +43,7 @@ sq.with({ people }).return('max(age)').from('people')
    * 
    * Constructs a Common Table Expression (CTE)
    * 
-   * Call `.recursive` to make the CTE recursive.
+   * Call `.withRecursive` to make the CTE recursive.
    * 
    * Multiple calls to `.with` are joined with ', '.
    *
@@ -69,14 +68,13 @@ sq.with`width as (select ${10} as n)`
    * 
    * Makes the Common Table Expression recursive.
    * 
-   * `.recursive` is idempotent. 
+   * `.withRecursive` is idempotent. 
    * 
    * @example
 ```js
 const one = sq.return`1`
 const next = sq.return`n + 1`.from`t`.where`n < 100`
-sq.recursive
-  .with({ 't(n)': one.unionAll(next) })
+sq.withRecursive({ 't(n)': one.unionAll(next) })
   .from`t`
   .return`sum(n)`
 ```
@@ -91,7 +89,8 @@ with recursive t(n) as (
 select sum(n) from t'
 ```
    */
-  recursive: this
+  withRecursive(...tables: { [table: string]: SQ |  Value[] }[]): this
+  withRecursive(strings: TemplateStringsArray, ...args: any[]): this
 }
 
 export interface From {
@@ -131,7 +130,7 @@ sq.delete.from('book').where({ id: 7 })
 sq.from('book').insert({ title: 'Moby Dick', authorId: 8 })
 // insert into book (title, author_id) values ($1, $2)
 
-sq.from(sq.l`unnest(array[1, 2, 3])`)
+sq.from(sq.txt`unnest(array[1, 2, 3])`)
 // select * from unnest(array[1, 2, 3])
 
 sq.from({ b: 'book' a: 'author' })
@@ -146,7 +145,7 @@ sq.from({ old: sq.from('person').where`age > 60` })
 sq.from({ p: [{ id: 7, name: 'Jo' }, { id: 9, name: 'Mo' }] })
 // select * from (values ($1, $2), ($3, $4)) as p(id, name)
 
-sq.from({ countDown: sq.l`unnest(${[3, 2, 1]})` }).query
+sq.from({ countDown: sq.txt`unnest(${[3, 2, 1]})` }).query
 // select * from unnest($1) as count_down'
 ```
    */
@@ -184,7 +183,7 @@ sq.from`book`.from`author`
 sq.from`book join comment`
 // select * from book join comment
 
-sq.from`$${'book'}`
+sq.from`${sq.raw('book')}`
 // select * from book
 ```
    */
@@ -226,7 +225,7 @@ sq.delete('book').where({ id: 7 })
 sq('book').insert({ title: 'Moby Dick', authorId: 8 })
 // insert into book (title, author_id) values ($1, $2)
 
-sq(sq.l`unnest(array[1, 2, 3])`)
+sq(sq.txt`unnest(array[1, 2, 3])`)
 // select * from unnest(array[1, 2, 3])
 
 sq({ b: 'book' a: 'author' })
@@ -241,7 +240,7 @@ sq({ old: sq('person').where`age > 60` })
 sq({ p: [{ id: 7, name: 'Jo' }, { id: 9, name: 'Mo' }] })
 // select * from (values ($1, $2), ($3, $4)) as p(id, name)
 
-sq({ countDown: sq.l`unnest(${[3, 2, 1]})` }).query
+sq({ countDown: sq.txt`unnest(${[3, 2, 1]})` }).query
 // select * from unnest($1) as count_down'
 ```
    */
@@ -279,7 +278,7 @@ sq`book`.from`author`
 sq`book join comment`
 // select * from book join comment
 
-sq`$${'book'}`
+sq`${sq.raw('book')}`
 // select * from book
 ```
    */
@@ -305,7 +304,7 @@ export interface Return {
    *
    * @example
 ```js
-sq.return('user.name', 'user.id', '33', sq.l('33'), 27, true)
+sq.return('user.name', 'user.id', '33', sq.txt('33'), 27, true)
 // select user.name, user.id, 33, $1, $2, $3
 
 sq.from('person').set`age = age + 1`.return('id', 'age')
@@ -318,11 +317,11 @@ sq.from('person').insert({ age: 12 }).return('id', 'age')
 // insert into person (age) values (12) returning id, age
 
 const userInput = '; drop table user;'
-sq.from('book').return(sq.l(userInput), 23).return(true)
+sq.from('book').return(sq.txt(userInput), 23).return(true)
 // select $1, $2, $3 from book
 
 sq.return({
-  now: sq.l`now()`,
+  now: sq.txt`now()`,
   tomorrow: sq.return`now() + '1 day'`
 })
 // select now() as today, (select now() + '1 day') as tomorrow
@@ -388,7 +387,7 @@ sq('person')().insert({ age: 12 })('id', 'age')
 // insert into person (age) values (12) returning id, age
 
 const userInput = '; drop table user;'
-sq('book')()(sq.l(userInput), 23)
+sq('book')()(sq.txt(userInput), 23)
 // select $1, $2 from book
 ```
    */
@@ -441,16 +440,16 @@ export interface Where {
 sq.from('person').where({ id: 7 })
 // select * form person where (id = $1)
 
-sq.from('person').where(sq.l`age >= ${18}`).set({ adult: true })
+sq.from('person').where(sq.txt`age >= ${18}`).set({ adult: true })
 // update person set adult = $1 where (age >= ${2})
 
 sq.delete.from('person').where({ age: 20, id: 5 }, { age: 30 })
 // delete from person where (age = $1 and id = $1 or age = $2)
 
-sq.from('person').where(sq.l`name = ${'Jo'}`, { age: 17 })
+sq.from('person').where(sq.txt`name = ${'Jo'}`, { age: 17 })
 // select * from person where (name = $1 or age = $2)
 
-sq.from('person').where({ minAge: sq.l`age < ${17}` })
+sq.from('person').where({ minAge: sq.txt`age < ${17}` })
 // select * from person where (age = $1)
 
 sq.from('person').where({ age: 7, gender: 'male' })
@@ -510,16 +509,16 @@ export interface ExpressWhere {
 sq('person')({ id: 7 })
 // select * form person where (id = $1)
 
-sq('person')(sq.l`age >= ${18}`).set({ adult: true })
+sq('person')(sq.txt`age >= ${18}`).set({ adult: true })
 // update person set adult = $1 where (age >= ${2})
 
 sq.delete('person')({ age: 20, id: 5 }, { age: 30 })
 // delete from person where (age = $1 and id = $1 or age = $2)
 
-sq('person')(sq.l`name = ${'Jo'}`, { age: 17 })
+sq('person')(sq.txt`name = ${'Jo'}`, { age: 17 })
 // select * from person where (name = $1 or age = $2)
 
-sq('person')({ minAge: sq.l`age < ${17}` })
+sq('person')({ minAge: sq.txt`age < ${17}` })
 // select * from person where (age = $1)
 
 sq('person')({ age: 7, gender: 'male' })
@@ -568,13 +567,13 @@ export interface And {
 ```js
 sq.from('person').where({ age: 20 }).and({ name: 'Jo' })
 // select * from person where (age > $1) and (name = $2)
-sq.from('book').left.join('author')
+sq.from('book').leftJoin('author')
   .on({ 'book.author_id': sq.raw('author.id') })
   .and({ 'author.status': 'active' })
 // select * from book left join author
 // on (book.author_id = author.id) and (author.status = $1)
 sq.from('book').return('genre', 'avg(book.rating) as r')
-  .group('genre').having(sq.l`r > 7`).and(sq.l`r <= 10`)
+  .groupBy('genre').having(sq.txt`r > 7`).and(sq.txt`r <= 10`)
 // select genre, avg(book.rating) as r from book
 // group by genre having (r > 7) and (r <= 10)
 ```
@@ -591,13 +590,13 @@ sq.from('book').return('genre', 'avg(book.rating) as r')
 sq.from`person`.where`age > 20`.and`age < 30`
 // select * from person where (age > 20) and (age < 30)
 
-sq.from`book`.left.join`author`
+sq.from`book`.leftJoin`author`
   .on`book.author_id = author.id`.and`author.status = 'active'`
 // select * from book left join author
 // on (book.author_id = author.id) and (author.status = 'active')
 
 sq.from`book`.return`genre, avg(book.rating) as r`
-  .group`genre`.having`r > 7`.and`r <= 10`
+  .groupBy`genre`.having`r > 7`.and`r <= 10`
 // select genre, avg(book.rating) as r from book
 // group by genre having (r > 7) and (r <= 10)
 ```
@@ -613,24 +612,24 @@ interface Or {
    * 
    * @example
 ```js
-sq.from('person').where(sq.l`age < 20`).or(sq.l`age > 30`)
+sq.from('person').where(sq.txt`age < 20`).or(sq.txt`age > 30`)
 // select * from person where (age < 20) or (age > 30)
 
-sq.from('book').left.join('author')
+sq.from('book').leftJoin('author')
   .on({ 'book.author_id': sq.raw('author.id') })
   .or({ 'book.editor_id': sq.raw('author.id') })
 // select * from book left join author
 // on (book.author_id = author.id) or (book.editor_id = author.id)
 
 sq.from('book').return('genre', 'avg(book.rating) as r')
-  .group('genre').having(sq.l`r < 2`).or(sq.l`r > 8`)
+  .groupBy('genre').having(sq.txt`r < 2`).or(sq.txt`r > 8`)
 // select genre, avg(book.rating) as r from book
 // group by genre having (r < 2) or (r > 8)
 ```
    */
   or(...conditions: Conditions): this
 
-    /**
+  /**
    * **OR condition** - template string
    * 
    * Condition to chain after `.where`, `.on`, or `.having`.
@@ -640,18 +639,79 @@ sq.from('book').return('genre', 'avg(book.rating) as r')
 sq.from`person`.where`age < 20`.or`age > 30`
 // select * from person where (age < 20) or (age > 30)
 
-sq.from`book`.left.join`author`
+sq.from`book`.leftJoin`author`
   .on`book.author_id = author.id`.or`book.editor_id = author.id`
 // select * from book left join author
 // on (book.author_id = author.id) or (book.editor_id = author.id)
 
 sq.from`book`.return`genre, avg(book.rating) as r`
-  .group`genre`.having`r < 2`.or`r > 8`
+  .groupBy`genre`.having`r < 2`.or`r > 8`
 // select genre, avg(book.rating) as r from book
 // group by genre having (r < 2) or (r > 8)
 ```
    */
   or(strings: TemplateStringsArray, ...args: any[]): this
+}
+
+export interface Distinct {
+  /**
+   * **SELECT DISTINCT**
+   * 
+   * Filters the query results so only distinct rows are returned. Duplicate result rows are eliminated.
+   * 
+   * `.distinct` filters rows using every column. To filter on a subset of columns use `.distinctOn` instead.
+   * 
+   * `.distinct` is idempotent.
+   * 
+   * @example
+```js
+sq.return('name', 'age').distinct.from('person')
+// select distinct name from person
+```
+   */
+  distinct: this
+
+  /**
+   * **SELECT DISTINCT ON** - columns
+   * 
+   * Filters query results on a subset of columns.
+   * 
+   * If multiple rows share values for the distinct columns, only the first is returned. An order by clause is needed to make the result set deterministic.
+   * 
+   * Columns may be strings or subqueries.
+   * 
+   * Multiple calls to `.distinctOn` are joined with ', '.
+   * 
+   * @example
+```js
+sq.from('person').return('name', 'age').distinctOn('name').orderBy('name')
+// select distinct on (name) name, age from person order by name
+
+sq.from('person').distinctOn('name', 'age').distinctOn('gender')
+// select distinct on (name, age, gender) * from person
+```
+   */
+  distinctOn(...columns: (string | SQ)[]): this
+
+  /**
+   * **SELECT DISTINCT ON** - template string
+   * 
+   * Filters query results on a subset of columns.
+   * 
+   * If multiple rows share values for the distinct columns, only the first is returned. An order by clause is needed to make the result set deterministic.
+   * 
+   * Multiple calls to `.distinctOn` are joined with ', '.
+   * 
+   * @example
+```js
+sq.from`person`.return`name, age`.distinctOn`name`.orderBy`name`
+// select distinct on (name) name, age from person order by name
+
+sq.from`person`.distinctOn`name, age`.distinctOn`gender`
+// select distinct on (name, age, gender) * from person
+```
+   */
+  distinctOn(...columns: (string | SQ)[]): this
 }
 
 interface GroupItems extends Array<Expression | RollupItem | CubeItem | GroupingSetsItem | GroupItems> {}
@@ -684,7 +744,7 @@ grouping sets ((a, b, c), (a, b), (a), ())
    * 
    * @example
 ```js
-sq.from`t`.group(sq.rollup('a', ['b', sq.l`c`], 'd'))
+sq.from`t`.groupBy(sq.rollup('a', ['b', sq.txt`c`], 'd'))
 // select * from t group by rollup (a, (b, c)), d
 ```
    */
@@ -703,7 +763,7 @@ grouping sets ((a, b, c), (a, b), (a, c), (a), (b, c), (b), (c), ())
    * 
    * @example
 ```js
-sq.from`t`.group(sq.cube('a', ['b', sq.l`c`], 'd'))
+sq.from`t`.groupBy(sq.cube('a', ['b', sq.txt`c`], 'd'))
 // select * from t group by cube (a, (b, c)), d
 ```
    */
@@ -712,11 +772,11 @@ sq.from`t`.group(sq.cube('a', ['b', sq.l`c`], 'd'))
     /**
    * **[Grouping Sets item](https://www.postgresql.org/docs/current/queries-table-expressions.html#QUERIES-GROUPING-SETS)** - creates grouping sets for use in a group by clause
    * 
-   * Accepts the same arguments as `.group`. Grouping sets can be nested.
+   * Accepts the same arguments as `.groupBy`. Grouping sets can be nested.
    * 
    * @example
 ```js
-sq.from`t`.group(
+sq.from`t`.groupBy(
   sq.groupingSets(
     ['a', 'b', 'c'],
     sq.groupingSets(['a', 'b']),
@@ -731,7 +791,7 @@ sq.from`t`.group(
   groupingSets(...args: GroupItems): GroupingSetsItem
 }
 
-export interface Group {
+export interface GroupBy {
   /**
    * **GROUP BY clause** - group items
    * 
@@ -745,29 +805,29 @@ export interface Group {
    * 
    * An expression may be a string or subquery.
    *
-   * Multiple `.group` calls are joined with ', '.
+   * Multiple `.groupBy` calls are joined with ', '.
    * 
    * @example
 ```js
-sq.from('book').return('genre', 'count(*)').group('genre')
+sq.from('book').return('genre', 'count(*)').groupBy('genre')
 // select genre, count(*) from book group by genre
 
-sq.from('book').return('genre', 'year').group('genre', 'year')
+sq.from('book').return('genre', 'year').groupBy('genre', 'year')
 // select genre, year from book group by genre, year
 
-sq.from('book').return('genre', 'year').group('genre').group('year')
+sq.from('book').return('genre', 'year').groupBy('genre').groupBy('year')
 // select genre, year from book group by genre, year
 
-sq.from('book').return('genre', 'year').group(['genre', 'year'])
+sq.from('book').return('genre', 'year').groupBy(['genre', 'year'])
 // select genre, year from book group by (genre, year)
 
-sq.from`t`.group(sq.rollup('a', ['b', sq.l`c`], 'd'))
+sq.from`t`.groupBy(sq.rollup('a', ['b', sq.txt`c`], 'd'))
 // select * from t group by rollup (a, (b, c)), d
 
-sq.from`t`.group(sq.cube('a', ['b', sq.l`c`], 'd'))
+sq.from`t`.groupBy(sq.cube('a', ['b', sq.txt`c`], 'd'))
 // select * from t group by cube (a, (b, c)), d
 
-sq.from`t`.group(
+sq.from`t`.groupBy(
   sq.groupingSets(
     ['a', 'b', 'c'],
     sq.groupingSets(['a', 'b']),
@@ -786,26 +846,26 @@ sq.from`t`.group(
 // )
 ```
    */
-  group(...args: GroupItems): this
+  groupBy(...args: GroupItems): this
 
   /**
    * **GROUP BY clause** - template string
    * 
-   * Multiple `.group` calls are joined with ', '.
+   * Multiple `.groupBy` calls are joined with ', '.
    * 
    * @example
 ```js
-sq.from`book`.return`genre, count(*)`.group`genre`
+sq.from`book`.return`genre, count(*)`.groupBy`genre`
 // select genre, count(*) from book group by genre
 
-sq.from`book`.return`genre, year`.group`genre, year`
+sq.from`book`.return`genre, year`.groupBy`genre, year`
 // select genre, year from book group by genre, year
 
-sq.from`book`.return`genre, year`.group`genre`.group`year`
+sq.from`book`.return`genre, year`.groupBy`genre`.groupBy`year`
 // select genre, year from book group by genre, year
 ```
    */
-  group(strings: TemplateStringsArray, ...args: any[]): this
+  groupBy(strings: TemplateStringsArray, ...args: any[]): this
 }
 
 export interface Having {
@@ -821,7 +881,7 @@ export interface Having {
    * @example
 ```js
 sq.from('book').return('genre')
-  .group('genre').having(sq.l`count(*) > 10`)
+  .groupBy('genre').having(sq.txt`count(*) > 10`)
 // select genre from book group by genre having count(*) > 10
 ```
    */
@@ -833,14 +893,14 @@ sq.from('book').return('genre')
    * @example
 ```js
 sq.from`book`.return`genre`
-  .group`genre`.having`count(*) > 10`
+  .groupBy`genre`.having`count(*) > 10`
 // select genre from book group by genre having count(*) > 10
 ```
    */
   having(strings: TemplateStringsArray, ...args: any[]): this
 }
 
-export interface Order {
+export interface OrderBy {
   /**
    * **ORDER BY clause** - order by items
    * 
@@ -852,24 +912,24 @@ export interface Order {
    *   * `nulls` - `'first'` or `'last'`
    *   * `using` - a sort operator
    * 
-   * Multiple `.order` calls are joined with ', '.
+   * Multiple `.orderBy` calls are joined with ', '.
    * 
    * @example
 ```js
-sq.from('book').order('title desc', sq.l`sales / ${1000}`)
+sq.from('book').orderBy('title desc', sq.txt`sales / ${1000}`)
 // select * from book order by title desc, sales / 1000
 
-sq.from('book').order(
+sq.from('book').orderBy(
   { by: 'title', sort: 'desc' },
-  { by: sq.l`sales / ${1000}` }
+  { by: sq.txt`sales / ${1000}` }
 )
 // select * from book order by title desc, sales / 1000
 
-sq.from('book').order({ by: 'title', using: '~<~', nulls: 'last' })
+sq.from('book').orderBy({ by: 'title', using: '~<~', nulls: 'last' })
 // select * from book order by title using ~<~ nulls last
 ```
    */
-  order(...orderItems: (Expression | {
+  orderBy(...orderItems: (Expression | {
     by: Expression
     sort?: 'asc' | 'desc'
     using?: string
@@ -879,21 +939,21 @@ sq.from('book').order({ by: 'title', using: '~<~', nulls: 'last' })
   /**
    * **ORDER BY clause** - template string
    * 
-   * Multiple `.order` calls are joined with ', '.
+   * Multiple `.orderBy` calls are joined with ', '.
    * 
    * @example
 ```js
-sq.from`book`.order`title desc, sales / ${1000}`
+sq.from`book`.orderBy`title desc, sales / ${1000}`
 // select * from book order by title desc, sales / 1000
 
-sq.from`book`.order`title`.order`sales / 1000`
+sq.from`book`.orderBy`title`.orderBy`sales / 1000`
 // select * from book order by title desc, sales / 1000
 
-sq.from`book`.order`title using ~<~' nulls last`
+sq.from`book`.orderBy`title using ~<~' nulls last`
 // select * from book order by title using ~<~ nulls last
 ```
    */
-  order(strings: TemplateStringsArray, ...args: any[]): this
+  orderBy(strings: TemplateStringsArray, ...args: any[]): this
 }
 
 
@@ -913,7 +973,7 @@ sq.from`person`.limit(8)
 sq.from`person`.limit(7).limit(5)
 // select * from person limit 5
 
-sq.from`person`.limit(sq.l`1 + 7`)
+sq.from`person`.limit(sq.txt`1 + 7`)
 // select * from person limit 1 + 7
 
 sq.from`person`.limit(sq.return(10))
@@ -958,7 +1018,7 @@ sq.from`person`.limit(8)
 sq.from`person`.limit(7).limit(5)
 // select * from person limit 5
 
-sq.from`person`.limit(sq.l`1 + 7`)
+sq.from`person`.limit(sq.txt`1 + 7`)
 // select * from person limit 1 + 7
 
 sq.from`person`.limit(sq.return(10))
@@ -1022,7 +1082,7 @@ sq.from({ b: 'book' }).join({ a: 'author'})
   .on({ 'b.author_id': sq.raw('a.id') }).on({ 'b.genre': 'Fantasy' })
 // select * from book as b join author as a on (b.author_id = a.id) and (b.genre = 'Fantasy')
 
-sq.from({ b: 'book' }).join({ a: 'author'}).on`$${'b.author_id'} = $${'a.id'}`
+sq.from({ b: 'book' }).join({ a: 'author'}).on`${sq.raw('b.author_id')} = ${sq.raw('a.id')}`
   .and({ 'b.genre': 'Fantasy' }).or({ 'b.special': true })
 // select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1) or (b.special = true)
 
@@ -1032,10 +1092,10 @@ sq.from('book').join('author').using('author_id')
 sq.from('a').join('b').using('x', 'y').using('z')
 // select * from a join b using (x, y, z)
 
-sq.from('book').left.join('author').right.join`publisher`
+sq.from('book').leftJoin('author').rightJoin`publisher`
 // select * from book natural left join author natural right join publisher
 
-sq.from('book').left.right.join('author').cross.inner.join`publisher`
+sq.from('book').naturalRightJoin('author').crossjoin`publisher`
 // select * from book natural right join author natural join publisher
 ```
    */
@@ -1074,10 +1134,10 @@ sq.from`book`.join`author`.using`author_id`
 sq.from`a`.join`b`.using`x, y`.using`z`
 // select * from a join b using (x, y, z)
 
-sq.from`book`.left.join`author`.right.join`publisher`
+sq.from`book`.leftJoin`author`.rightJoin`publisher`
 // select * from book natural left join author natural right join publisher
 
-sq.from`book`.left.right.join`author`.cross.inner.join`publisher`
+sq.from`book`.naturalRightJoin`author`.crossjoin`publisher`
 // select * from book natural right join author natural join publisher
 ```
    */
@@ -1090,13 +1150,13 @@ sq.from`book`.left.right.join`author`.cross.inner.join`publisher`
    * 
    * @example
 ```js
-sq.from`book`.inner.join`author`
+sq.from`book`.join`author`
 // select * from book natural join author
 
 sq.from`book`.join`author`
 // select * from book natural join author
 
-sq.from`book`.inner.join`author`.on`book.author_id = author.id`
+sq.from`book`.join`author`.on`book.author_id = author.id`
 // select * from book join author on book.author_id = author.id
 ```
    */
@@ -1109,10 +1169,10 @@ sq.from`book`.inner.join`author`.on`book.author_id = author.id`
    * 
    * @example
 ```js
-sq.from`book b`.left.join`author a`
+sq.from`book b`.leftJoin`author a`
 // select * from book natural left join author
 
-sq.from`book b`.left.join`author a`.on`b.author_id = a.id`
+sq.from`book b`.leftJoin`author a`.on`b.author_id = a.id`
 // select * from book b left join author a on b.author_id = a.id
 ```
    */
@@ -1125,10 +1185,10 @@ sq.from`book b`.left.join`author a`.on`b.author_id = a.id`
    * 
    * @example
 ```js
-sq.from`book b`.right.join`author a`
+sq.from`book b`.rightJoin`author a`
 // select * from book natural right join author
 
-sq.from`book b`.right.join`author a`.on`b.author_id = a.id`
+sq.from`book b`.rightJoin`author a`.on`b.author_id = a.id`
 // select * from book b right join author a on b.author_id = a.id
 ```
    */
@@ -1141,10 +1201,10 @@ sq.from`book b`.right.join`author a`.on`b.author_id = a.id`
    * 
    * @example
 ```js
-sq.from`book b`.full.join`author a`
+sq.from`book b`.fullJoin`author a`
 // select * from book natural full join author
 
-sq.from`book b`.full.join`author a`.on`b.author_id = a.id`
+sq.from`book b`.fullJoin`author a`.on`b.author_id = a.id`
 // select * from book b full join author a on b.author_id = a.id
 ```
    */
@@ -1157,10 +1217,10 @@ sq.from`book b`.full.join`author a`.on`b.author_id = a.id`
    * 
    * @example
 ```js
-sq.from`book b`.cross.join`author a`
-// select * from book natural cross join author
+sq.from`book b`.crossJoin`author a`
+// select * from book cross join author
 
-sq.from`book b`.cross.join`author a`.on`b.author_id = a.id`
+sq.from`book b`.crossJoin`author a`.on`b.author_id = a.id`
 // select * from book b cross join author a on b.author_id = a.id
 ```
    */
@@ -1192,7 +1252,7 @@ sq.from({ b: 'book' }).join({ a: 'author'})
   .on({ 'b.author_id': sq.raw('a.id') }).on({ 'b.genre': 'Fantasy' })
 // select * from book as b join author as a on (b.author_id = a.id) and (b.genre = 'Fantasy')
 
-sq.from({ b: 'book' }).join({ a: 'author'}).on`$${'b.author_id'} = $${'a.id'}`
+sq.from({ b: 'book' }).join({ a: 'author'}).on`${sq.raw('b.author_id')} = ${sq.raw('a.id')}`
   .and({ 'b.genre': 'Fantasy' }).or({ 'b.special': true })
 // select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1) or (b.special = true)
 ```
@@ -1448,7 +1508,7 @@ sq.from('person')
 
 sq.from('person').insert({
   firstName: sq.return`${'Shallan'}`,
-  lastName: sq.l('Davar')
+  lastName: sq.txt('Davar')
 })
 // insert into person(first_name, last_name) values ((select 'Shallan'), 'Davar')
 ```
@@ -1478,7 +1538,7 @@ sq.from('person')
 
 sq.from('person').insert([{
   firstName: sq.return`${'Shallan'}`,
-  lastName: sq.l('Davar')
+  lastName: sq.txt('Davar')
 }])
 // insert into person(first_name, last_name) values ((select 'Shallan'), 'Davar')
 ```
@@ -1494,10 +1554,10 @@ sq.from('person').insert([{
    * 
    * @example
 ```js
-sq.from('person(name, age)').insert(sq.return(sq.l('Jo'), 23))
+sq.from('person(name, age)').insert(sq.return(sq.txt('Jo'), 23))
 // insert into person(name, age) select 'Jo', 23
 
-sq.from('person(name)').insert(sq.l`values (${'Jo'})`)
+sq.from('person(name)').insert(sq.txt`values (${'Jo'})`)
 // insert into person(name) values ('Jo')
 ```
    */
@@ -1530,7 +1590,7 @@ export interface Set {
    * @example
 ```js
 sq.from('person')
-  .set({ age: sq.l`age + 1`, done: true })
+  .set({ age: sq.txt`age + 1`, done: true })
   .where({ age: 7 })
   .return('person.name')
 // update person
@@ -1546,7 +1606,7 @@ sq.from('person').set(
 // set first_name = 'Robert', nickname = 'Rob', processed = true
 
 sq.from('person')
-  .set({ firstName: sq.l`'Bob'` })
+  .set({ firstName: sq.txt`'Bob'` })
   .set({ lastName: sq.return`'Smith'` })
 // update person
 // set first_name = 'Bob', last_name = (select 'Smith')
@@ -1599,11 +1659,11 @@ sq`person``age < 7``id`.delete
 }
 
 
-export interface SQL {
+export interface Manual {
   /**
-   * Appends Raw SQL string
+   * Manually Build Query
    *
-   * Multiple calls to `.l` are joined with spaces.
+   * Multiple calls to `.sql` are joined with spaces.
    *
    * Template string arguments are automatically parameterized.
    * To provide a raw unparameterized argument, prefix it with `$`.
@@ -1611,60 +1671,85 @@ export interface SQL {
    *
    * @example
 ```js
-sq.l`select * from book`
+sq.sql`select * from book`
 // select * from book
 
-sq.l`select * from person`.l`where age = ${8}`.l`or name = ${'Jo'}`
+sq.sql`select * from person`.sql`where age = ${8}`.sql`or name = ${'Jo'}`
 // select * from person where age = $1 or name = $2
 
-sq.l`select * $${'person'}`
+sq.sql`select * ${sq.raw('person')}`
 // select * from person
 
-sq`person`.where({ min: sq.l`age < 7` })
+sq`person`.where({ min: sq.txt`age < 7` })
 // select * from person where age < 7
 
 sq.return`now() today, (${sq.return`now() + '1 day'`}) tomorrow`
 // select now() today, (select now() + '1 day') tomorrow
 ```
    */
-  l(strings: TemplateStringsArray, ...args: any[]): this
+  sql(strings: TemplateStringsArray, ...args: any[]): this
 
   /**
-   * Parameterizes the given argument
+   * Parameterizes Query argument(s)
    *
-   * Multiple calls to `.l` are joined with spaces.
+   * Multiple calls to `.sql` are joined with spaces.
    *
    * @example
 ```js
-sq.l`select * from person where age >=`.l(20).l`and age < `.l(30)
+sq.sql`select * from person where age >=`.sql(20).sql`and age < `.sql(30)
 // select * from person where age >= $1 and age < $2
 
-sq.return({ safe: sq.l('Jo'), dangerous: 'Mo' })
+sq.return({ safe: sq.txt('Jo'), dangerous: 'Mo' })
 // select $1 as safe, Mo as dangerous
 ```
    */
-  l(arg: any): this
+  sql(...args: any): this
+
+  /**
+   * Manually Build Text Fragment
+   *
+   * Multiple calls to `.txt` are joined with spaces.
+   *
+   * Template string arguments are automatically parameterized.
+   * To provide a raw unparameterized argument, prefix it with `$`.
+   * Arguments can be subQ.
+   *
+   * @example
+```js
+   */
+  txt(strings: TemplateStringsArray, ...args: any[]): this
+
+  /**
+   * Parameterizes Fragment argument(s)
+   *
+   * Multiple calls to `.txt` are joined with spaces.
+   *
+   * @example
+```js
+
+```
+   */
+  txt(...args: any): this
+
 }
 
 
 export interface Raw {
   /**
-   * Appends a raw, unparameterized argument
+   * Creates a string that is not parameterized when embedded.
    *
-   * Multiple calls to `.raw` are joined with spaces.
-   *
-   * Alternatively prefix an argument with `$` in a call to `.l`.
+   * Alternatively prefix an argument with `$` in a tagged template literal.
    *
    * @example
 ```js
-sq.l`select * from`.raw('test_table').l`where id = ${7}`
+sq.sql`select * from`.raw('test_table').sql`where id = ${7}`
 // select * from test_table where id = $1
 
-sq.l`select * from $${'test_table'} where id = ${7}`
+sq.sql`select * from ${sq.raw('test_table')} where id = ${7}`
 // select * from test_table where id = $1
 ```
    */
-  raw(arg: any): this
+  raw(arg: string): Buildable
 }
 
 export interface Link {
@@ -1675,11 +1760,11 @@ export interface Link {
    * @example
 ```js
 const books = [{ id: 1, title: '1984' }, { id: 2, title: 'Hi' }]
-const val = book => sq.l`(${book.id}, ${book.title})`
+const val = book => sq.sql`(${book.id}, ${book.title})`
 const values = sq.extend(...books.map(val)).link(', ')
 // ($1, $2), ($3, $4)
 
-sq.l`insert into book(id, title)`.l`values ${values}`.link('\n')
+sq.sql`insert into book(id, title)`.sql`values ${values}`.link('\n')
 // insert into book(id, title)
 // values ($1, $2), ($3, $4)'
 ```
@@ -1693,7 +1778,7 @@ export interface Buildable {
    *
    * @example
 ```js
-sq.l`select * from book`.query
+sq.sql`select * from book`.query
 { text: 'select * from book', args: [], type: 'manual' }
 
 sq`book`({ id: 7 })`title`.query
@@ -1772,7 +1857,7 @@ sq.extend(sq.from('book').where({ id: 8 }), sq.return('title'))
 sq.from('book').extend(sq.where({ genre: 'Fantasy'})).return('id')
 // select id from book where genre = $1
 
-sq.l`select id`.extend(sq.l`from book`, sq.l`where genre = ${'Fantasy'}`)
+sq.sql`select id`.extend(sq.sql`from book`, sq.sql`where genre = ${'Fantasy'}`)
 // select id from book where genre = $1
 
 sq`author`.extend(

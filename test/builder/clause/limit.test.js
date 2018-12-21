@@ -21,7 +21,7 @@ describe('Limit', () => {
   })
   query({
     name: 'manual subquery',
-    query: sq.from`person`.limit(sq.l`1 + 7`),
+    query: sq.from`person`.limit(sq.txt`1 + 7`),
     text: 'select * from person limit 1 + 7',
     args: []
   })

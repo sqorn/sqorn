@@ -1,5 +1,5 @@
 {
-  "name": "sqorn-sqlite",
+  "name": "@sqorn/sqlite",
   "version": "0.0.40",
   "description": "A Javascript library for building SQLite queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",

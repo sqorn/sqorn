@@ -1,4 +1,5 @@
 const { sq, query } = require('../tape')
+const { e } = sq
 
 describe('where', () => {
   describe('template string', () => {
@@ -16,12 +17,12 @@ describe('where', () => {
   describe('template string args', () => {
     query({
       name: '1 raw arg',
-      query: sq.where`$${'name'} = 'Jo'`,
+      query: sq.where`${sq.raw('name')} = 'Jo'`,
       text: "select * where (name = 'Jo')"
     })
     query({
       name: '2 raw args',
-      query: sq.where`$${'name'} = $${"'Jo'"}`,
+      query: sq.where`${sq.raw('name')} = ${sq.raw("'Jo'")}`,
       text: "select * where (name = 'Jo')"
     })
     query({
@@ -30,17 +31,46 @@ describe('where', () => {
       text: 'select * where (name = $1)',
       args: ['Jo']
     })
+    expect(() => sq.where`name is ${undefined}`.query).toThrowError()
+    query({
+      name: 'null arg',
+      query: sq.where`name = ${null}`,
+      text: 'select * where (name = $1)',
+      args: [null]
+    })
     query({
       name: '2 paramterized args',
-      query: sq.where`name = ${'Jo'} or name = ${'Mo'}`,
-      text: 'select * where (name = $1 or name = $2)',
+      query: sq.where`name = ${'Jo'} and name = ${'Mo'}`,
+      text: 'select * where (name = $1 and name = $2)',
       args: ['Jo', 'Mo']
     })
     query({
       name: 'multiple raw and parameterized args',
-      query: sq.where`$${'name'} = ${'Jo'} $${'or'} $${'name'} = ${'Mo'}`,
-      text: 'select * where (name = $1 or name = $2)',
+      query: sq.where`${sq.raw('name')} = ${'Jo'} ${sq.raw('and')} ${sq.raw(
+        'name'
+      )} = ${'Mo'}`,
+      text: 'select * where (name = $1 and name = $2)',
       args: ['Jo', 'Mo']
+    })
+  })
+  describe('expression', () => {
+    query({
+      name: 'e(true)',
+      query: sq.where(e(true)),
+      text: 'select * where $1',
+      args: [true]
+    })
+    query({
+      name: '1 condition',
+      query: sq.where(e.eq`age`(7)),
+      text: 'select * where (age = $1)',
+      args: [7]
+    })
+    query({
+      name: '2 conditions',
+      query: sq.where(e.gt`age`(7), e`age`.lt(10)),
+      text: 'select * where (age > $1) and (age < $2)',
+      args: [7, 10]
     })
   })
   describe('object', () => {
@@ -53,31 +83,31 @@ describe('where', () => {
     query({
       name: '2 conditions, and',
       query: sq.where({ age: 7, name: 'Jo' }),
-      text: 'select * where (age = $1 and name = $2)',
+      text: 'select * where (age = $1) and (name = $2)',
       args: [7, 'Jo']
     })
     query({
       name: '3 conditions, and',
       query: sq.where({ age: 7, name: 'Jo', city: 'San Diego' }),
-      text: 'select * where (age = $1 and name = $2 and city = $3)',
+      text: 'select * where (age = $1) and (name = $2) and (city = $3)',
       args: [7, 'Jo', 'San Diego']
     })
     query({
-      name: '2 conditions, or',
+      name: '2 conditions, and',
       query: sq.where({ age: 7 }, { name: 'Jo' }),
-      text: 'select * where (age = $1 or name = $2)',
+      text: 'select * where (age = $1) and (name = $2)',
       args: [7, 'Jo']
     })
     query({
-      name: '3 conditions, or',
+      name: '3 conditions, and',
       query: sq.where({ age: 7 }, { name: 'Jo' }, { city: 'San Diego' }),
-      text: 'select * where (age = $1 or name = $2 or city = $3)',
+      text: 'select * where (age = $1) and (name = $2) and (city = $3)',
       args: [7, 'Jo', 'San Diego']
     })
     query({
-      name: 'and + or',
+      name: 'and + and',
       query: sq.where({ age: 7 }, { name: 'Jo', city: 'San Diego' }),
-      text: 'select * where (age = $1 or name = $2 and city = $3)',
+      text: 'select * where (age = $1) and (name = $2) and (city = $3)',
       args: [7, 'Jo', 'San Diego']
     })
     query({
@@ -87,17 +117,20 @@ describe('where', () => {
       args: ['Jo']
     })
   })
-  describe('subquery argument', () => {
+  describe('fragment argument', () => {
     query({
-      name: 'one subquery',
-      query: sq.where(sq.l`first_name = ${'Jo'}`),
-      text: 'select * where (first_name = $1)',
+      name: 'one fragment',
+      query: sq.where(sq.txt`first_name = ${'Jo'}`),
+      text: 'select * where first_name = $1',
       args: ['Jo']
     })
     query({
-      name: 'two subqueries',
-      query: sq.where(sq.l`first_name = ${'Jo'}`, sq.l`last_name = ${'Schmo'}`),
-      text: 'select * where (first_name = $1 or last_name = $2)',
+      name: 'two fragments',
+      query: sq.where(
+        sq.txt`first_name = ${'Jo'}`,
+        sq.txt`last_name = ${'Schmo'}`
+      ),
+      text: 'select * where first_name = $1 and last_name = $2',
       args: ['Jo', 'Schmo']
     })
   })
@@ -128,44 +161,8 @@ describe('where', () => {
         { middleName: 'Jo' }
       ).where`city = ${'San Diego'}`,
       text:
-        'select * where (first_name = $1 and last_name = $2 or middle_name = $3) and (city = $4)',
+        'select * where (first_name = $1) and (last_name = $2) and (middle_name = $3) and (city = $4)',
       args: ['Jo', 'Schmo', 'Jo', 'San Diego']
-    })
-  })
-  describe('.and .or', () => {
-    query({
-      name: 'and',
-      query: sq.where`name = ${'Joe'}`.and`age = ${8}`,
-      text: 'select * where (name = $1) and (age = $2)',
-      args: ['Joe', 8]
-    })
-    query({
-      name: 'or',
-      query: sq.where`name = ${'Joe'}`.or`age = ${8}`,
-      text: 'select * where (name = $1) or (age = $2)',
-      args: ['Joe', 8]
-    })
-    query({
-      name: 'multiple and/or',
-      query: sq.where`name = ${'Joe'}`.or`age = ${8}`.and`color = ${'blue'}`,
-      text: 'select * where (name = $1) or (age = $2) and (color = $3)',
-      args: ['Joe', 8, 'blue']
-    })
-    query({
-      name: 'and/or object',
-      query: sq.where({ name: 'Joe' }).or({ age: 8 }),
-      text: 'select * where (name = $1) or (age = $2)',
-      args: ['Joe', 8]
-    })
-  })
-  describe('applys correctly to .where and .on', () => {
-    query({
-      name: 'and',
-      query: sq.from`a`.join`b`.on`a.id = b.id`.or`b.id is ${3}`
-        .where`a.x = ${7}`.and`b.y = ${8}`,
-      text:
-        'select * from a join b on (a.id = b.id) or (b.id is $1) where (a.x = $2) and (b.y = $3)',
-      args: [3, 7, 8]
     })
   })
 })

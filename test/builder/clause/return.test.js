@@ -28,42 +28,42 @@ describe('return', () => {
   describe('subquery args', () => {
     query({
       name: 'one arg',
-      query: sq.return(sq.l`name`),
+      query: sq.return(sq.txt`name`),
       text: 'select name'
     })
     query({
       name: 'two args',
-      query: sq.return(sq.l`id`, sq.l`name`),
+      query: sq.return(sq.txt`id`, sq.txt`name`),
       text: 'select id, name'
     })
   })
   describe('template string args', () => {
     query({
       name: '1 raw arg',
-      query: sq.return`$${'age'}, name`,
+      query: sq.return`${sq.raw('age')}, name`,
       text: 'select age, name'
     })
     query({
       name: '2 raw args',
-      query: sq.return`$${'age'}, $${'name'}`,
+      query: sq.return`${sq.raw('age')}, ${sq.raw('name')}`,
       text: 'select age, name'
     })
     query({
       name: '1 parameterized arg',
-      query: sq.return`${7} as age, name`,
-      text: 'select $1 as age, name',
+      query: sq.return`${7} age, name`,
+      text: 'select $1 age, name',
       args: [7]
     })
     query({
       name: '2 parameterized args',
-      query: sq.return`${7} as age, ${'Jo'} as name`,
-      text: 'select $1 as age, $2 as name',
+      query: sq.return`${7} age, ${'Jo'} name`,
+      text: 'select $1 age, $2 name',
       args: [7, 'Jo']
     })
     query({
       name: 'multiple raw and parameterized args',
-      query: sq.return`${7} as $${'age'}, ${'Jo'} as $${'name'}`,
-      text: 'select $1 as age, $2 as name',
+      query: sq.return`${7} ${sq.raw('age')}, ${'Jo'} ${sq.raw('name')}`,
+      text: 'select $1 age, $2 name',
       args: [7, 'Jo']
     })
   })

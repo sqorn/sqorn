@@ -1,49 +1,50 @@
-const { sq, query } = require('../tape')
+const { sq, e, query } = require('../tape')
 
 describe('tutorial', () => {
   describe('Manual Queries', () => {
     describe('SQL', () => {
       query({
         name: 'parameterized argument',
-        query: sq.l`select * from person where age >= ${20} and age < ${30}`,
+        query: sq.sql`select * from person where age >= ${20} and age < ${30}`,
         text: 'select * from person where age >= $1 and age < $2',
         args: [20, 30]
       })
       test('unparameterized', () => {
         expect(
-          sq.l`select * from person where age >= ${20} and age < ${30}`
+          sq.sql`select * from person where age >= ${20} and age < ${30}`
             .unparameterized
         ).toBe('select * from person where age >= 20 and age < 30')
       })
       query({
         name: 'chained calls',
-        query: sq.l`select *`.l`from person`
-          .l`where age >= ${20} and age < ${30}`,
+        query: sq.sql`select *`.sql`from person`
+          .sql`where age >= ${20} and age < ${30}`,
         text: 'select * from person where age >= $1 and age < $2',
         args: [20, 30]
       })
       query({
         name: 'subquery argument',
-        query: sq.l`select * from person ${sq.l`where age >= ${20} and age < ${30}`}`,
+        query: sq.sql`select * from person ${sq.txt`where age >= ${20} and age < ${30}`}`,
         text: 'select * from person where age >= $1 and age < $2',
         args: [20, 30]
       })
       query({
         name: 'function call',
-        query: sq.l`select * from person where age >=`.l(20).l`and age <`.l(30),
+        query: sq.sql`select * from person where age >=`.sql(20)
+          .sql`and age <`.sql(30),
         text: 'select * from person where age >= $1 and age < $2',
         args: [20, 30]
       })
     })
     describe('Raw', () => {
       query({
-        name: '.l`$${arg}`',
-        query: sq.l`select * from $${'test_table'}`,
+        name: '.sql`${sq.raw(arg)}`',
+        query: sq.sql`select * from ${sq.raw('test_table')}`,
         text: 'select * from test_table'
       })
       query({
         name: '.raw(arg)',
-        query: sq.l`select * from`.raw('test_table').l`where id = ${7}`,
+        query: sq.sql`select * from ${sq.raw('test_table')} where id = ${7}`,
         text: 'select * from test_table where id = $1',
         args: [7]
       })
@@ -52,9 +53,9 @@ describe('tutorial', () => {
       query({
         name: '.extend',
         query: sq.extend(
-          sq.l`select *`,
-          sq.l`from person`,
-          sq.l`where age >= ${20} and age < ${30}`
+          sq.sql`select *`,
+          sq.sql`from person`,
+          sq.sql`where age >= ${20} and age < ${30}`
         ),
         text: 'select * from person where age >= $1 and age < $2',
         args: [20, 30]
@@ -62,11 +63,13 @@ describe('tutorial', () => {
     })
     describe('Link', () => {
       const books = [{ id: 1, title: '1984' }, { id: 2, title: 'Dracula' }]
-      const value = book => sq.l`(${book.id}, ${book.title})`
+      const value = book => sq.txt`(${book.id}, ${book.title})`
       const values = sq.extend(...books.map(value)).link`, `
       query({
         name: 'link',
-        query: sq.l`insert into book(id, title)`.l`values ${values}`.link('\n'),
+        query: sq.sql`insert into book(id, title)`.sql`values ${values}`.link(
+          '\n'
+        ),
         text: 'insert into book(id, title)\nvalues ($1, $2), ($3, $4)',
         args: [1, '1984', 2, 'Dracula']
       })
@@ -91,15 +94,15 @@ describe('tutorial', () => {
         text: 'select * from book, author'
       })
       query({
-        name: '.from(sq.l``)',
-        query: sq.from(sq.l`unnest(array[1, 2, 3])`),
+        name: '.from(sq.txt``)',
+        query: sq.from(sq.txt`unnest(array[1, 2, 3])`),
         text: 'select * from unnest(array[1, 2, 3])',
         args: []
       })
       query({
         name: '.from object - string table source',
         query: sq.from({ b: 'book', p: 'person' }),
-        text: 'select * from book as b, person as p'
+        text: 'select * from book b, person p'
       })
       query({
         name: '.from object - array of row objects',
@@ -107,29 +110,29 @@ describe('tutorial', () => {
           people: [{ age: 7, firstName: 'Jo' }, { age: 9, firstName: 'Mo' }]
         }),
         text:
-          'select * from (values ($1, $2), ($3, $4)) as people(age, first_name)',
+          'select * from (values ($1, $2), ($3, $4)) people(age, first_name)',
         args: [7, 'Jo', 9, 'Mo']
       })
       query({
         name: '.from object - select subquery',
         query: sq.from({ b: sq.from`book` }),
-        text: 'select * from (select * from book) as b',
+        text: 'select * from (select * from book) b',
         args: []
       })
       query({
         name: '.from object - subquery table source',
-        query: sq.from({ countDown: sq.l`unnest(${[3, 2, 1]})` }),
-        text: 'select * from unnest($1) as count_down',
+        query: sq.from({ countDown: sq.txt`unnest(${[3, 2, 1]})` }),
+        text: 'select * from unnest($1) count_down',
         args: [[3, 2, 1]]
       })
       query({
         name: '.from - mix objects and strings',
-        query: sq.from({ b: 'book' }, 'person', sq.l`author`),
-        text: 'select * from book as b, person, author',
+        query: sq.from({ b: 'book' }, 'person', sq.txt`author`),
+        text: 'select * from book b, person, author',
         args: []
       })
       query({
-        name: '.from`join`',
+        name: '.from`.join`',
         query: sq.from`book left join author on book.author_id = author.id`,
         text:
           'select * from book left join author on book.author_id = author.id'
@@ -149,21 +152,15 @@ describe('tutorial', () => {
         args: ['Fantasy', 2000]
       })
       query({
-        name: '.where(sq.l``)',
-        query: sq.from`book`.where(sq.l`genre = ${'Fantasy'}`),
-        text: 'select * from book where (genre = $1)',
+        name: '.where(sq.txt``)',
+        query: sq.from`book`.where(sq.txt`genre = ${'Fantasy'}`),
+        text: 'select * from book where genre = $1',
         args: ['Fantasy']
-      })
-      query({
-        name: '.where(sq.l``)',
-        query: sq.from`book`.where({ genre: 'Fantasy', year: 2000 }),
-        text: 'select * from book where (genre = $1 and year = $2)',
-        args: ['Fantasy', 2000]
       })
       query({
         name: '.where({})',
         query: sq.from`book`.where({ genre: 'Fantasy', year: 2000 }),
-        text: 'select * from book where (genre = $1 and year = $2)',
+        text: 'select * from book where (genre = $1) and (year = $2)',
         args: ['Fantasy', 2000]
       })
       query({
@@ -180,26 +177,29 @@ describe('tutorial', () => {
         text: 'select * from book, author where (book.id = author.id)',
         args: []
       })
-      const condMinYear = sq.l`year >= ${20}`
-      const condMaxYear = sq.l`year < ${30}`
+      const condMinYear = sq.txt`(year >= ${20})`
+      const condMaxYear = sq.txt`(year < ${30})`
       query({
-        name: '.where({ Builder })',
-        query: sq.from`person`.where({ condMinYear, condMaxYear }),
-        text: 'select * from person where (year >= $1 and year < $2)',
+        name: '.where(sq.txt, sq.txt)',
+        query: sq.from`person`.where(condMinYear, condMaxYear),
+        text: 'select * from person where (year >= $1) and (year < $2)',
         args: [20, 30]
       })
       query({
         name: '.where({}).where({})',
-        query: sq.from`person`.where({ name: 'Rob' }, sq.l`name = ${'Bob'}`),
-        text: 'select * from person where (name = $1 or name = $2)',
+        query: sq.from`person`.where(
+          { name: 'Rob' },
+          sq.txt`(name = ${'Bob'})`
+        ),
+        text: 'select * from person where (name = $1) and (name = $2)',
         args: ['Rob', 'Bob']
       })
     })
     describe('Select', () => {
       query({
         name: '.return``',
-        query: sq.return`${1} as a, ${2} as b, ${1} + ${2} as sum`,
-        text: 'select $1 as a, $2 as b, $3 + $4 as sum',
+        query: sq.return`${1} a, ${2} b, ${1} + ${2} sum`,
+        text: 'select $1 a, $2 b, $3 + $4 sum',
         args: [1, 2, 1, 2]
       })
       query({
@@ -215,8 +215,8 @@ describe('tutorial', () => {
         args: []
       })
       query({
-        name: '.return(sq.l``)',
-        query: sq.from`book`.return(sq.l`title`, sq.l`author`),
+        name: '.return(sq.txt``)',
+        query: sq.from`book`.return(sq.txt`title`, sq.txt`author`),
         text: 'select title, author from book',
         args: []
       })
@@ -226,13 +226,15 @@ describe('tutorial', () => {
           firstName: 'person.first_name',
           age: 'person.age'
         }),
-        text:
-          'select person.first_name as first_name, person.age as age from person'
+        text: 'select person.first_name first_name, person.age age from person'
       })
       query({
         name: '.return object - subquery expression',
-        query: sq.return({ sum: sq.l`${2} + ${3}`, firstName: sq.l('Bob') }),
-        text: 'select $1 + $2 as sum, $3 as first_name',
+        query: sq.return({
+          sum: sq.txt`${2} + ${3}`,
+          firstName: sq.txt('Bob')
+        }),
+        text: 'select $1 + $2 sum, $3 first_name',
         args: [2, 3, 'Bob']
       })
       query({
@@ -275,9 +277,9 @@ describe('tutorial', () => {
       })
       query({
         name: ".distinctOn('', '').return",
-        query: sq.from`generate_series(0, 10) as n`.distinctOn(sq.l`n / 3`)
+        query: sq.from`generate_series(0, 10) n`.distinctOn(sq.txt`n / 3`)
           .return`n`,
-        text: 'select distinct on (n / 3) n from generate_series(0, 10) as n',
+        text: 'select distinct on (n / 3) n from generate_series(0, 10) n',
         args: []
       })
     })
@@ -339,14 +341,14 @@ describe('tutorial', () => {
     describe('Group By', () => {
       query({
         name: 'tagged template',
-        query: sq.from`person`.return`age, count(*)`.group`age`,
+        query: sq.from`person`.return`age, count(*)`.groupBy`age`,
         text: 'select age, count(*) from person group by age',
         args: []
       })
       query({
         name: 'multiple calls',
-        query: sq.from`person`.return`age, last_name, count(*)`.group`age`
-          .group`last_name`,
+        query: sq.from`person`.return`age, last_name, count(*)`.groupBy`age`
+          .groupBy`last_name`,
         text:
           'select age, last_name, count(*) from person group by age, last_name',
         args: []
@@ -356,26 +358,26 @@ describe('tutorial', () => {
         query: sq
           .from('person')
           .return('count(*)')
-          .group('age', [sq.l`last_name`, 'first_name']),
+          .groupBy('age', [sq.txt`last_name`, 'first_name']),
         text:
           'select count(*) from person group by age, (last_name, first_name)',
         args: []
       })
       query({
         name: 'rollup',
-        query: sq.from`t`.group(sq.rollup('a', ['b', sq.l`c`]), 'd'),
+        query: sq.from`t`.groupBy(sq.rollup('a', ['b', sq.txt`c`]), 'd'),
         text: 'select * from t group by rollup (a, (b, c)), d',
         args: []
       })
       query({
         name: 'cube',
-        query: sq.from`t`.group(sq.cube('a', ['b', sq.l`c`]), 'd'),
+        query: sq.from`t`.groupBy(sq.cube('a', ['b', sq.txt`c`]), 'd'),
         text: 'select * from t group by cube (a, (b, c)), d',
         args: []
       })
       query({
         name: 'grouping sets',
-        query: sq.from`t`.group(
+        query: sq.from`t`.groupBy(
           sq.groupingSets(
             ['a', 'b', 'c'],
             sq.groupingSets(['a', 'b']),
@@ -389,7 +391,10 @@ describe('tutorial', () => {
       })
       query({
         name: 'expression args',
-        query: sq.from`person`.group('age', [sq.l`last_name`, 'first_name']),
+        query: sq.from`person`.groupBy('age', [
+          sq.txt`last_name`,
+          'first_name'
+        ]),
         text: 'select * from person group by age, (last_name, first_name)',
         args: []
       })
@@ -397,13 +402,13 @@ describe('tutorial', () => {
     describe('Having', () => {
       query({
         name: 'tagged template',
-        query: sq.from`person`.group`age`.having`age < ${20}`,
+        query: sq.from`person`.groupBy`age`.having`age < ${20}`,
         text: 'select * from person group by age having (age < $1)',
         args: [20]
       })
       query({
         name: 'multiple calls',
-        query: sq.from`person`.group`age`.having`age >= ${20}`
+        query: sq.from`person`.groupBy`age`.having`age >= ${20}`
           .having`age < ${30}`,
         text:
           'select * from person group by age having (age >= $1) and (age < $2)',
@@ -411,57 +416,57 @@ describe('tutorial', () => {
       })
       query({
         name: 'chain .on and .or',
-        query: sq.from`person`.group`age`
-          .having({ age: 18, c: sq.l`age < ${19}` })
-          .or({ age: 20 }).and`count(*) > 10`,
+        query: sq.from`person`.groupBy`age`
+          .having({ age: 18 }, sq.txt`age < ${19}`)
+          .having({ age: 20 }).having`count(*) > 10`,
         text:
-          'select * from person group by age having (age = $1 and age < $2) or (age = $3) and (count(*) > 10)',
+          'select * from person group by age having (age = $1) and age < $2 and (age = $3) and (count(*) > 10)',
         args: [18, 19, 20]
       })
     })
     describe('Order By', () => {
       query({
         name: 'tagged template',
-        query: sq.from`book`.order`title asc nulls last`,
+        query: sq.from`book`.orderBy`title asc nulls last`,
         text: 'select * from book order by title asc nulls last',
         args: []
       })
       query({
         name: 'multiple calls',
-        query: sq.from`book`.order`title`.order`year`,
+        query: sq.from`book`.orderBy`title`.orderBy`year`,
         text: 'select * from book order by title, year',
         args: []
       })
       query({
         name: 'expressions',
-        query: sq.from`book`.order('title', sq.l`sales / ${1000}`),
+        query: sq.from`book`.orderBy('title', sq.txt`sales / ${1000}`),
         text: 'select * from book order by title, sales / $1',
         args: [1000]
       })
       query({
         name: 'object - by',
-        query: sq.from`book`.order(
+        query: sq.from`book`.orderBy(
           { by: 'title' },
-          { by: sq.l`sales / ${1000}` }
+          { by: sq.txt`sales / ${1000}` }
         ),
         text: 'select * from book order by title, sales / $1',
         args: [1000]
       })
       query({
         name: 'object - sort',
-        query: sq.from`book`.order({ by: 'title', sort: 'desc' }),
+        query: sq.from`book`.orderBy({ by: 'title', sort: 'desc' }),
         text: 'select * from book order by title desc',
         args: []
       })
       query({
         name: 'object - using',
-        query: sq.from`person`.order({ by: 'first_name', using: '~<~' }),
+        query: sq.from`person`.orderBy({ by: 'first_name', using: '~<~' }),
         text: 'select * from person order by first_name using ~<~',
         args: []
       })
       query({
         name: 'object - nulls',
-        query: sq.from`book`.order({ by: 'title', nulls: 'last' }),
+        query: sq.from`book`.orderBy({ by: 'title', nulls: 'last' }),
         text: 'select * from book order by title nulls last',
         args: []
       })
@@ -487,7 +492,7 @@ describe('tutorial', () => {
       })
       query({
         name: 'limit manual subquery',
-        query: sq.from`person`.limit(sq.l`1 + 7`),
+        query: sq.from`person`.limit(sq.txt`1 + 7`),
         text: 'select * from person limit 1 + 7',
         args: []
       })
@@ -519,7 +524,7 @@ describe('tutorial', () => {
       })
       query({
         name: 'offset manual subquery',
-        query: sq.from`person`.offset(sq.l`1 + 7`),
+        query: sq.from`person`.offset(sq.txt`1 + 7`),
         text: 'select * from person offset 1 + 7',
         args: []
       })
@@ -533,7 +538,7 @@ describe('tutorial', () => {
     describe('Join', () => {
       query({
         name: 'natural join',
-        query: sq.from`book`.join`author`,
+        query: sq.from`book`.naturalJoin`author`,
         text: 'select * from book natural join author',
         args: []
       })
@@ -541,8 +546,7 @@ describe('tutorial', () => {
         name: 'on',
         query: sq.from({ b: 'book' }).join({ a: 'author' })
           .on`b.author_id = a.id`,
-        text:
-          'select * from book as b join author as a on (b.author_id = a.id)',
+        text: 'select * from book b join author a on (b.author_id = a.id)',
         args: []
       })
       query({
@@ -550,19 +554,9 @@ describe('tutorial', () => {
         query: sq
           .from({ b: 'book' })
           .join({ a: 'author' })
-          .on({ 'b.author_id': sq.raw('a.id') })
-          .on({ 'b.genre': 'Fantasy' }),
+          .on({ 'b.author_id': e`a.id` }, { 'b.genre': 'Fantasy' }),
         text:
-          'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1)',
-        args: ['Fantasy']
-      })
-      query({
-        name: '.and / .or',
-        query: sq.from({ b: 'book' }).join({ a: 'author' })
-          .on`$${'b.author_id'} = $${'a.id'}`.and({ 'b.genre': 'Fantasy' })
-          .or`b.special = true`,
-        text:
-          'select * from book as b join author as a on (b.author_id = a.id) and (b.genre = $1) or (b.special = true)',
+          'select * from book b join author a on (b.author_id = a.id) and (b.genre = $1)',
         args: ['Fantasy']
       })
       query({
@@ -579,17 +573,17 @@ describe('tutorial', () => {
       })
       query({
         name: 'join type',
-        query: sq.from`book`.left.join`author`.right.join`publisher`,
+        query: sq.from`book`.naturalLeftJoin`author`
+          .naturalRightJoin`publisher`,
         text:
           'select * from book natural left join author natural right join publisher',
         args: []
       })
       query({
         name: 'multiple join type',
-        query: sq.from`book`.left.right.join`author`.cross.inner
-          .join`publisher`,
+        query: sq.from`book`.naturalRightJoin`author`.crossJoin`publisher`,
         text:
-          'select * from book natural right join author natural join publisher',
+          'select * from book natural right join author cross join publisher',
         args: []
       })
     })
@@ -630,17 +624,16 @@ describe('tutorial', () => {
     describe('With', () => {
       query({
         name: 'template string',
-        query: sq.with`n as (select ${20} as age)`.from`n`.return`age`,
-        text: 'with n as (select $1 as age) select age from n',
+        query: sq.with`n (select ${20} age)`.from`n`.return`age`,
+        text: 'with n (select $1 age) select age from n',
         args: [20]
       })
       query({
         name: 'multiple calls',
-        query: sq.with`width as (select ${10} as n)`
-          .with`height as (select ${20} as n)`
-          .return`width.n * height.n as area`,
+        query: sq.with`width (select ${10} n)`.with`height (select ${20} n)`
+          .return`width.n * height.n area`,
         text:
-          'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
+          'with width (select $1 n), height (select $2 n) select width.n * height.n area',
         args: [10, 20]
       })
       query({
@@ -648,13 +641,13 @@ describe('tutorial', () => {
         query: sq
           .with({
             width: sq.return({ n: 10 }),
-            height: sq.l`select ${20} as n`
+            height: sq.sql`select ${20} n`
           })
           .return({
-            area: sq.l`width.n * height.n`
+            area: sq.txt`width.n * height.n`
           }),
         text:
-          'with width as (select $1 as n), height as (select $2 as n) select width.n * height.n as area',
+          'with width (select $1 n), height (select $2 n) select width.n * height.n area',
         args: [10, 20]
       })
       const people = [{ age: 7, name: 'Jo' }, { age: 9, name: 'Mo' }]
@@ -662,17 +655,17 @@ describe('tutorial', () => {
         name: 'object array arg',
         query: sq.with({ people }).return`max(age)`.from`people`,
         text:
-          'with people(age, name) as (values ($1, $2), ($3, $4)) select max(age) from people',
+          'with people(age, name) (values ($1, $2), ($3, $4)) select max(age) from people',
         args: [7, 'Jo', 9, 'Mo']
       })
       const one = sq.return`1`
       const next = sq.return`n + 1`.from`t`.where`n < 100`
       query({
         name: 'recursive cte',
-        query: sq.recursive.with({ 't(n)': one.unionAll(next) }).from`t`
+        query: sq.withRecursive({ 't(n)': one.unionAll(next) }).from`t`
           .return`sum(n)`,
         text:
-          'with recursive t(n) as (select 1 union all (select n + 1 from t where (n < 100))) select sum(n) from t',
+          'with recursive t(n) (select 1 union all (select n + 1 from t where (n < 100))) select sum(n) from t',
         args: []
       })
     })
@@ -729,7 +722,14 @@ describe('tutorial', () => {
   describe('Insert Queries', () => {
     describe('Insert', () => {
       query({
-        name: '.insert({})',
+        name: '.insert``',
+        query: sq.from`person(first_name, last_name)`
+          .insert`values (${'Shallan'}, ${'Davar'})`,
+        text: 'insert into person(first_name, last_name) values ($1, $2)',
+        args: ['Shallan', 'Davar']
+      })
+      query({
+        name: '.insert({ firstName, lastName })',
         query: sq
           .from('person')
           .insert({ firstName: 'Shallan', lastName: 'Davar' }),
@@ -737,16 +737,10 @@ describe('tutorial', () => {
         args: ['Shallan', 'Davar']
       })
       query({
-        name: '.insert(...[])',
-        query: sq
-          .from('person')
-          .insert(
-            { firstName: 'Shallan', lastName: 'Davar' },
-            { firstName: 'Navani', lastName: 'Kholin' }
-          ),
-        text:
-          'insert into person(first_name, last_name) values ($1, $2), ($3, $4)',
-        args: ['Shallan', 'Davar', 'Navani', 'Kholin']
+        name: '.insert({ a: undefined, b: null })',
+        query: sq.from('test').insert({ a: undefined, b: null }),
+        text: 'insert into test(a, b) values (default, $1)',
+        args: [null]
       })
       query({
         name: '.insert(...[])',
@@ -773,10 +767,10 @@ describe('tutorial', () => {
         args: ['Shallan', 'Davar', 'Navani', 'Kholin']
       })
       query({
-        name: '.insert({ sq.l })',
+        name: '.insert({ sq.txt })',
         query: sq.from('person').insert({
           firstName: sq.return`${'Shallan'}`,
-          lastName: sq.l('Davar')
+          lastName: sq.txt('Davar')
         }),
         text:
           'insert into person(first_name, last_name) values ((select $1), $2)',
@@ -787,17 +781,17 @@ describe('tutorial', () => {
         query: sq
           .from('superhero(name)')
           .insert(sq.return`${'batman'}`.union(sq.return`${'superman'}`)),
-        text: 'insert into superhero(name) select $1 union (select $2)',
+        text: 'insert into superhero(name) (select $1 union (select $2))',
         args: ['batman', 'superman']
       })
       query({
         name: '.insert default values',
-        query: sq.from`person`.insert(),
+        query: sq.from`person`.insert(undefined),
         text: 'insert into person default values',
         args: []
       })
       query({
-        name: '.insert default values',
+        name: '.insert multiple',
         query: sq.from`person`
           .insert({ firstName: 'Shallan', lastName: 'Davar' })
           .insert({ firstName: 'Navani', lastName: 'Kholin' }),
@@ -844,7 +838,7 @@ describe('tutorial', () => {
       query({
         name: '.set({})',
         query: sq.from('person').set({
-          firstName: sq.l`'Bob'`,
+          firstName: sq.txt`'Bob'`,
           lastName: sq.return`'Smith'`
         }),
         text:

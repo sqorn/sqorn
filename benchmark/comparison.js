@@ -24,7 +24,7 @@ new Benchmark.Suite()
     ).query
   })
   .add('Sqorn - raw', function() {
-    sq.l`select title, author, year from books where author = ${'Joe'}`.query
+    sq.sql`select title, author, year from books where author = ${'Joe'}`.query
   })
   .add('Knex', function() {
     knex

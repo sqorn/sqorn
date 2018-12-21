@@ -1,0 +1,16 @@
+{
+  "name": "@sqorn/builder-expression",
+  "version": "0.0.40",
+  "description": "Sqorn Expression Builder",
+  "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "main": "./src/index.js",
+  "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-expression-builder",
+  "homepage": "https://sqorn.org",
+  "dependencies": {
+    "@sqorn/lib-util": "^0.0.40"
+  }
+}

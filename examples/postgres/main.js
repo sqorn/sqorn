@@ -1,4 +1,4 @@
-const sqorn = require('sqorn-pg')
+const sqorn = require('@sqorn/pg')
 const pg = require('pg')
 
 const server = 'postgresql://postgres@localhost:5432/'
@@ -12,23 +12,23 @@ async function main() {
   let pool = new pg.Pool(adminConnection)
   let sq = sqorn({ pg, pool })
   // delete app database if it exists
-  await sq.l`drop database if exists $${appDatabase}`
+  await sq.sql`drop database if exists ${sq.raw(appDatabase)}`
   // create app database
-  await sq.l`create database $${appDatabase}`
+  await sq.sql`create database ${sq.raw(appDatabase)}`
   // disconnect from admin database
   await sq.end()
   // connect to created database
   pool = new pg.Pool(appConnection)
   sq = sqorn({ pg, pool })
   // create author table
-  await sq.l`create table author (
+  await sq.sql`create table author (
     id              serial primary key,
     first_name      text,
     last_name       text,
     birthday        date
   )`
   // create book table
-  await sq.l`create table book (
+  await sq.sql`create table book (
     id              serial primary key,
     title           text,
     genre           text,

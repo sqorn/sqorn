@@ -1,4 +1,4 @@
-# [<img src="https://raw.githubusercontent.com/sqorn/sqorn/master/docs/website/static/img/logo_blue.svg?sanitize=true" height="38px"/> <span style="color: #2979f">Sqorn</span>](https://sqorn.org) &middot; [![License](https://img.shields.io/github/license/sqorn/sqorn.svg)](https://github.com/sqorn/sqorn/blob/master/LICENSE) [![npm](https://img.shields.io/npm/v/sqorn.svg)](https://www.npmjs.com/package/sqorn) ![Supports Node 8+](https://img.shields.io/node/v/sqorn.svg) [![npm](https://img.shields.io/travis/sqorn/sqorn.svg)](https://travis-ci.org/sqorn/sqorn) ![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg) [![Coverage Status](https://coveralls.io/repos/github/sqorn/sqorn/badge.svg)](https://coveralls.io/github/sqorn/sqorn)
+# [<img src="https://raw.githubusercontent.com/sqorn/sqorn/master/docs/website/static/img/logo_blue.svg?sanitize=true" height="38px"/> <span style="color: #2979f">Sqorn</span>](https://sqorn.org) &middot; [![License](https://img.shields.io/github/license/sqorn/sqorn.svg)](https://github.com/sqorn/sqorn/blob/master/LICENSE) [![npm](https://img.shields.io/npm/v/sqorn.svg)](https://www.npmjs.com/package/sqorn) ![Supports Node 8+](https://img.shields.io/node/v/sqorn.svg) [![npm](https://img.shields.io/travis/sqorn/sqorn.svg)](https://travis-ci.org/sqorn/sqorn) [![Coverage Status](https://coveralls.io/repos/github/sqorn/sqorn/badge.svg)](https://coveralls.io/github/sqorn/sqorn)
 
 Sqorn is a Javascript library for building SQL queries.
 
@@ -10,14 +10,14 @@ Sqorn is a Javascript library for building SQL queries.
 
 [**Fast:**](https://sqorn.org/benchmarks.html) 10x faster than [Knex.js](https://knexjs.org/) and 200x faster than [Squel](https://github.com/hiddentao/squel)
 
-**Secure:** Sqorn generates parameterized queries safe from SQL injection.
+**Secure:** Sqorn generates parameterized queries safe from SQL injection. Sqorn has no external dependencies.
 
 ## Install
 
 Sqorn requires Node version 8 or above.
 
 ```sh
-npm install --save sqorn-pg # only Postgres is currently supported
+npm install --save @sqorn/pg # only Postgres is currently supported
 ```
 
 Then read the [tutorial](https://sqorn.org/docs/tutorial.html) and [try the online demo](https://sqorn.org/demo.html).
@@ -27,7 +27,7 @@ Then read the [tutorial](https://sqorn.org/docs/tutorial.html) and [try the onli
 CRUD Operations are dead simple.
 
 ```js
-const sq = require('sqorn-pg')()
+const sq = require('@sqorn/pg')()
 
 const Person = sq`person`, Book = sq`book`
 
@@ -79,13 +79,7 @@ Learn more in the [tutorial](https://sqorn.org/docs/tutorial.html).
 
 ## Contributing
 
-Sqorn is a monorepo managed with Lerna. It contains the following packages:
-
-* [**Sqorn Core:**](https://github.com/sqorn/sqorn/tree/master/packages/sqorn-core) A Javascript library for building query builders
-* [**Sqorn SQL:**](https://github.com/sqorn/sqorn/tree/master/packages/sqorn-sql) Utilities for making SQL query builders
-* [**Sqorn Postgres:**](https://github.com/sqorn/sqorn/tree/master/packages/sqorn-pg) A Javascript library for building Postgres queries
-* [**Sqorn SQLite:**](https://github.com/sqorn/sqorn/tree/master/packages/sqorn-sqlite) A Javascript library for building SQLite queries
-* [**Sqorn MySQL:**](https://github.com/sqorn/sqorn/tree/master/packages/sqorn-mysql) A Javascript library for building MySQL queries
+Sqorn is a monorepo managed with Lerna.
 
 Clone the repo then run the following commands to install all dependencies:
 

@@ -1,7 +1,7 @@
 {
-  "name": "sqorn-adapter-mysql",
+  "name": "@sqorn/adapter-mysql",
   "version": "0.0.40",
-  "description": "Sqorn Adapter MySQL",
+  "description": "Sqorn Node MySQL Adapter",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
   "engines": {

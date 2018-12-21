@@ -1,6 +1,44 @@
 const { sq, query } = require('../tape')
 
 describe('extend', () => {
+  describe('sql', () => {
+    query({
+      name: 'simmple',
+      query: sq.extend(sq.txt`moo`),
+      text: 'moo',
+      args: []
+    })
+    query({
+      name: '2 calls',
+      query: sq.extend(sq.txt`moo`, sq.txt`shoo`),
+      text: 'moo shoo',
+      args: []
+    })
+    query({
+      name: '2 calls, args',
+      query: sq.extend(sq.txt('moo'), sq.txt('shoo')),
+      text: '$1 $2',
+      args: ['moo', 'shoo']
+    })
+    query({
+      name: 'multiple calls',
+      query: sq.txt`a`.extend(sq.txt`b`, sq.txt`c`, sq.txt`d`).txt`e`,
+      text: 'a b c d e',
+      args: []
+    })
+    query({
+      name: 'simple array',
+      query: sq.extend([sq.txt`moo`]),
+      text: 'moo',
+      args: []
+    })
+    query({
+      name: 'complex array',
+      query: sq.txt`a`.extend([sq.txt`b`, sq.txt`c`, sq.txt`d`]).txt`e`,
+      text: 'a b c d e',
+      args: []
+    })
+  })
   describe('basic', () => {
     query({
       name: 'frm',

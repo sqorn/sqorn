@@ -10,14 +10,14 @@ Sqorn Postgres is a Javascript library for building SQL queries.
 
 [**Fast:**](https://sqorn.org/benchmarks.html) 10x faster than [Knex.js](https://knexjs.org/) and 200x faster than [Squel](https://github.com/hiddentao/squel)
 
-**Secure:** Sqorn generates parameterized queries safe from SQL injection.
+**Secure:** Sqorn generates parameterized queries safe from SQL injection. Sqorn has no external dependencies.
 
 ## Install
 
 Sqorn requires Node version 8 or above.
 
 ```sh
-npm install --save sqorn-pg # only Postgres is currently supported
+npm install --save @sqorn/pg # only Postgres is currently supported
 ```
 
 Then read the [tutorial](https://sqorn.org/docs/tutorial.html) and [try the online demo](https://sqorn.org/demo.html).
@@ -27,7 +27,7 @@ Then read the [tutorial](https://sqorn.org/docs/tutorial.html) and [try the onli
 CRUD Operations are dead simple.
 
 ```js
-const sq = require('sqorn-pg')()
+const sq = require('@sqorn/pg')()
 
 const Person = sq`person`, Book = sq`book`
 

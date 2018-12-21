@@ -9,7 +9,7 @@ interface Configuration {
    * @example
 ```js
 const pg = require('pg')
-const sqorn = require('sqorn-pg')
+const sqorn = require('@sqorn/pg')
 const pool = new pg.Pool()
 const sq = sqorn({ pg, pool })
 ```
@@ -24,7 +24,7 @@ const sq = sqorn({ pg, pool })
    * @example
 ```js
 const pg = require('pg')
-const sqorn = require('sqorn-pg')
+const sqorn = require('@sqorn/pg')
 const pool = new pg.Pool()
 const sq = sqorn({ pg, pool })
 ```
@@ -72,7 +72,7 @@ await names.all()
 * 
 * @example
 * const pg = require('pg')
-* const sqorn = require('sqorn-pg')
+* const sqorn = require('@sqorn/pg')
 * const pool = new pg.Pool()
 * const sq = sqorn({ pg, pool })
 */

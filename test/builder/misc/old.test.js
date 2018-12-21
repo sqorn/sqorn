@@ -2,13 +2,13 @@ const { sq, query } = require('../tape')
 
 describe('sql query - tagged template', () => {
   query({
-    name: 'sql    - .l``',
-    query: sq.l`select * from person`,
+    name: 'sql    - .txt``',
+    query: sq.sql`select * from person`,
     text: 'select * from person'
   })
   query({
-    name: 'sql    - .l``',
-    query: sq.l`select * from person where name = 'Bob' and age > 7`,
+    name: 'sql    - .txt``',
+    query: sq.sql`select * from person where name = 'Bob' and age > 7`,
     text: `select * from person where name = 'Bob' and age > 7`
   })
 })
@@ -144,14 +144,14 @@ describe('select query - tagged template args', () => {
 
 describe('sql query - tagged template args', () => {
   query({
-    name: 'select - .l`${int}`',
-    query: sq.l`select * from person where age > ${7}`,
+    name: 'select - .sql`${int}`',
+    query: sq.sql`select * from person where age > ${7}`,
     text: 'select * from person where age > $1',
     args: [7]
   })
   query({
-    name: 'select - .l`${int}${string}`',
-    query: sq.l`select * from person where age > ${7} or name = ${'Bob'}`,
+    name: 'select - .sql`${int}${string}`',
+    query: sq.sql`select * from person where age > ${7} or name = ${'Bob'}`,
     text: `select * from person where age > $1 or name = $2`,
     args: [7, 'Bob']
   })
@@ -159,8 +159,8 @@ describe('sql query - tagged template args', () => {
 
 describe('query - tagged template sql arg', () => {
   query({
-    name: 'select - .l`${sq``}`',
-    query: sq`(${sq`person``age > 7`})`.return`name`,
+    name: 'select - .sql`${sq``}`',
+    query: sq`${sq`person``age > 7`}`.return`name`,
     text: 'select name from (select * from person where (age > 7))',
     args: []
   })
@@ -168,8 +168,8 @@ describe('query - tagged template sql arg', () => {
 
 describe('query - tagged template $raw arg', () => {
   query({
-    name: 'select - .from`$${string}`',
-    query: sq.from`$${'person'}`,
+    name: 'select - .from`${sq.raw(string)}`',
+    query: sq.from`${sq.raw('person')}`,
     text: 'select * from person',
     args: []
   })

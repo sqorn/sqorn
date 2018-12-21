@@ -5,7 +5,6 @@
   "dependencies": {
     "knex": "latest",
     "sql": "^0.78.0",
-    "sqorn": "latest",
     "squel": "latest"
   },
   "devDependencies": {

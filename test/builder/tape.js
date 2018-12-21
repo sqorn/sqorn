@@ -1,10 +1,14 @@
 const sqorn = require('../../packages/sqorn-pg')
 const sq = sqorn()
 
-const query = ({ name, query, text, args = [] }) =>
+const query = ({ name, query, text, args = [], error }) =>
   test(name, () => {
-    const res = query.query
-    expect({ text: res.text, args: res.args }).toEqual({ text, args })
+    if (error) {
+      expect(() => query.query).toThrowError()
+    } else {
+      const res = query.query
+      expect({ text: res.text, args: res.args }).toEqual({ text, args })
+    }
   })
 
-module.exports = { sq, query, sqorn }
+module.exports = { sq, e: sq.e, query, sqorn }

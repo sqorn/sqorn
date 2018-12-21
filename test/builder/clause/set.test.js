@@ -16,12 +16,12 @@ describe('set', () => {
   describe('template string args', () => {
     query({
       name: '1 raw arg',
-      query: sq.set`$${'age'} = 7`,
+      query: sq.set`${sq.raw('age')} = 7`,
       text: 'set age = 7'
     })
     query({
       name: '2 raw args',
-      query: sq.set`$${'age'} = 7, $${'name'} = 'Jo'`,
+      query: sq.set`${sq.raw('age')} = 7, ${sq.raw('name')} = 'Jo'`,
       text: `set age = 7, name = 'Jo'`
     })
     query({
@@ -38,7 +38,7 @@ describe('set', () => {
     })
     query({
       name: 'multiple raw and parameterized args',
-      query: sq.set`$${'age'} = ${7}, $${'name'} = ${'Jo'}`,
+      query: sq.set`${sq.raw('age')} = ${7}, ${sq.raw('name')} = ${'Jo'}`,
       text: `set age = $1, name = $2`,
       args: [7, 'Jo']
     })
@@ -46,12 +46,12 @@ describe('set', () => {
   describe('object', () => {
     query({
       name: '1 column',
-      query: sq.set({ age: sq.l`age + 1` }),
+      query: sq.set({ age: sq.txt`age + 1` }),
       text: 'set age = age + 1'
     })
     query({
       name: '2 columns',
-      query: sq.set({ age: sq.l`age + 1`, updated: sq.l`now()` }),
+      query: sq.set({ age: sq.txt`age + 1`, updated: sq.txt`now()` }),
       text: 'set age = age + 1, updated = now()'
     })
     query({
@@ -82,7 +82,7 @@ describe('set', () => {
   describe('subquery', () => {
     query({
       name: 'manual',
-      query: sq.from('person').set({ firstName: sq.l`${'Bob'}` }),
+      query: sq.from('person').set({ firstName: sq.txt`${'Bob'}` }),
       text: `update person set first_name = $1`,
       args: ['Bob']
     })

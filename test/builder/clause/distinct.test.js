@@ -53,7 +53,7 @@ describe('distinct', () => {
     })
     query({
       name: '.distinctOn subquery',
-      query: sq.distinctOn(sq.l`title`).from`book`,
+      query: sq.distinctOn(sq.txt`title`).from`book`,
       text: 'select distinct on (title) * from book'
     })
     query({

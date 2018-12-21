@@ -10,20 +10,20 @@ sq.from({ u: 'users' })
 // introduce .and and .or that selectively build either .where, .having, or .long
 
 sq.from({ u: 'users' })
-  .join({ a: 'accounts' }).left.on({ 'u.id': 'a.user_id' })
-  .join({ a: 'accounts' }).right.on({ 'u.id': 'a.user_id' })
+  .join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
+  .join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
 
 sq.from({ u: 'users' })
-  .left.join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
-  .right.join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
-  .lateral.right.join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
-  .natural.right.join({ a: 'accounts' })
+  leftJoin({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
+  rightJoin({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
+  .lateralrightJoin({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
+  .naturalrightJoin({ a: 'accounts' })
 
 sq.from({ u: 'users' })
-  .join({ a: 'accounts' }).left.on({ 'u.id': 'a.user_id' })
+  .join({ a: 'accounts' }).on({ 'u.id': 'a.user_id' })
   .wrap(
-    sq.right.join({ a: 'accounts' }).using('meow')
-      .natural.full.join({ a: 'accounts' })
+    sqrightJoin({ a: 'accounts' }).using('meow')
+      .naturalfullJoin({ a: 'accounts' })
   )
 
 sq.from('users')
@@ -36,8 +36,8 @@ sq.from('users')
 
 SELECT json_agg(r.*) FROM (
   SELECT
-    album.title as title,
-    json_agg(track.*) as tracks
+    album.title title,
+    json_agg(track.*) tracks
   FROM
     album
   LEFT OUTER JOIN
@@ -56,9 +56,9 @@ sq.return({ album: 'json_agg(r.*)' })
   .from({
     r: sq.return({ title: 'album.title', tracks: 'json_agg(track.*)' })
       .from('album')
-      .left.join('track').on('album.id = track.album_id')
+      leftJoin('track').on('album.id = track.album_id')
       .where({ 'album.year': 2018 })
-      .group('album.id')
+      .groupBy('album.id')
   })
 
 const { Album, Track } =  require('./models')
@@ -70,11 +70,11 @@ const res = await Album({ year: 2018 })(
 
 `
 select json_agg(r.*) from (
-  select album.title as title, json_agg(track.*) as tracks
+  select album.title title, json_agg(track.*) tracks
   from album
        join track on album.track_id = track.id
   group by album.id
-) as r`
+) r`
                
 const albums await
 
@@ -128,7 +128,7 @@ From, group, and select are type changing operations
 const a = Person.a.as('a')
 const b = Person.b.as('b')
 
-Person.group(a, b).return(
+Person.groupBy(a, b).return(
   // aggregate expressions, only these are eligible for relatinoships
   a,
   b,
@@ -137,7 +137,7 @@ Person.group(a, b).return(
 )
 
 const name = Person.name.as('name')
-Person.group(name).return(
+Person.groupBy(name).return(
   name,
   name: // umm doesn't really work
 )
@@ -177,7 +177,7 @@ const { sq, book, author, publisher, city } = require('./db')
 
 
 
-post.where({ firstName: 'Jo'}).order(post.id).limit(1).return({
+post.where({ firstName: 'Jo'}).orderBy(post.id).limit(1).return({
   title: 'title',
   body: 'body',
   author: user.where({ status: 'good' }).return({
@@ -219,7 +219,7 @@ sq.return(book.id, book.tile, book.author.firstName, book.author.lastName)
          where book.id = $1`,
   args: [7] }
 
-sq.json(post.title, post.comments.limit(3).order('create_time asc'))
+sq.json(post.title, post.comments.limit(3).orderBy('create_time asc'))
   .where(e(post.id).eq(7).and())
   .query
 
@@ -278,7 +278,7 @@ const getTopPosts = ({ time, topic, user, max = 25 }) => {
     frm`post`,
     user && whr({ user }),
     topic && whr({ topic }),
-    range && whr`create_time >= now() - $${timeRange}`,
+    range && whr`create_time >= now() - ${sq.raw(timeRange)}`,
     ord`score asc`,
     max && lim(max),
     ret`id, name, age`
@@ -471,7 +471,7 @@ sq`book`
 
 `.from` specifies the table to query and `.return` specifies the selected columns. If `.return` isn't called, select queries implicitly request all columns (`*`).
 
-Using `sq` as a template literal tag is shorthand for calling `.from`.
+Using `sq` a template literal tag is shorthand for calling `.from`.
 
 ### Where
 
@@ -721,7 +721,7 @@ sq.inj`p.employer_id = c.id`(`person p`, `company c`))`p.id = ${23}``c.name`
 ### with
 
 ```sql
-with `with_alias` as (
+with `with_alias` (
   select * from "book" where "author" = 'Moby Dick'
 )
 select * from `with_alias`
@@ -739,7 +739,7 @@ select age, count(*) from person group by age
 ```
 
 ```javascript
-sq`person`()`age, count(*)`.group`age`
+sq`person`()`age, count(*)`.groupBy`age`
 ```
 
 ### having
@@ -749,7 +749,7 @@ select age, count(*) count from person group by age having age < 18
 ```
 
 ```javascript
-sq`person`()`age, count(*) count`.group`age``age < 18`
+sq`person`()`age, count(*) count`.groupBy`age``age < 18`
 ```
 
 ### order by
@@ -759,7 +759,7 @@ select * from person order by last_name, first_name
 ```
 
 ```javascript
-sq`person`.order`last_name, first_name`
+sq`person`.orderBy`last_name, first_name`
 ```
 
 ### limit
@@ -769,7 +769,7 @@ select * from person order by last_name limit 10 offset 7
 ```
 
 ```javascript
-sq`person`.order`last_name, first_name`.limit(10).offset(7)
+sq`person`.orderBy`last_name, first_name`.limit(10).offset(7)
 ```
 
 ### offset
@@ -952,7 +952,7 @@ sq`person p join company c on p.employer_id = c.id`
 // select c.name from person p join company c on p.employer_id = c.id
 // where p.id = 23
 sq.wit`children`(sq`person``age < ${18}`)`children`()`first_name`
-// with children as (select * from "person" where age < 18)
+// with children (select * from "person" where age < 18)
 // select first_name from children`
 sq.l`name = ${firstName}`
 // name = 'John' -- builds escaped SQL string
@@ -1009,7 +1009,7 @@ Person.insert({ name: 'Ed' })
 Person.delete({ name: 'Ed' })
 
 sq.wit`children`(sq`person``age < ${18}`)`children`()`first_name`
-// with children as (select * from "person" where age < 18)
+// with children (select * from "person" where age < 18)
 // select first_name from children`
 sq.l`name = ${firstName}`
 // name = 'John' -- builds escaped SQL string

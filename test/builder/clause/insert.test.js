@@ -17,7 +17,7 @@ describe('insert', () => {
   describe('misc', () => {
     query({
       name: 'default values',
-      query: sq.from('person').insert(),
+      query: sq.from('person').insert(undefined),
       text: 'insert into person default values'
     })
     query({
@@ -119,7 +119,7 @@ describe('insert', () => {
       name: 'subquery value',
       query: sq.from('person').insert({
         firstName: sq.return`${'Shallan'}`,
-        lastName: sq.l('Davar')
+        lastName: sq.txt('Davar')
       }),
       text:
         'insert into person(first_name, last_name) values ((select $1), $2)',
@@ -180,14 +180,14 @@ describe('insert', () => {
   describe('subquery', () => {
     query({
       name: 'manual',
-      query: sq.from('person(name)').insert(sq.l`values (${'Jo'})`),
+      query: sq.from('person(name)').insert(sq.txt`values (${'Jo'})`),
       text: `insert into person(name) values ($1)`,
       args: ['Jo']
     })
     query({
       name: 'select',
-      query: sq.from('person(name, age)').insert(sq.return(sq.l('Jo'), 23)),
-      text: `insert into person(name, age) select $1, $2`,
+      query: sq.from('person(name, age)').insert(sq.return(sq.txt('Jo'), 23)),
+      text: `insert into person(name, age) (select $1, $2)`,
       args: ['Jo', 23]
     })
   })

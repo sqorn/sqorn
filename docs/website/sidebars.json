@@ -1,5 +1,29 @@
 {
   "docs": {
-    "Sqorn": ["tutorial", "api", "faq"]
+    "Introduction": [
+      "about",
+      "setup",
+      "quick-start"
+    ],
+    "Queries": [
+      "manual-queries",
+      "select-queries",
+      "delete-queries",
+      "insert-queries",
+      "update-queries"
+    ],
+    "Expressions": [
+      "expressions",
+      "operations"
+    ],
+    "Execution": [
+      "executing-queries",
+      "transactions"
+    ],
+    "Misc": [
+      "configuration",
+      "api",
+      "faq"
+    ]
   }
 }
