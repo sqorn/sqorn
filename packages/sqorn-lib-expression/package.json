@@ -1,6 +1,6 @@
 {
   "name": "@sqorn/lib-expression",
-  "version": "0.0.40",
+  "version": "0.0.41",
   "description": "Sqorn Expression Library",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -11,5 +11,6 @@
   "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-lib-expression",
   "homepage": "https://sqorn.org",
   "dependencies": {
-    "@sqorn/lib-util": "^0.0.40"}
+    "@sqorn/lib-util": "^0.0.41"
+  }
 }
