@@ -1,5 +1,9 @@
 import { SQ, SQF, SQW, SQR } from './sq'
 
+interface Buildable {
+  _build(ctx: any): string
+}
+
 type Expression = string | SQ
 type Value = { [column: string]: any }
 type Row = { [column: string]: any }
