@@ -1,6 +1,6 @@
 {
   "name": "@sqorn/lib-core",
-  "version": "0.0.44",
+  "version": "0.0.45",
   "description": "Sqorn Core Library",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -14,8 +14,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@sqorn/builder-expression": "^0.0.44",
-    "@sqorn/builder-sq": "^0.0.44",
-    "@sqorn/lib-util": "^0.0.44"
+    "@sqorn/builder-expression": "^0.0.45",
+    "@sqorn/builder-sq": "^0.0.45",
+    "@sqorn/lib-util": "^0.0.45"
   }
 }

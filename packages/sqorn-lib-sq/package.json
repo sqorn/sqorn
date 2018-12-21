@@ -1,6 +1,6 @@
 {
   "name": "@sqorn/lib-sq",
-  "version": "0.0.44",
+  "version": "0.0.45",
   "description": "Sqorn Untyped Query Library",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -25,6 +25,6 @@
     "literals"
   ],
   "dependencies": {
-    "@sqorn/lib-util": "^0.0.44"
+    "@sqorn/lib-util": "^0.0.45"
   }
 }

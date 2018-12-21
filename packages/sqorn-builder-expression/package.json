@@ -1,6 +1,6 @@
 {
   "name": "@sqorn/builder-expression",
-  "version": "0.0.44",
+  "version": "0.0.45",
   "description": "Sqorn Expression Builder",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -14,6 +14,6 @@
     "access": "public"
   },
   "dependencies": {
-    "@sqorn/lib-util": "^0.0.44"
+    "@sqorn/lib-util": "^0.0.45"
   }
 }
