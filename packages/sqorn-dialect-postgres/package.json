@@ -13,5 +13,6 @@
   "dependencies": {
     "@sqorn/lib-expression": "^0.0.41",
     "@sqorn/lib-sq": "^0.0.41"
-  }
+  },
+  "gitHead": "da1674daa64fb9b82693b0ed7a83ac7bb141cc26"
 }

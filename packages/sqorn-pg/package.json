@@ -25,5 +25,6 @@
     "@sqorn/adapter-pg": "^0.0.41",
     "@sqorn/dialect-postgres": "^0.0.41",
     "@sqorn/lib-core": "^0.0.41"
-  }
+  },
+  "gitHead": "da1674daa64fb9b82693b0ed7a83ac7bb141cc26"
 }

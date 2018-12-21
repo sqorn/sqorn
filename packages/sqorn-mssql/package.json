@@ -17,5 +17,6 @@
     "query",
     "builder",
     "mssql"
-  ]
+  ],
+  "gitHead": "da1674daa64fb9b82693b0ed7a83ac7bb141cc26"
 }

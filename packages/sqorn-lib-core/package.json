@@ -14,5 +14,6 @@
     "@sqorn/builder-expression": "^0.0.41",
     "@sqorn/builder-sq": "^0.0.41",
     "@sqorn/lib-util": "^0.0.41"
-  }
+  },
+  "gitHead": "da1674daa64fb9b82693b0ed7a83ac7bb141cc26"
 }
