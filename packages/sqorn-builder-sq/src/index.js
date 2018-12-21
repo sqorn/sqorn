@@ -68,10 +68,9 @@ const applyReducers = reducers => (method, ctx) => {
     methods.push(method)
   }
   // build methods object by processing methods in call order
-  const express = { id: 0 }
   for (let i = methods.length - 1; i >= 0; --i) {
     const method = methods[i]
-    reducers[method.name](ctx, method.args, express)
+    reducers[method.name](ctx, method.args)
   }
   return ctx
 }
@@ -103,7 +102,7 @@ const builderProperties = ({ chain, newContext, updateContext, queries }) => ({
 
 const adapterProperties = ({
   client,
-  config: { thenable = true, mapOutputKeys = camelCase }
+  config: { mapOutputKeys = camelCase }
 }) => {
   const mapKey = memoize(mapOutputKeys)
   return {
@@ -112,32 +111,35 @@ const adapterProperties = ({
         return client.end()
       }
     },
-    one: {
-      value: async function(trx) {
-        const rows = await client.query(this.query, trx)
-        return mapRowKeys(rows, mapKey)[0]
-      }
-    },
     all: {
       value: async function(trx) {
         const rows = await client.query(this.query, trx)
         return mapRowKeys(rows, mapKey)
       }
     },
+    first: {
+      value: async function(trx) {
+        const rows = await client.query(this.query, trx)
+        return mapRowKeys(rows, mapKey)[0]
+      }
+    },
+    one: {
+      value: async function(trx) {
+        const rows = await client.query(this.query, trx)
+        if (rows.length === 0) throw Error('Error: 0 result rows')
+        return mapRowKeys(rows, mapKey)[0]
+      }
+    },
+    run: {
+      value: async function(trx) {
+        await client.query(this.query, trx)
+      }
+    },
     transaction: {
       value: function(fn) {
         return fn ? client.transactionCallback(fn) : client.transactionObject()
       }
-    },
-    ...(thenable
-      ? {
-          then: {
-            value: function(resolve) {
-              resolve(this.all())
-            }
-          }
-        }
-      : {})
+    }
   }
 }
 

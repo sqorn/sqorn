@@ -1,4 +1,4 @@
-import { SQ, SQF, SQW, SQR } from './sq'
+import { SQ } from './sq'
 
 interface Buildable {
   _build(ctx: any): string
@@ -8,7 +8,6 @@ type Expression = string | SQ
 type Value = { [column: string]: any }
 type Row = { [column: string]: any }
 type Conditions = (SQ | { [field: string]: SQ | any })[]
-type Simplify<T> = {[key in keyof T]: T[key]};
 
 export interface With {
   /**
@@ -194,101 +193,6 @@ sq.from`${sq.raw('book')}`
   from(strings: TemplateStringsArray, ...args: any[]): this
 }
 
-interface ExpressFrom {
-  /**
-   * **FROM clause** - table arguments - express `.from`
-   * 
-   * A table may be:
-   * * an expression
-   * * an object where each key is an alias and each value may be
-   *   * an expression
-   *   * an array of data values
-   * 
-   * An expression may be a string or subquery
-   * 
-   * The first call to `.from` specifies the query table.
-   * 
-   * Subsequent calls have different effects based on query type.
-   * 
-   * * `select * from a, b, c`
-   * * `update a from b, c`
-   * * `delete a using b, c`
-   * * `insert into a`
-   *
-   * @example
-```js
-sq('book')
-// select * from book
-
-sq('book').where({ id: 8 }).set({ authorId: 7 })
-// update book set author_id = $1 where id = $2
-
-sq.delete('book').where({ id: 7 })
-// delete from book where id = $1
-
-sq('book').insert({ title: 'Moby Dick', authorId: 8 })
-// insert into book (title, author_id) values ($1, $2)
-
-sq(sq.txt`unnest(array[1, 2, 3])`)
-// select * from unnest(array[1, 2, 3])
-
-sq({ b: 'book' a: 'author' })
-// select * from book as b, author as a
-
-sq({ b: 'book' a: 'author' })
-// select * from book as b, author as a
-
-sq({ old: sq('person').where`age > 60` })
-// select * from (select * from person where age > 60) as old
-
-sq({ p: [{ id: 7, name: 'Jo' }, { id: 9, name: 'Mo' }] })
-// select * from (values ($1, $2), ($3, $4)) as p(id, name)
-
-sq({ countDown: sq.txt`unnest(${[3, 2, 1]})` }).query
-// select * from unnest($1) as count_down'
-```
-   */
-  (...tables: (Expression | { [alias: string]: Expression | Value[] })[]): SQW
-
-  /**
-   * **FROM clause** - template string - express `.from`
-   * 
-   * The first call to `.from` specifies the query table.
-   * 
-   * Subsequent calls have different effects based on query type.
-   * 
-   * * `select * from a, b, c`
-   * * `update a from b, c`
-   * * `delete a using b, c`
-   * * `insert into a`
-   *
-   * @example
-```js
-sq`book`
-// select * from book
-
-sq`book`.set({ archived: true })
-// update book set archived = $1
-
-sq.delete`book`
-// delete from book
-
-sq`book`.insert({ title: 'Squirrels!' })
-// insert into book (title) values ($1)
-
-sq`book`.from`author`
-// select * from book, author
-
-sq`book join comment`
-// select * from book join comment
-
-sq`${sq.raw('book')}`
-// select * from book
-```
-   */
-  (strings: TemplateStringsArray, ...args: any[]): SQW
-}
-
 export interface Return {
   /**
    * **SELECT or RETURNING clause** - field arguments
@@ -359,68 +263,6 @@ sq.return`${7}, ${8}, ${9}`.return`${10}`
   return(strings: TemplateStringsArray, ...args: any[]): this
 }
 
-export interface ExpressReturn {
-  /**
-   * **SELECT or RETURNING clause** - field arguments - express `.return`
-   *
-   * Pass `.return` the fields the query should return.
-   * 
-   * A field may be:
-   * * an expression
-   * * a non-string argument to parameterize
-   * * an object where each key is an alias and each value is:
-   *   * an expression
-   *   * a non-string argument to parameterize
-   * 
-   * An expression may be a string or subquery.
-   * 
-   * **To prevent SQL injection, never source string fields from user input**
-   *
-   * @example
-```js
-sq('person')({ id: 7 })('name')
-// select name from person where id = $1
-
-sq('person')()('id', 'age').set`age = age + 1`
-// update person set age = age + 1 returning id, age
-
-sq.delete('person')({ name: 'Jo' })('id', 'age')
-// delete from person where name = $1 returning id, age
-
-sq('person')().insert({ age: 12 })('id', 'age')
-// insert into person (age) values (12) returning id, age
-
-const userInput = '; drop table user;'
-sq('book')()(sq.txt(userInput), 23)
-// select $1, $2 from book
-```
-   */
-  (...fields: (Expression | any | { [alias: string]: Expression | any })[]):  SQ
-
-
-  /**
-   * SELECT or RETURNING clause - specify fields to returns - express `.return`
-   *
-   * Accepts fields as template string
-   *
-   * @example
-```js
-sq`book``id = ${3}``title`
-// select title from book where id = $1
-
-sq`person`()`id, age`.set`age = age + 1`
-// update person set age = age + 1 returning id, age
-
-sq.delete`person``age > ${23}``id, age`
-// delete from person where age > $1 returning id, age
-
-sq`person`()`id, age`.insert({ age: 12 })
-// insert into person (age) values ($1) returning id, age
-```
-   */
-  (strings: TemplateStringsArray, ...args: any[]): SQ
-}
-
 export interface Where {
   /**
    * **WHERE clause** - query filters
@@ -488,173 +330,6 @@ sq.from('person').where({ age: 7 }).where({ name: 'Joe' })
  ```
    */
   where(strings: TemplateStringsArray, ...args: any[]): this
-}
-
-export interface ExpressWhere {
-  /**
-   * **WHERE clause** - query filters - express `.where`
-   *
-   * Pass `.where` the filter conditions.
-   * 
-   * A condition may be:
-   * * a manual subquery
-   * * an object such that each value is
-   *   * a manual subquery and its key is ignored
-   *   * or checked for equality against its key
-   * 
-   * Multiple conditions are joined with _" or "_.
-   * 
-   * Properties within an object are joined with _" and "_.
-   * 
-   * Multiple calls to `.where` are joined with _" and "_.
-   *
-   * @example
-```js
-sq('person')({ id: 7 })
-// select * form person where (id = $1)
-
-sq('person')(sq.txt`age >= ${18}`).set({ adult: true })
-// update person set adult = $1 where (age >= ${2})
-
-sq.delete('person')({ age: 20, id: 5 }, { age: 30 })
-// delete from person where (age = $1 and id = $1 or age = $2)
-
-sq('person')(sq.txt`name = ${'Jo'}`, { age: 17 })
-// select * from person where (name = $1 or age = $2)
-
-sq('person')({ minAge: sq.txt`age < ${17}` })
-// select * from person where (age = $1)
-
-sq('person')({ age: 7, gender: 'male' })
-// select * from person where (age = $1 and gender = $2)
-
-sq('person')({ age: 7 }).where({ name: 'Joe' })
-// select * from person where (age = $1) and name = $2
-```
-   */
-  (...conditions: Conditions): SQR
-
-  /**
-   * **WHERE clause** - template string - express `.where`
-   *
-   * Filters result set.
-   * 
-   * Multiple calls to `.where` are joined with _" and "_.
-   *
-   * @example
-```js
- sq`person``age < ${18}`
- // select * from person where (age < $1)
- 
- sq`person``age < ${7}`.set`group = ${'infant'}`
- // update person set group = $1 where (age < $2)
- 
- sq.delete`person``age < ${7}`
- // delete from person where (age < $1)
- 
- sq`person``age > ${3}`.where`age < ${7}`
- // select * from person where (age > $1) and (age < $2)
- ```
-   */
-  (strings: TemplateStringsArray, ...args: any[]): SQR
-}
-
-interface Logic extends And, Or {}
-
-export interface And {
-  /**
-   * **AND condition** - query filters
-   * 
-   * Condition to chain after `.where`, `.on`, or `.having`.
-   * 
-   * @example
-```js
-sq.from('person').where({ age: 20 }).and({ name: 'Jo' })
-// select * from person where (age > $1) and (name = $2)
-sq.from('book').leftJoin('author')
-  .on({ 'book.author_id': sq.raw('author.id') })
-  .and({ 'author.status': 'active' })
-// select * from book left join author
-// on (book.author_id = author.id) and (author.status = $1)
-sq.from('book').return('genre', 'avg(book.rating) as r')
-  .groupBy('genre').having(sq.txt`r > 7`).and(sq.txt`r <= 10`)
-// select genre, avg(book.rating) as r from book
-// group by genre having (r > 7) and (r <= 10)
-```
-   */
-  and(...conditions: Conditions): this
-
-  /**
-   * **AND condition** - template string
-   * 
-   * Condition to chain after `.where`, `.on`, or `.having`.
-   * 
-   * @example
-```js
-sq.from`person`.where`age > 20`.and`age < 30`
-// select * from person where (age > 20) and (age < 30)
-
-sq.from`book`.leftJoin`author`
-  .on`book.author_id = author.id`.and`author.status = 'active'`
-// select * from book left join author
-// on (book.author_id = author.id) and (author.status = 'active')
-
-sq.from`book`.return`genre, avg(book.rating) as r`
-  .groupBy`genre`.having`r > 7`.and`r <= 10`
-// select genre, avg(book.rating) as r from book
-// group by genre having (r > 7) and (r <= 10)
-```
-   */
-  and(strings: TemplateStringsArray, ...args: any[]): this
-}
-
-interface Or {
-  /**
-   * **OR condition** - query filters
-   * 
-   * Condition to chain after `.where`, `.on`, or `.having`.
-   * 
-   * @example
-```js
-sq.from('person').where(sq.txt`age < 20`).or(sq.txt`age > 30`)
-// select * from person where (age < 20) or (age > 30)
-
-sq.from('book').leftJoin('author')
-  .on({ 'book.author_id': sq.raw('author.id') })
-  .or({ 'book.editor_id': sq.raw('author.id') })
-// select * from book left join author
-// on (book.author_id = author.id) or (book.editor_id = author.id)
-
-sq.from('book').return('genre', 'avg(book.rating) as r')
-  .groupBy('genre').having(sq.txt`r < 2`).or(sq.txt`r > 8`)
-// select genre, avg(book.rating) as r from book
-// group by genre having (r < 2) or (r > 8)
-```
-   */
-  or(...conditions: Conditions): this
-
-  /**
-   * **OR condition** - template string
-   * 
-   * Condition to chain after `.where`, `.on`, or `.having`.
-   * 
-   * @example
-```js
-sq.from`person`.where`age < 20`.or`age > 30`
-// select * from person where (age < 20) or (age > 30)
-
-sq.from`book`.leftJoin`author`
-  .on`book.author_id = author.id`.or`book.editor_id = author.id`
-// select * from book left join author
-// on (book.author_id = author.id) or (book.editor_id = author.id)
-
-sq.from`book`.return`genre, avg(book.rating) as r`
-  .groupBy`genre`.having`r < 2`.or`r > 8`
-// select genre, avg(book.rating) as r from book
-// group by genre having (r < 2) or (r > 8)
-```
-   */
-  or(strings: TemplateStringsArray, ...args: any[]): this
 }
 
 export interface Distinct {
@@ -1335,13 +1010,13 @@ interface SetOperators {
    * 
    * @example
 ```js
-sq`a`.union(sq`b`)
+sq.from`a`.union(sq.from`b`)
 // select * from a union (select * from b)
 
-sq`a`.union(sq`b`, sq`c`)
+sq.from`a`.union(sq.from`b`, sq.from`c`)
 // select * from a union (select * from b) union (select * from c)
 
-sq`a`.union(sq`b`).union(sq`c`)
+sq.from`a`.union(sq.from`b`).union(sq.from`c`)
 // select * from a union (select * from b) union (select * from c)
 ```
    */
@@ -1356,13 +1031,13 @@ sq`a`.union(sq`b`).union(sq`c`)
    * 
    * @example
 ```js
-sq`a`.unionAll(sq`b`)
+sq.from`a`.unionAll(sq.from`b`)
 // select * from a union all (select * from b)
 
-sq`a`.unionAll(sq`b`, sq`c`)
+sq.from`a`.unionAll(sq.from`b`, sq.from`c`)
 // select * from a union all (select * from b) union all (select * from c)
 
-sq`a`.unionAll(sq`b`).unionAll(sq`c`)
+sq.from`a`.unionAll(sq.from`b`).unionAll(sq.from`c`)
 // select * from a union all (select * from b) union all (select * from c)
 ```
    */
@@ -1379,13 +1054,13 @@ sq`a`.unionAll(sq`b`).unionAll(sq`c`)
    * 
    * @example
 ```js
-sq`a`.intersect(sq`b`)
+sq.from`a`.intersect(sq.from`b`)
 // select * from a intersect (select * from b)
 
-sq`a`.intersect(sq`b`, sq`c`)
+sq.from`a`.intersect(sq.from`b`, sq.from`c`)
 // select * from a intersect (select * from b) intersect (select * from c)
 
-sq`a`.intersect(sq`b`).intersect(sq`c`)
+sq.from`a`.intersect(sq.from`b`).intersect(sq.from`c`)
 // select * from a intersect (select * from b) intersect (select * from c)
 ```
    */
@@ -1400,13 +1075,13 @@ sq`a`.intersect(sq`b`).intersect(sq`c`)
    * 
    * @example
 ```js
-sq`a`.intersectAll(sq`b`)
+sq.from`a`.intersectAll(sq.from`b`)
 // select * from a intersect all (select * from b)
 
-sq`a`.intersectAll(sq`b`, sq`c`)
+sq.from`a`.intersectAll(sq.from`b`, sq.from`c`)
 // select * from a intersect all (select * from b) intersect all (select * from c)
 
-sq`a`.intersectAll(sq`b`).intersectAll(sq`c`)
+sq.from`a`.intersectAll(sq.from`b`).intersectAll(sq.from`c`)
 // select * from a intersect all (select * from b) intersect all (select * from c)
 ```
    */
@@ -1423,13 +1098,13 @@ sq`a`.intersectAll(sq`b`).intersectAll(sq`c`)
    * 
    * @example
 ```js
-sq`a`.except(sq`b`)
+sq.from`a`.except(sq.from`b`)
 // select * from a except (select * from b)
 
-sq`a`.except(sq`b`, sq`c`)
+sq.from`a`.except(sq.from`b`, sq.from`c`)
 // select * from a except (select * from b) except (select * from c)
 
-sq`a`.except(sq`b`).except(sq`c`)
+sq.from`a`.except(sq.from`b`).except(sq.from`c`)
 // select * from a except (select * from b) except (select * from c)
 ```
    */
@@ -1444,13 +1119,13 @@ sq`a`.except(sq`b`).except(sq`c`)
    * 
    * @example
 ```js
-sq`a`.exceptAll(sq`b`)
+sq.from`a`.exceptAll(sq.from`b`)
 // select * from a except all (select * from b)
 
-sq`a`.exceptAll(sq`b`, sq`c`)
+sq.from`a`.exceptAll(sq.from`b`, sq.from`c`)
 // select * from a except all (select * from b) except all (select * from c)
 
-sq`a`.exceptAll(sq`b`).exceptAll(sq`c`)
+sq.from`a`.exceptAll(sq.from`b`).exceptAll(sq.from`c`)
 // select * from a except all (select * from b) except all (select * from c)
 ```
    */
@@ -1655,7 +1330,7 @@ sq.delete.from`person`
 sq.delete.from`person`.where`age < 7`.return`id`
 // delete from person where age < 7 returning id
 
-sq`person``age < 7``id`.delete
+sq.from`person``age < 7``id`.delete
 // delete from person where age < 7 returning id
 ```
    */
@@ -1684,7 +1359,7 @@ sq.sql`select * from person`.sql`where age = ${8}`.sql`or name = ${'Jo'}`
 sq.sql`select * ${sq.raw('person')}`
 // select * from person
 
-sq`person`.where({ min: sq.txt`age < 7` })
+sq.from`person`.where({ min: sq.txt`age < 7` })
 // select * from person where age < 7
 
 sq.return`now() today, (${sq.return`now() + '1 day'`}) tomorrow`
@@ -1753,7 +1428,7 @@ sq.sql`select * from ${sq.raw('test_table')} where id = ${7}`
 // select * from test_table where id = $1
 ```
    */
-  raw(arg: string): Buildable
+  raw(string: string): Buildable
 }
 
 export interface Link {
@@ -1785,10 +1460,10 @@ export interface Buildable {
 sq.sql`select * from book`.query
 { text: 'select * from book', args: [], type: 'manual' }
 
-sq`book`({ id: 7 })`title`.query
+sq.from`book`({ id: 7 })`title`.query
 { text: 'select title from book where id = $1', args: [7], type: 'select' }
 
-sq`book`.delete({ id: 7 })`title`.query
+sq.from`book`.delete({ id: 7 })`title`.query
 { text: 'delete from book where id = $1 returning title', args: [7], type: 'delete' }
 ```
    */
@@ -1803,7 +1478,7 @@ sq`book`.delete({ id: 7 })`title`.query
    *
    * @example
 ```js
-sq`book`({ id: 7 })`title`.unparameterized ===
+sq.from`book`({ id: 7 })`title`.unparameterized ===
 'select title from book where id = 7'
 ```
    */
@@ -1819,12 +1494,12 @@ interface Execute extends Promise<Row[]> {
    * 
    * @example
 ```js
-const children = await sq`person`.all()
+const children = await sq.from`person`.all()
 // .all() is optional
-const children = await sq`person`
+const children = await sq.from`person`
 // unless the query is part of a transaction
 const trx = await sq.transaction()
-await sq`person`.insert({ name: 'Jo' }).all(trx)
+await sq.from`person`.insert({ name: 'Jo' }).all(trx)
 ```
    */
   all(trx?: Transaction): Promise<Row[]>
@@ -1837,11 +1512,11 @@ await sq`person`.insert({ name: 'Jo' }).all(trx)
    * Execute the query within a transaction by passing the transaction object `trx`.
    * 
    * @example
-   * const bob = await sq`person`.where`name = 'Bob'`.return`id`.one()
+   * const bob = await sq.from`person`.where`name = 'Bob'`.return`id`.one()
    * if (bob) console.log(bob.id)
    * 
    * const trx = await sq.transaction()
-   * await sq`person`.insert({ name: 'Jo' }).one(trx)
+   * await sq.from`person`.insert({ name: 'Jo' }).one(trx)
    */
   one(trx?: Transaction): Promise<Row | void>
 }
@@ -1850,8 +1525,6 @@ interface Extend {
   /**
    * Returns a new query equivalent to the combination of the current
    * query and the argument queries
-   * 
-   * `.extend` does not modify the query chain's *Express* state. Every query chain has its own *Express* state.
    * 
    * @example
 ```js
@@ -1864,9 +1537,9 @@ sq.from('book').extend(sq.where({ genre: 'Fantasy'})).return('id')
 sq.sql`select id`.extend(sq.sql`from book`, sq.sql`where genre = ${'Fantasy'}`)
 // select id from book where genre = $1
 
-sq`author`.extend(
-  sq`book``book.author_id = author.id``title`,
-  sq`publisher``publisher.id = book.publisher_id``publisher`
+sq.from`author`.extend(
+  sq.from`book``book.author_id = author.id``title`,
+  sq.from`publisher``publisher.id = book.publisher_id``publisher`
 )`author.id = 7``first_name`
 // select title, publisher, first_name
 // from author, book, publisher
