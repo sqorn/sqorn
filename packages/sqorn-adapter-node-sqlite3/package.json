@@ -1,6 +1,6 @@
 {
   "name": "@sqorn/adapter-node-sqlite3",
-  "version": "0.0.42",
+  "version": "0.0.43",
   "description": "Sqorn Node SQLite3 Adapter",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
