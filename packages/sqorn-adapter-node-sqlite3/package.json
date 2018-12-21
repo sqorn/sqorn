@@ -9,5 +9,8 @@
   },
   "main": "./src/index.js",
   "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-adapter-node-sqlite3",
-  "homepage": "https://sqorn.org"
+  "homepage": "https://sqorn.org",
+  "publishConfig": {
+    "access": "public"
+  }
 }

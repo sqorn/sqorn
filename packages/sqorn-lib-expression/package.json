@@ -10,6 +10,9 @@
   "main": "./src/index.js",
   "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-lib-expression",
   "homepage": "https://sqorn.org",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@sqorn/lib-util": "^0.0.40"}
 }
