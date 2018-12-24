@@ -9,12 +9,12 @@ sidebar_label: Execution
 
 ## All
 
-`.all` executes a query and returns a Promise for a Row array.
+`.all` executes a query and returns a Promise for an array of result rows.
 
 A Row is an object in the form `{ field: value }`. Field names are converted to [camelCase](configuration#map-output-keys) by default.
 
 ```js
-await sq.sql`select id, first_name, last_name from person`.all()
+const people = await sq.sql`select id, first_name, last_name from person`.all()
 
 [ { id: 1, firstName: 'Kaladin', lastName: 'Stormblessed' },
   { id: 2, firstName: 'Shallan', lastName: 'Davar' },
@@ -23,35 +23,47 @@ await sq.sql`select id, first_name, last_name from person`.all()
 
 ## First
 
-`.first` executes a query and returns a Promise for the first result row. `.first` returns `undefined` if there are no results.
+`.first` executes a query and returns a Promise for the first result row.
+
+If a query returns no rows, `.first` returns `undefined`.
+
+If a query returns multiple rows, all but the first are disgarded.
 
 ```js
-await sq.sql`select id, first_name, last_name from person`.first()
+const person = await sq.sql`select id, first_name, last_name from person limit 1`.first()
 
-{ id: 1, firstName: 'Kaladin', lastName: 'Stormblessed' }
-
-await sq.sql`select id, first_name, last_name from person where false`.first()
-
-undefined
+if (person) {
+  // person === { id: 1, firstName: 'Kaladin', lastName: 'Stormblessed' }
+  console.log(person.title)
+} else {
+  // person === undefined
+  console.log('Person not found')
+}
 ```
 
 ## One
 
-`.one` executes a query and returns a Promise for the first result row. `.one` throws an error if there are no results.
+`.one` executes a query and returns a Promise for the first result row.
+
+If a query returns no rows, `.one` throws an error.
+
+If a query returns multiple rows, all but the first are disgarded.
 
 ```js
-await sq.sql`select id, first_name, last_name from person`.one()
-
-{ id: 1, firstName: 'Kaladin', lastName: 'Stormblessed' }
-
-await sq.sql`select * from person where false`.one()
-
-// throws error
+try {
+  const person = await sq.sql`select id, first_name, last_name from person where id = ${1}`.one()
+  // person === { id: 1, firstName: 'Kaladin', lastName: 'Stormblessed' }
+  console.log(person)
+} catch (error) {
+  console.log('Person not found')
+}
 ```
 
 ## Run
 
-`.run` executes a query and returns a void Promise that resolves when a query is done.
+`.run` executes a query and returns a void Promise that resolves when it is done.
+
+If a query returns rows, all are disgarded.
 
 ```js
 await sq.sql`insert into person(first_name, last_name) values (${'Jasnah'}, ${'Kholin'})`.run()
@@ -77,7 +89,6 @@ await pool.query(text, args)
 ## Unparameterized
 
 `.unparameterized` generates an unparameterized query string.  **To prevent SQL injection, never use this method.**
-
 
 ```js
 const sqorn = require('@sqorn/pg')

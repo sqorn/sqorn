@@ -1,4 +1,4 @@
-import { SQF } from './sq'
+import { SQF } from './builders'
 
 interface Configuration {
   /**

@@ -749,7 +749,7 @@ sq.from('book').orderBy(sq.return`sales / ${1000}`, 'title').query
 
 `.orderBy` accepts objects.
 
-Property `by` is used for ordering. It can be a string, [Expression](expressions), [Fragment](manual-queries#fragments) or [Subqueries](manual-queries#subqueries).
+Property `by` is used for ordering. It can be a string, [Expression](expressions), [Fragment](manual-queries#fragments) or [Subquery](manual-queries#subqueries).
 
 ```js
 sq.from('book').orderBy({ by: e`sales`.div(1000) }, { by: 'title' }).query
@@ -1029,6 +1029,8 @@ Person.except(Young).intersect(Person.except(Old)).query
 ```
 
 ## With
+
+**Reference** [Postgres](https://www.postgresql.org/docs/current/queries-with.html) [MySQL](https://dev.mysql.com/doc/refman/en/with.html) [SQLite](https://www.sqlite.org/lang_with.html) [T-SQL](https://docs.microsoft.com/en-us/sql/t-sql/queries/with-common-table-expression-transact-sql)
 
 Construct CTEs (Common Table Expressions) with `.with`.
 

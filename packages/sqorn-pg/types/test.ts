@@ -1,5 +1,13 @@
-import { ExpressionBuilder } from './expression'
-declare let e: ExpressionBuilder['e'];
+import { CreateExpression, TableExpression } from './expressions'
+declare let e: CreateExpression
+
+const a0 = e.add(3, 4).add(5).sub(6).eqAny([])
+
+const a01 = e.between(2, 3, 4).lt(true)
+const a02 = e.lt(3, 4).between(true)(false)
+const a03 = e.between(null)(null)(null)
+
+e(3).eqAny([4, 5, true])
 
 const a1 = e.and(true)
 const a2 = a1(true)
@@ -40,7 +48,7 @@ const j4 = e.between(2)`b`(false);
 const k1 = e.eq(98)`n`
 const k2 = e.eq`n`(98)
 
-declare let subquery: SubqueryExpression
+declare let subquery: TableExpression
 const l1 = e.exists(subquery)
 const l2 = e(subquery).exists
 const l3 = e(null)
