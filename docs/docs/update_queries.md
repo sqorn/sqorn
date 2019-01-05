@@ -91,6 +91,15 @@ sq.from('person')
   args: [] }
 ```
 
+`undefined` values set fields to `default`.
+
+```js
+sq.from('person').set({ firstName: undefined }).query
+
+{ text: "update person set first_name = default",
+  args: [] }
+```
+
 ## Where
 
 Filter the rows to update with `.where`.

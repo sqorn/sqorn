@@ -1,7 +1,15 @@
-import { CreateExpression, TableExpression } from './expressions'
-declare let e: CreateExpression
 
-const a0 = e.add(3, 4).add(5).sub(6).eqAny([])
+import sqorn = require('..')
+
+const { sq, e, db } = sqorn()
+
+sq.from('book').join('book').on({ a: 3 })
+sq.where({ a: e`true` })
+
+const x = sq.raw('')
+const a = sq.txt(x)
+
+const a0 = e.add(sq.raw(''), 3).add(5).sub(6).eqAny([])
 
 const a01 = e.between(2, 3, 4).lt(true)
 const a02 = e.lt(3, 4).between(true)(false)
@@ -29,7 +37,7 @@ const e2 = e.eq(null, 2)
 const e3 = e.eq(2, null)
 const e4 = e.eq(1)
 
-const f1 = e.subtract(e.add(3, 4), 23).add(23).divide(null)
+const f1 = e.sub(e.add(3, 4), 23).add(23).div(null)
 const f2 = e.add(2, 3, 4).subtract(4, 5, 6)
 
 const g1 = e.and(true, false)(true)(false)(e.eq(2,3), null)

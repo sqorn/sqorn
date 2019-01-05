@@ -1,14 +1,14 @@
 {
-  "name": "@sqorn/builder-sq",
+  "name": "@sqorn/builder-manual",
   "version": "0.0.45",
-  "description": "Sqorn Untyped Query Builder",
+  "description": "Sqorn Manual Query Builder",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
   "engines": {
     "node": ">=8.0.0"
   },
   "main": "./src/index.js",
-  "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-builder-sq",
+  "repository": "https://github.com/sqorn/sqorn/tree/master/packages/sqorn-builder-manual",
   "homepage": "https://sqorn.org",
   "publishConfig": {
     "access": "public"

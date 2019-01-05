@@ -1,26 +1,11 @@
-import { Arg } from '../args'
+import { Arg, InputValue, Subquery } from '../args'
 
 export interface Insert {
-  /**
-   * Specifies the data to insert.
-   *
-   * @example
-```js
-sq.from`person(name, age)`.insert`values (${'bo'}, ${22})`
-// insert into person(name, age) values ('bo', 22)
-
-sq.from`person(name)`.insert`values ('Jo')`.insert`values ('Mo')`
-// insert into person(name, age) values ('Mo')
-```
-   */
-  insert(strings: TemplateStringsArray, ...args: Arg[]): this
 
   /**
    * Specifies the data to insert as objects.
    * 
-   * Column names are inferred from object keys.
-   * 
-   * Values may be subqueries
+   * Field names are inferred from object keys.
    * 
    * @example
 ```js
@@ -45,14 +30,12 @@ sq.from('person').insert({
 // insert into person(first_name, last_name) values ((select 'Shallan'), 'Davar')
 ```
    */
-  insert(...values: Value[]): this
+  insert(...values: InputValue[]): this
 
   /**
    * Specifies the data to insert as an array of objects.
    * 
-   * Column names are inferred from object keys.
-   * 
-   * Values may be subqueries.
+   * Field names are inferred from object keys..
    * 
    * @example
 ```js
@@ -71,7 +54,7 @@ sq.from('person').insert([{
 // insert into person(first_name, last_name) values ((select 'Shallan'), 'Davar')
 ```
    */  
-  insert(values: Value[]): this
+  insert(values: InputValue[]): this
 
   /**
    * Specifies the data to insert from a query.
@@ -85,7 +68,7 @@ sq.from('person(name)').insert(sq.txt`values (${'Jo'})`)
 // insert into person(name) values ('Jo')
 ```
    */
-  insert(query: SQ): this
+  insert(subquery: Subquery): this
 
   /**
    * Inserts default values.
@@ -97,4 +80,18 @@ sq.from('person').insert()
 ```
    */
   insert(undefined: undefined): this
+
+  /**
+   * Specifies the data to insert.
+   *
+   * @example
+```js
+sq.from`person(name, age)`.insert`values (${'bo'}, ${22})`
+// insert into person(name, age) values ('bo', 22)
+
+sq.from`person(name)`.insert`values ('Jo')`.insert`values ('Mo')`
+// insert into person(name, age) values ('Mo')
+```
+   */
+  insert(strings: TemplateStringsArray, ...args: Arg[]): this
 }

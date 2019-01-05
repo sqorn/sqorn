@@ -22,14 +22,14 @@ Install [Node Postgres](https://www.npmjs.com/package/pg) and [Sqorn Postgres](h
 npm install --save pg @sqorn/pg
 ```
 
-Create a [Node Postgres connection pool](https://node-postgres.com/features/connecting). Then pass `pg` and `pool` arguments to `sqorn()` to create a query builder `sq.from`.
+Create a [Node Postgres connection pool](https://node-postgres.com/features/connecting). Then pass `pg` and `pool` arguments to `sqorn()` to initialize sqorn.
 
 ```js
 const pg = require('pg')
 const sqorn = require('@sqorn/pg')
 
 const pool = new pg.Pool()
-const sq = sqorn({ pg, pool })
+const { db, sq, e, txt, sql, raw } = sqorn({ pg, pool })
 ```
 
 ### MySQL

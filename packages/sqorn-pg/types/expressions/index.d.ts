@@ -8,7 +8,8 @@ import { ArrayOperations, ArrayChainOperations } from './operations/array'
 import { JSONOperations, JSONChainOperations } from './operations/json'
 import { RowOperations, RowChainOperations } from './operations/row'
 import { TableOperations, TableChainOperations } from './operations/table'
-import { AnyBuilder, ManualBuilder, FragmentBuilder, SelectBuilder} from '../builders'
+import { AnyBuilder, ManualBuilder, FragmentBuilder, RawBuilder} from '../builders'
+import { Queryable } from '../buildable'
 
 type TypeExpressionMap = {
   unknown: UnknownExpression
@@ -20,20 +21,30 @@ type TypeExpressionMap = {
   row: RowExpression
   table: TableExpression
 }
+
+type JSONValue = JSONPrimitive | JSONArray | JSONObject
+type JSONPrimitive = null | boolean | number | string
+interface JSONArray extends Array<JSONValue> {}
+interface JSONObject {
+  [key: string]: JSONValue
+}
+
+interface ArrayValue extends Array<Arg> {}
+
 type TypePrimitiveMap = {
-  unknown: null | AnyBuilder | ManualBuilder | FragmentBuilder
+  unknown: null | AnyBuilder | ManualBuilder | FragmentBuilder | RawBuilder
   boolean: boolean
   number: number
   string: string
-  array: any[]
-  json: null | number | boolean | string | any[] | { [key: string]: any }
+  array: ArrayValue
+  json: JSONValue
   row: never
   table: never
 }
 type TypeInferenceMap = {
   [key in Types]: TypeExpressionMap[key] | TypePrimitiveMap[key]
 }
-type InferOrUnknown<T extends Types> = null | UnknownExpression | TypeInferenceMap[T]
+type InferOrUnknown<T extends Types> = TypeInferenceMap['unknown'] | TypeInferenceMap[T]
 type TypeCompatibilityMap = {
   unknown: Arg
   boolean: InferOrUnknown<'boolean'>
@@ -79,8 +90,11 @@ export type RowTypes = CompatibleTypes<'row'>
 export type TableTypes = CompatibleTypes<'table'>
 export type JSONTypes = CompatibleTypes<'json'>
 
-interface Expression<T extends Types> extends ComparisonChainOperations<T> {
-  type: T
+interface Expression<T extends Types> extends
+  Queryable<'expression'>,
+  ComparisonChainOperations<T>
+{
+  expressionType: T
 }
 
 export interface CreateExpression extends

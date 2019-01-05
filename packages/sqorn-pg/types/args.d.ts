@@ -9,18 +9,23 @@ import {
   RowExpression,
   TableExpression
 } from './expressions'
-import { AnyBuilder, ManualBuilder, FragmentBuilder } from './builders'
+import {
+  AnyBuilder,
+  ManualBuilder,
+  FragmentBuilder,
+  RawBuilder
+} from './builders'
 
 export type Arg = Arg
 
 export type WithItem = Aliased<
-  AnyBuilder | ManualBuilder | FragmentBuilder | ValuesArray
+  AnyBuilder | ManualBuilder | FragmentBuilder | Value[]
 >
 export type FromItem =
   | Aliasable<
       string | AnyBuilder | ManualBuilder | FragmentBuilder | TableExpression
     >
-  | Aliased<ValuesArray>
+  | Aliased<Value[]>
 
 type SelectItem =
   | string
@@ -47,6 +52,7 @@ export type Condition =
   | ManualBuilder
   | FragmentBuilder
   | BooleanExpression
+  | Value
 
 export type Numeric =
   | AnyBuilder
@@ -57,4 +63,10 @@ export type Numeric =
 
 export type Subquery = AnyBuilder | ManualBuilder | FragmentBuilder
 
-interface ValuesArray extends Array<Arg> {}
+export type Value = {
+  [field: string]: Arg
+}
+
+export type InputValue = {
+  [field: string]: Arg | undefined
+}

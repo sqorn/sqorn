@@ -2,8 +2,7 @@ const { camelCase, memoize } = require('@sqorn/lib-util')
 const createNewContext = require('./context')
 const build = Symbol.for('sqorn-build')
 
-const createQueryBuilder = ({ defaultContext, query, adapter, e, config }) => {
-  const { escape } = defaultContext
+const createQueryBuilder = ({ defaultContext, query, adapter, config }) => {
   const { queries, methods, properties } = query
   const newContext = createNewContext(defaultContext)
   const client = adapter(config)

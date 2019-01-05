@@ -1,6 +1,6 @@
 import { Arg, WithItem } from '../args'
 
-export default interface With {
+export interface With {
   /**
    * Builds a CTE (Common Table Expression)
    * 

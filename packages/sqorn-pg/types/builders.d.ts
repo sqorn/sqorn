@@ -1,37 +1,34 @@
-import { Buildable } from './buildable'
+import { Queryable } from './buildable'
 import { Executable } from './executable'
-import { GroupByUtil } from './util'
-import {
-  Link,
-  Extend,
-  With,
-  Return,
-  Distinct,
-  From,
-  Join,
-  Where,
-  GroupBy,
-  Having,
-  SetOperators,
-  OrderBy,
-  Limit,
-  Offset,
-  Set,
-  Delete,
-  Insert,
-  Values,
-  Manual,
-  Raw
-} from './methods'
-import { CreateExpression } from './expressions'
+import { Buildable } from './buildable'
+import { Link } from './methods/link'
+import { Extend } from './methods/extend'
+import { With } from './methods/with'
+import { Return } from './methods/return'
+import { Distinct } from './methods/distinct'
+import { From } from './methods/from'
+import { Join } from './methods/join'
+import { Where } from './methods/where'
+import { GroupBy, GroupByUtil } from './methods/groupby'
+import { Having } from './methods/having'
+import { SetOperators } from './methods/set_operators'
+import { OrderBy } from './methods/orderby'
+import { Limit } from './methods/limit'
+import { Offset } from './methods/offset'
+import { Set } from './methods/set'
+import { Delete } from './methods/delete'
+import { Insert } from './methods/insert'
+import { Sql } from './methods/sql'
+import { Txt } from './methods/txt'
+import { Raw } from './methods/raw'
 
-interface QueryBuilder extends Buildable, Executable, Link, Extend {}
+interface QueryBuilder extends Queryable<'query'>, Executable, Link, Extend {}
 
 export interface AnyBuilder
-  extends SelectBuilder, UpdateBuilder, DeleteBuilder, InsertBuilder, ValuesBuilder, ManualBuilder, FragmentBuilder {}
+  extends QueryBuilder, SelectBuilder, UpdateBuilder, DeleteBuilder, InsertBuilder, Util {}
 
 interface SelectBuilder
-  extends With, Distinct, Return, From, Join, Where, GroupBy, Having, SetOperators, OrderBy, Limit, Offset {}
+  extends With, Return, Distinct, From, Join, Where, GroupBy, Having, SetOperators, OrderBy, Limit, Offset {}
 
 interface UpdateBuilder extends With, From, Return, Where, Set {}
 
@@ -39,23 +36,11 @@ interface DeleteBuilder extends With, From, Return, Where, Delete {}
 
 interface InsertBuilder extends With, From, Insert, Return {}
 
-interface ValuesBuilder extends Values, OrderBy, Limit, Offset {}
+export interface ManualBuilder extends QueryBuilder, Sql {}
 
-export interface ManualBuilder extends Manual {}
+export interface FragmentBuilder
+  extends Queryable<'query'>, Link, Extend, Txt {}
 
-export interface FragmentBuilder extends Manual {}
-
-interface ExpressionBuilder extends Buildable {
-  e: CreateExpression;
-}
+export interface RawBuilder extends Buildable<'raw'> {}
 
 interface Util extends GroupByUtil {}
-
-interface End {
-  /**
-   * Closes the database connection.
-   *
-   * Subsequent attempts to execute using the query builder will fail.
-   */
-  end(): Promise<void>;
-}

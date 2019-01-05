@@ -37,70 +37,28 @@ const createQueryBuilder = ({ defaultContext, query, adapter, e, config }) => {
   return chain()
 }
 
-/** Creates a new builder instance */
-const createChain = prototype => {
-  const chain = method => {
-    const fn = (...args) => chain({ name: 'express', args, prev: method })
-    fn.method = method
-    Object.setPrototypeOf(fn, prototype)
-    return fn
-  }
-  return chain
-}
-
-/** Creates an object containing all method reducers */
-const createReducers = methods => {
-  const reducers = {}
-  for (const name in methods) {
-    const { updateContext, properties = {} } = methods[name]
-    reducers[name] = updateContext
-    // some methods have subproperties, e.g. .unionAll
-    for (const key in properties) {
-      reducers[`${name}.${key}`] = properties[key]
-    }
-  }
-  return reducers
-}
-
-/** Follows a method chain, applying each method's reducer, to ctx */
-const applyReducers = reducers => (method, ctx) => {
-  // follow method links to construct methods array (in reverse)
-  const methods = []
-  for (; method !== undefined; method = method.prev) {
-    methods.push(method)
-  }
-  // build methods object by processing methods in call order
-  for (let i = methods.length - 1; i >= 0; --i) {
-    const method = methods[i]
-    reducers[method.name](ctx, method.args)
-  }
-  return ctx
-}
-
-/** Default properties of all SQL Query Builders */
-const builderProperties = ({ chain, newContext, updateContext, queries }) => ({
-  [build]: {
-    value: function(inheritedContext) {
-      const ctx = updateContext(this.method, newContext(inheritedContext))
-      return queries[ctx.type](ctx)
+const disconnectedAdapter = {
+  all: {
+    value: async function(trx) {
+      throw Error('Error: Cannot execute query when not connected to database.')
     }
   },
-  query: {
-    get: function() {
-      return this[build]()
+  first: {
+    value: async function(trx) {
+      throw Error('Error: Cannot execute query when not connected to database.')
     }
   },
-  unparameterized: {
-    get: function() {
-      return this[build]({ unparameterized: true }).text
+  one: {
+    value: async function(trx) {
+      throw Error('Error: Cannot execute query when not connected to database.')
     }
   },
-  extend: {
-    value: function(...args) {
-      return chain({ name: 'extend', args, prev: this.method })
+  run: {
+    value: async function(trx) {
+      throw Error('Error: Cannot execute query when not connected to database.')
     }
   }
-})
+}
 
 const adapterProperties = ({
   client,
@@ -108,11 +66,6 @@ const adapterProperties = ({
 }) => {
   const mapKey = memoize(mapOutputKeys)
   return {
-    end: {
-      value: async function() {
-        return client.end()
-      }
-    },
     all: {
       value: async function(trx) {
         const rows = await client.query(this.query, trx)
@@ -135,11 +88,6 @@ const adapterProperties = ({
     run: {
       value: async function(trx) {
         await client.query(this.query, trx)
-      }
-    },
-    transaction: {
-      value: function(fn) {
-        return fn ? client.transactionCallback(fn) : client.transactionObject()
       }
     }
   }
