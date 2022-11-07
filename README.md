@@ -1,3 +1,9 @@
+# WARNING: THIS PROJECT IS UNMAINTAINED.
+
+Expect no further fixes or features. Anyone is free to fork, modify, and publish the code, but please do not reuse the name "Sqorn" without permission.
+
+Why: The original developer does not and will not have the time and motivation to continue.
+
 # [<img src="https://raw.githubusercontent.com/sqorn/sqorn/master/docs/website/static/img/logo_blue.svg?sanitize=true" height="38px"/> <span style="color: #2979f">Sqorn</span>](https://sqorn.org) &middot; [![License](https://img.shields.io/github/license/sqorn/sqorn.svg)](https://github.com/sqorn/sqorn/blob/master/LICENSE) [![npm](https://img.shields.io/npm/v/sqorn.svg)](https://www.npmjs.com/package/sqorn) ![Supports Node 8+](https://img.shields.io/node/v/sqorn.svg) [![npm](https://img.shields.io/travis/sqorn/sqorn.svg)](https://travis-ci.org/sqorn/sqorn) [![Coverage Status](https://coveralls.io/repos/github/sqorn/sqorn/badge.svg)](https://coveralls.io/github/sqorn/sqorn)
 
 Sqorn is a Javascript library for building SQL queries.
