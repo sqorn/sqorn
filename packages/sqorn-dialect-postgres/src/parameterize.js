@@ -9,8 +9,12 @@ const escape = arg => {
   if (arg === undefined) throw Error('Error: parameter is undefined')
   if (arg === null) return 'null'
   if (typeof arg === 'string') return escapeLiteral(arg)
-  if (typeof arg === 'number') return '' + arg
-  if (typeof arg === 'boolean') return '' + arg
+  if (
+    typeof arg === 'number' ||
+    typeof arg == 'bigint' ||
+    typeof arg == 'boolean'
+  )
+    return '' + arg
   if (typeof arg === 'object') {
     if (Array.isArray(arg)) {
       return `array[${arg.map(e => escape(e)).join(', ')}]`
