@@ -7,7 +7,8 @@
   },
   "scripts": {
     "test": "jest",
-    "test:db": "jest test/database/**"
+    "test:db": "jest test/database/**",
+    "prerelease": "npm run --workspaces --if-present prerelease"
   },
   "workspaces": [
     "packages/*"
@@ -19,6 +20,7 @@
     "@tsconfig/recommended": "^1.0.1",
     "@types/jest": "^29.2.4",
     "coveralls": "^3.0.2",
+    "gitpkg": "^1.0.0-beta.4",
     "jest": "^29.3.1",
     "pg": "^8.8.0",
     "prettier": "^1.14.2",

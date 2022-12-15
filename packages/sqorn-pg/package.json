@@ -1,6 +1,6 @@
 {
   "name": "@sqorn/pg",
-  "version": "0.0.45",
+  "version": "0.0.46",
   "description": "A Javascript library for building Postgres queries",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -28,5 +28,8 @@
     "@sqorn/adapter-pg": "^0.0.45",
     "@sqorn/dialect-postgres": "^0.0.45",
     "@sqorn/lib-core": "^0.0.45"
+  },
+  "scripts": {
+    "prerelease": "gitpkg publish"
   }
 }
