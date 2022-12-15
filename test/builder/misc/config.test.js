@@ -1,13 +1,10 @@
 const pg = require('pg')
 const { query, sqorn } = require('../tape')
-
-const db_name = 'sqorn_config_test'
-const adminConnection = {
-  connectionString: 'postgresql://postgres@localhost:5432/postgres'
-}
-const appConnection = {
-  connectionString: `postgresql://postgres@localhost:5432/${db_name}`
-}
+const {
+  adminConnection,
+  appConnection,
+  db_name
+} = require('../../database/connection')
 
 const createTestDatabase = async () => {
   // create test database
@@ -29,9 +26,9 @@ const createTestDatabase = async () => {
   await sq.end()
 }
 
-describe('Config', async () => {
+describe('Config', () => {
   beforeAll(createTestDatabase)
-  describe('thenable', async () => {
+  describe('thenable', () => {
     test('default = true', async () => {
       const sq = sqorn({ pg, pool: new pg.Pool(appConnection) })
       try {

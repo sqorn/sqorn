@@ -1,3 +1,6 @@
 {
-  "compilerOptions": {"strictNullChecks":true}
+  "extends": "@tsconfig/node-lts/tsconfig.json",
+  "compilerOptions": {
+    "esModuleInterop": true
+  },
 }

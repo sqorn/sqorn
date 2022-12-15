@@ -1,16 +1,8 @@
 const sqorn = require('../../packages/sqorn-pg')
 const pg = require('pg')
+const { adminConnection, connection, db_name } = require('./connection')
 
-const db_name = 'sqorn_pg_test'
-const adminConnection = {
-  connectionString: 'postgresql://postgres@localhost:5432/postgres'
-}
-const connection = {
-  // username: postgres, no password, database name: sqorn_test
-  connectionString: `postgresql://postgres@localhost:5432/${db_name}`
-}
-
-describe('pg', async () => {
+describe('pg', () => {
   beforeAll(async () => {
     const pool = new pg.Pool(adminConnection)
     const sq = sqorn({ pg, pool })
