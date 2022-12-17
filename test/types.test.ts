@@ -87,14 +87,14 @@ test("ExpressionBuilder", () => {
   const r8 = e.like('a')`asdf`
 
   const s1 = e([])
-  const s2 = e.arrayGet([], 23)
-  const s3 = e.arrayGet([])(23)
-  const s4 = e([]).arrayGet`(23)`
+  // const s2 = e.arrayGet([], 23)
+  // const s3 = e.arrayGet([])(23)
+  // const s4 = e([]).arrayGet`(23)`
   const s5 = e([])
-  const s6 = e.arrayAppend([], 23)
-  const s7 = e.arrayAppend([])(23)
-  const s8 = e([]).arrayAppend(23)
-  const s9 = e([]).arrayCat([])
+  // const s6 = e.arrayAppend([], 23)
+  // const s7 = e.arrayAppend([])(23)
+  // const s8 = e([]).arrayAppend(23)
+  // const s9 = e([]).arrayCat([])
 
   const t = e.and(e(true).gt(true), e.in('a')([]))
 

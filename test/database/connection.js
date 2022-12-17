@@ -1,16 +1,16 @@
-const db_name = 'sqorn_pg_test'
-const uri = process.env.POSTGRES_URL ?? `postgres://postgres@localhost:5432`
+require('dotenv').config()
+const db_name = `sqorn_pg_test_${process.env.JEST_WORKER_ID}`
 
 module.exports = {
   db_name,
   adminConnection: {
-    connectionString: `${uri}/postgres`,
-    connectionTimeoutMillis: 1000
+    database: 'postgres',
+    connectionTimeoutMillis: 1000,
+    ssl: false
   },
   connection: {
-    connectionString: `${uri}/${db_name}`,
-    connectionTimeoutMillis: 1000
+    database: db_name,
+    connectionTimeoutMillis: 1000,
+    ssl: false
   }
 }
-
-console.log(module.exports)

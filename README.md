@@ -89,6 +89,17 @@ npm install
 
 `npm test` runs all tests. `npm run clean` removes all dependencies.
 
+To run tests that connect to Postgres, you need a running postgres instance from somewhere. Then, you need to set the standard Postgres environment variables to tell the tests where to connect. If you add a `.env` file to this repo, the tests will use environment variables from there to connect.
+
+```
+// in `.env`
+PGHOST=127.0.0.1
+PGUSER=some-user
+PGPASSWORD=some-password
+PGPORT=5432
+PGDATABASE=postgres
+```
+
 ## Maintainers
 
 Sqorn is currently maintained by the @gadgetinc development team. Please direct support requests, bug reports, and other communication about Sqorn to this github repo.
