@@ -1,6 +1,6 @@
 {
   "name": "@sqorn/lib-util",
-  "version": "0.0.45",
+  "version": "0.0.46",
   "description": "Sqorn Utility Library",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -12,5 +12,8 @@
   "homepage": "https://sqorn.org",
   "publishConfig": {
     "access": "public"
+  },
+  "scripts": {
+    "prerelease": "gitpkg publish"
   }
 }

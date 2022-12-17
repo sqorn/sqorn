@@ -1,6 +1,6 @@
 {
   "name": "@sqorn/dialect-mysql",
-  "version": "0.0.45",
+  "version": "0.0.46",
   "description": "Sqorn MySQL Dialect",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",

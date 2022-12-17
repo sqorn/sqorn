@@ -1,6 +1,6 @@
 {
   "name": "@sqorn/dialect-postgres",
-  "version": "0.0.45",
+  "version": "0.0.46",
   "description": "Sqorn Postgres Dialect",
   "author": "Sufyan Dawoodjee <eejdoowad@gmail.com>",
   "license": "MIT",
@@ -16,5 +16,8 @@
   "dependencies": {
     "@sqorn/lib-expression": "^0.0.45",
     "@sqorn/lib-sq": "^0.0.45"
+  },
+  "scripts": {
+    "prerelease": "gitpkg publish"
   }
 }

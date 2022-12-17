@@ -7,3 +7,4 @@ debug.log
 .DS_Store
 .vscode
 lerna-debug.log
+.env
